@@ -1,0 +1,5 @@
+dn: cn=_GROUP_,ou=groups,dc=docker,dc=local
+changetype: modify
+delete: memberUID
+memberUID: _USER_
+

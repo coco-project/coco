@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# get the user to which this container belongs
+# since we only mount the owner's home directory and noone is able to create dirs in /home
+# we can be sure there is only one dir with the username's name
+USER=`ls /home/`
+
+# chown the /data directory so the user is able to store his personal per-container
+# files in there
+chown ${USER}:${USER} /data
+
+# chown all python modules to the current user
+# cloned containers may otherwise contain files by other users so we wouldn't have permissions
+chown -R ${USER} /usr/local/lib/python3.4/dist-packages/
+
+# start the IPython notebook server
+/sbin/setuser ${USER} \
+ipython3 notebook --no-browser --init --ip=0.0.0.0 \
+--ipython-dir=/home/${USER}/.ipython --notebook-dir=/data --user=${USER}

@@ -1,0 +1,14 @@
+version: 1
+
+dn: cn=_USER_,ou=users,dc=docker,dc=local
+cn:  _USER_
+gidnumber: _GID_
+homedirectory: /home/_USER_
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: _USER_
+uid: _USER_
+uidnumber: _ID_
+userpassword: {MD5}_PASSWORD_
+

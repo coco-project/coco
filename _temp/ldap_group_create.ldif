@@ -1,0 +1,8 @@
+version: 1
+
+dn: cn=_GROUP_,ou=groups,dc=docker,dc=local
+cn: _GROUP_
+gidnumber: _GID_
+objectclass: posixGroup
+objectclass: top
+

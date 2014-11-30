@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ $# -ne 2 ]
+then
+  echo "Usage: `basename $0` container user"
+  exit 65
+fi
+
+docker-bash $1 login $2

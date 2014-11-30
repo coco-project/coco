@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]
+then
+  echo "Usage: `basename $0` image user [command]"
+  exit 65
+fi
+
+# optional command to run inside the container
+CMD=""
+if [ $# -gt 2 ]
+then
+  CMD="/sbin/my_init -- $3"
+fi
+
+# create and start the container
+ID=`docker run --detach=true --publish-all=true -v /srv/homes/$2:/home/$2 -v /srv/homes/$2:/data/home -v /srv/shares:/data/shares $1 $CMD`
+
+echo "Container is running: $CMD"
+echo "Container created with ID: $ID"

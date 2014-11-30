@@ -1,0 +1,19 @@
+FROM fhnw/ldap:1
+MAINTAINER FHNW <ipynbsrv@fhnw.ch>
+
+ENV HOME /root
+CMD ["/sbin/my_init", "--", "/usr/local/bin/init_cmd"]
+
+# Install system-wide pip for IPython
+RUN apt-get update && apt-get -y install python3-pip
+# Install IPython + Notebook
+RUN pip3 install "ipython[notebook]"
+
+# Copy my_init services into the container
+ADD ipython3-notebook.bin /usr/local/bin/init_cmd
+
+# Expose the IPython notebook server; use --publish-all=true
+EXPOSE 8888
+
+# Clean up APT when done.
+RUN apt-get autoremove && apt-get autoclean && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /etc/*-
