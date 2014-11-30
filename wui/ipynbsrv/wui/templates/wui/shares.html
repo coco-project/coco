@@ -1,12 +1,22 @@
 {% extends "wui/base.html" %}
 
+{% load staticfiles %}
+
 {% block title %} - Shares{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static "bower_components/datatables/media/css/jquery.dataTables.min.css" %}">
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.css">
+{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-xs-12">
         <h1>Shares</h1>
-        <div class="row form-grid-filters">
+        <form role="form">
+            <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-share">Create new</button>
+        </form>
+        <!--<div class="row form-grid-filters">
             <form class="form-inline col-xs-12" role="form">
                 <div class="form-group">
                     <label for="filter-membership">Membership:&nbsp;</label>
@@ -22,7 +32,7 @@
                 </div>
                 <button type="button" class="btn btn-primary pull-right" data-toggle="modal" data-target="#modal-create-share">Create new</button>
             </form>
-        </div>
+        </div>-->
 
         <!-- modal -->
         <div class="modal fade" id="modal-create-share" tabindex="-1" role="dialog" aria-labelledby="modal-create-share" aria-hidden="true">
@@ -55,13 +65,13 @@
         <div class="row shares-table">
             <div class="col-xs-12">
                 <div class="table-responsive">
-                    <table class="table table-hover table-striped">
+                    <table class="table table-hover table-striped" cellspacing="0" width="100%">
                         <thead>
                             <tr>
                                 <th width="25%">Name</th>
                                 <th width="25%">Membership</th>
                                 <th width="25%">Members</th>
-                                <th width="25%">Actions</th>
+                                <th width="25%" style="text-align: right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -81,7 +91,7 @@
                                     </ul>
                                 </td>
                                 <td>
-                                    <form role="form">
+                                    <form class="pull-right" role="form">
                                         <button class="btn btn-sm btn-default" type="submit" name="" title="Add new member" data-toggle="tooltip" data-placement="top">
                                             <i class="glyphicon glyphicon-plus"></i>
                                         </button>
@@ -99,18 +109,18 @@
                             </tr>
 
                             <tr>
-                                <td><strong>fhnw-maths</strong></td>
+                                <td><strong>fhnw-physics</strong></td>
                                 <td><span class="label label-info">Owner</span></td>
                                 <td>
                                     <ul class="list">
                                         <li>Martin Melchior</li>
-                                        <li>Michael Graber</li>
                                         <li>Florian Aschwanden</li>
                                         <li>Michel Käser</li>
+                                        <li>Michael Graber</li>
                                     </ul>
                                 </td>
                                 <td>
-                                    <form role="form">
+                                    <form class="pull-right" role="form">
                                         <button class="btn btn-sm btn-default" type="submit" name="" title="Add new member" data-toggle="tooltip" data-placement="top">
                                             <i class="glyphicon glyphicon-plus"></i>
                                         </button>
@@ -128,18 +138,18 @@
                             </tr>
 
                             <tr>
-                                <td><strong>fhnw-maths</strong></td>
-                                <td><span class="label label-info">Owner</span></td>
+                                <td><strong>fhnw-cpp</strong></td>
+                                <td>Member</td>
                                 <td>
                                     <ul class="list">
+                                        <li>Florian Aschwanden</li>
                                         <li>Martin Melchior</li>
                                         <li>Michael Graber</li>
-                                        <li>Florian Aschwanden</li>
                                         <li>Michel Käser</li>
                                     </ul>
                                 </td>
                                 <td>
-                                    <form role="form">
+                                    <form class="pull-right" role="form">
                                         <button class="btn btn-sm btn-default" type="submit" name="" title="Add new member" data-toggle="tooltip" data-placement="top">
                                             <i class="glyphicon glyphicon-plus"></i>
                                         </button>
@@ -165,9 +175,14 @@
 {% endblock %}
 
 {% block js %}
+<script src="{% static "bower_components/datatables/media/js/jquery.dataTables.min.js" %}"></script>
+<script src="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.js"></script>
 <script>
 $(function() {
     $('[data-toggle="tooltip"]').tooltip();
+    $('table').dataTable({
+        responsive: false
+    });
 });
 </script>
 {% endblock %}

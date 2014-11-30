@@ -59,11 +59,19 @@ h2 {
 //
 // generic
 // --------------------------
+.btn-create
+{
+    margin-top: -68px;
+}
+
 .form-grid-filters
 {
     margin-bottom: 20px;
     .form-group {
         margin-right: 15px;
+        &:last-child {
+            margin-right: 0;
+        }
     }
 }
 
@@ -144,3 +152,8 @@ h2 {
         padding-left: 18px;
     }
 }
+
+//
+// Plugins
+// --------------------------
+@import "plugins.less";
