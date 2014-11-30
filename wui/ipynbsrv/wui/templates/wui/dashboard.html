@@ -1,0 +1,107 @@
+{% extends "wui/base.html" %}
+
+{% block title %} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <h1>Dashboard</h1>
+        <div class="dashboard-box">
+            <p><strong>Welcome back Michel!</strong></p>
+            <p>You have no pending invitations. Good :)</p>
+        </div>
+        <h2>Running containers</h2>
+        <div class="row container-grid">
+            <!-- container grid -->
+            <!--
+            Foreach container in containers
+            panel-success if running, panel-danger if stopped
+            -->
+            <div class="col-xs-12 col-sm-6 col-md-4">
+                <div class="panel panel-success panel-container">
+                    <div class="panel-heading">IPython Notebook</div>
+                    <div class="panel-body">
+                        <!--<dl class="dl-horizontal">
+                            <dt>Status</dt>
+                            <dd>Running</dd>
+                        </dl>-->
+                        Some useful information here.
+                    </div>
+                    <div class="panel-footer">
+                        <div class="dropdown">
+                            <button class="btn btn-default btn-block dropdown-toggle" type="button" id="actions-container_1" data-toggle="dropdown" aria-expanded="true">
+                            Actions
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Stop</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Backup/Restore</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Clone</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Share</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Delete</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-6 col-md-4">
+                <div class="panel panel-success panel-container">
+                    <div class="panel-heading">IPython Notebook</div>
+                    <div class="panel-body">
+                        <!--<dl class="dl-horizontal">
+                            <dt>Status</dt>
+                            <dd>Running</dd>
+                        </dl>-->
+                        Some useful information here.
+                    </div>
+                    <div class="panel-footer">
+                        <div class="dropdown">
+                            <button class="btn btn-default btn-block dropdown-toggle" type="button" id="actions-container_1" data-toggle="dropdown" aria-expanded="true">
+                            Actions
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Stop</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Backup/Restore</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Clone</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Share</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Delete</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-6 col-md-4">
+                <div class="panel panel-success panel-container">
+                    <div class="panel-heading">IPython Notebook</div>
+                    <div class="panel-body">
+                        <!--<dl class="dl-horizontal">
+                            <dt>Status</dt>
+                            <dd>Running</dd>
+                        </dl>-->
+                        Some useful information here.
+                    </div>
+                    <div class="panel-footer">
+                        <div class="dropdown">
+                            <button class="btn btn-default btn-block dropdown-toggle" type="button" id="actions-container_1" data-toggle="dropdown" aria-expanded="true">
+                            Actions
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Stop</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Backup/Restore</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Clone</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Share</a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Delete</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- end container grid -->
+        </div>
+    </div>
+</div>
+{% endblock %}

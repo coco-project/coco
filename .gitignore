@@ -3,3 +3,6 @@
 
 # Python compiled files
 *.pyc
+
+# Bower packages
+/wui/ipynbsrv/wui/static/bower_components
