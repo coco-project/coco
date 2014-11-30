@@ -1,28 +1,33 @@
 //
 // DataTables
 // --------------------------
-div.dataTables_filter label
+div.dataTables_filter label,
+div.dataTables_length label
 {
-    font-weight: bold !important;
+    font-weight: bold;
+    input,
+    select {
+        font-weight: normal;
+    }
 }
 
 .table > thead > tr > th
 {
-    border-bottom: 0 !important;
+    border-bottom: 0;
 }
 
 table.dataTable thead th
 {
-    border-bottom: 0 !important;
+    border-bottom: 0;
 }
 
 table.dataTable.no-footer
 {
-    border-bottom: 0 !important;
+    border-bottom: 0;
 }
 
-.dataTables_paginate .paginate_button
+.dataTables_wrapper .dataTables_paginate .paginate_button
 {
-    margin-left: -1px !important;
-    padding: 0 !important;
+    margin-left: -1px;
+    padding: 0;
 }
