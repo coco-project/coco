@@ -1,0 +1,2 @@
+django==1.7.1
+docker-py==0.6.0
