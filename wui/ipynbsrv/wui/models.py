@@ -9,6 +9,7 @@ class User(models.Model):
 class Group(models.Model):
     gid       = models.IntegerField(primary_key=True, max_length=10)
     groupname = models.CharField(null=False, blank=False, max_length=100)
+    system    = models.BooleanField(default=True)
 
 
 class Tag(models.Model):
@@ -28,11 +29,19 @@ class Host(models.Model):
 class Image(models.Model):
     id          = models.AutoField(primary_key=True)
     img_id      = models.CharField(null=False, max_length=12)
+    cmd         = models.CharField(null=True, blank=True, max_length=100)
+    ports       = models.CharField(null=True, blank=True, max_length=25)
     name        = models.CharField(null=False, max_length=75)
     description = models.CharField(null=True, blank=True, max_length=2500)
     host        = models.ForeignKey(Host)
     owner       = models.ForeignKey(User)
     tags        = models.ManyToManyField(Tag)
+
+
+class ImageShare(models.Model):
+    img_id = models.ForeignKey(Image)
+    uid    = models.ForeignKey(User)
+    gid    = models.ForeignKey(Group)
 
 
 # FIXME: PK should be ct_id and host
