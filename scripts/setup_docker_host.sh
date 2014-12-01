@@ -18,8 +18,10 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+echo "------------------------------------------------------------"
 echo "Note: During installation, you'll be prompted with a dialog to configure the LDAP client."
-echo "Make sure you enter the correct information for your system."
+echo "Make sure you enter 'ldap://127.0.0.1/' and 'dc=ipynbsrv,dc=ldap'."
+echo "------------------------------------------------------------"
 
 # detect the package manager
 if `which apt-get &> /dev/null`; then
@@ -61,8 +63,10 @@ chmod -R 755 $DATA
 
 # install the LDAP client tools
 # we need to know all LDAP users because the home/share directories will belong to them
+echo "------------------------------------------------------------"
 echo "Going to install the libpam-ldapd package."
-echo "When asked for the nsswitch services to configure, choose 'passwd', 'groups' and 'shadow'"
+echo "When asked for the nsswitch services to configure, choose 'group', 'passwd' and 'shadow'."
+echo "------------------------------------------------------------"
 $INSTALL libpam-ldapd
 # configure that we want to use LDAP for passwd etc.
 #sed -i 's/compat/compat ldap/' /etc/nsswitch.conf
@@ -73,3 +77,8 @@ if [ $PS == "deb" ]; then
 else
     echo "DOCKER_OPTS='-H :9999'" >> /etc/default/docker
 fi
+echo "alias docker='docker -H :9999'" >> ~/.bash_aliases
+
+echo "------------------------------------------------------------"
+echo "All done!"
+echo "------------------------------------------------------------"
