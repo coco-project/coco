@@ -38,10 +38,11 @@ class Image(models.Model):
     tags        = models.ManyToManyField(Tag)
 
 
+# FIXME: check either uid or gid, not both
 class ImageShare(models.Model):
     img_id = models.ForeignKey(Image)
-    uid    = models.ForeignKey(User)
-    gid    = models.ForeignKey(Group)
+    uid    = models.ForeignKey(User,  null=True, blank=True)
+    gid    = models.ForeignKey(Group, null=True, blank=True)
 
 
 # FIXME: PK should be ct_id and host
