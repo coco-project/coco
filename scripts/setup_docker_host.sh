@@ -10,7 +10,7 @@
 # TODO:
 #   - detect CentOS/EL version: CentOS 6 has Docker packages in EPEL repo
 #
-# last updated: 30.11.2014
+# last updated: 01.12.2014
 #
 
 if [ "$EUID" -ne 0 ]; then
