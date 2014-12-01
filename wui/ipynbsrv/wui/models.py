@@ -16,12 +16,13 @@ class Tag(models.Model):
 
 
 class Host(models.Model):
-    ip           = models.CharField(primary_key=True, null=False, max_length=15)
-    fqdn         = models.CharField(unique=True, null=True, blank=True, max_length=75)
-    username     = models.CharField(null=False, max_length=30)
-    ssh_port     = models.IntegerField(null=False, default=22)
-    ssh_pub_key  = models.CharField(null=False, max_length=8192)
-    ssh_priv_key = models.CharField(null=False, max_length=8192)
+    ip             = models.CharField(primary_key=True, null=False, max_length=15)
+    fqdn           = models.CharField(unique=True, null=True, blank=True, max_length=75)
+    username       = models.CharField(null=False, max_length=30)
+    ssh_port       = models.IntegerField(null=False, default=22)
+    ssh_pub_key    = models.TextField(null=False)
+    ssh_priv_key   = models.TextField(null=False)
+    docker_version = models.CharField(null=False, max_length=12)
 
 
 # FIXME: PK should be img_id and host
@@ -29,7 +30,7 @@ class Image(models.Model):
     id          = models.AutoField(primary_key=True)
     img_id      = models.CharField(null=False, max_length=12)
     name        = models.CharField(null=False, max_length=75)
-    description = models.CharField(null=True, blank=True, max_length=2500)
+    description = models.TextField(null=True, blank=True)
     host        = models.ForeignKey(Host)
     owner       = models.ForeignKey(User)
     tags        = models.ManyToManyField(Tag)
@@ -40,7 +41,7 @@ class Container(models.Model):
     id          = models.AutoField(primary_key=True)
     ct_id       = models.CharField(null=False, max_length=12)
     name        = models.CharField(null=False, max_length=75)
-    description = models.CharField(null=True, blank=True, max_length=2500)
+    description = models.TextField(null=True, blank=True)
     status      = models.BooleanField(default=False)
     host        = models.ForeignKey(Host)
     image       = models.ForeignKey(Image)
@@ -50,7 +51,7 @@ class Container(models.Model):
 
 class Share(models.Model):
     name        = models.CharField(primary_key=True, null=False, max_length=75)
-    description = models.CharField(null=True, blank=True, max_length=2500)
+    description = models.TextField(null=True, blank=True)
     owner       = models.ForeignKey(User)
     group       = models.ForeignKey(Group)
     tags        = models.ManyToManyField(Tag)
