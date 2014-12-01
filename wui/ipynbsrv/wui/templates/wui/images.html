@@ -1,11 +1,158 @@
 {% extends "wui/base.html" %}
 
+{% load staticfiles %}
+
 {% block title %} - Images{% endblock %}
+
+{% block external_css %}
+<link rel="stylesheet" href="{% static "bower_components/datatables/media/css/jquery.dataTables.min.css" %}">
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.css">
+{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-xs-12">
         <h1>Images</h1>
+        <form role="form">
+            <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-image">Create new</button>
+        </form>
+
+        <!-- modal -->
+        <div class="modal fade" id="modal-create-image" tabindex="-1" role="dialog" aria-labelledby="modal-create-image" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title">New image</h4>
+                    </div>
+                    <form role="form">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="modal-base">Base container</label>
+                                <select class="form-control" id="modal-base" required>
+                                    <option></option>
+                                    <option>fhnw/ipython</option>
+                                    <option>haxe/dev</option>
+                                    <option>...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="modal-name">Name</label>
+                                <input type="text" class="form-control" id="modal-name" placeholder="e.g fhnw-maths " required>
+                            </div>
+                            <div class="form-group">
+                                <label for="modal-description">Description</label>
+                                <textarea class="form-control" rows="3" placeholder="..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <div class="checkbox">
+                                    <label for="modal-public">
+                                        <input type="checkbox" id="modal-public" value="yes" aria-describedby="modal-public_help">
+                                        Make the image available to the public
+                                    </label>
+                                    <span id="modal-public_help" class="help-block">If chosen, other registered users are able to create containers based on this image.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary">Create</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- end modal -->
+
+        <div class="row shares-table">
+            <div class="col-xs-12">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped table-smart" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th width="25%">Name</th>
+                                <th width="55%">Description</th>
+                                <th width="10%" style="text-align: center">Public</th>
+                                <th width="10%" style="text-align: right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>ipython-nb-extended</td>
+                                <td>IPython Notebook base image extended with various pip packages.</td>
+                                <td style="text-align: center"><input type="checkbox" data-sort="1" checked></td>
+                                <td>
+                                    <form class="pull-right" role="form">
+                                        <button class="btn btn-sm btn-danger" type="submit" name="" title="Delete this image" data-toggle="tooltip" data-placement="top">
+                                            <i class="glyphicon glyphicon-remove"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>haxe-dev-stable</td>
+                                <td>Haxe development environment (stable release).</td>
+                                <td style="text-align: center"><input data-sort="0" type="checkbox"></td>
+                                <td>
+                                    <form class="pull-right" role="form">
+                                        <button class="btn btn-sm btn-danger" type="submit" name="" title="Delete this image" data-toggle="tooltip" data-placement="top">
+                                            <i class="glyphicon glyphicon-remove"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>ipython-fhnw_an1</td>
+                                <td>IPython Notebook used @FHNW in module "Analysis 1".</td>
+                                <td style="text-align: center"><input data-sort="0" type="checkbox"></td>
+                                <td>
+                                    <form class="pull-right" role="form">
+                                        <button class="btn btn-sm btn-danger" type="submit" name="" title="Delete this image" data-toggle="tooltip" data-placement="top">
+                                            <i class="glyphicon glyphicon-remove"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static "bower_components/datatables/media/js/jquery.dataTables.min.js" %}"></script>
+<script src="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+<script>
+$(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // http://josephmisiti.github.io/sorting-booleans-in-jquery-datatables/
+    $.fn.dataTableExt.oSort['checked-in-asc'] = function(a,b) {
+        var a_sort = parseInt($(a).data("sort"));
+        var b_sort = parseInt($(b).data("sort"));
+        return ((a_sort < b_sort) ? -1 : ((a_sort > b_sort) ? 1 : 0));
+    };
+    $.fn.dataTableExt.oSort['checked-in-desc'] = function(a,b) {
+        var a_sort = parseInt($(a).data("sort"));
+        var b_sort = parseInt($(b).data("sort"));
+        return ((a_sort < b_sort) ? 1 : ((a_sort > b_sort) ? -1 : 0));
+    };
+
+    $('.table-smart').dataTable({
+        aoColumns: [
+            null,
+            null,
+            { "sType": "checked-in" }
+        ],
+        columnDefs: [{
+            aTargets:    [ 3 ],
+            bSearchable: false,
+            bSortable:   false
+        }]
+    });
+});
+</script>
 {% endblock %}

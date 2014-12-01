@@ -68,16 +68,29 @@ h2 {
 {
     margin-bottom: 20px;
     .form-group {
-        margin-right: 15px;
-        &:last-child {
-            margin-right: 0;
+        @media (min-width: @screen-sm-min) {
+            margin-right: 15px;
+            &:last-child {
+                margin-right: 0;
+            }
         }
+    }
+}
+
+.form-group-search
+{
+    @media (min-width: @screen-sm-min) {
+        float: right;
     }
 }
 
 .modal-footer
 {
     margin-top: 0;
+}
+
+td > ul {
+    padding-left: 18px;
 }
 
 //
@@ -148,9 +161,6 @@ h2 {
 // --------------------------
 .shares-table
 {
-    td > ul {
-        padding-left: 18px;
-    }
 }
 
 //
