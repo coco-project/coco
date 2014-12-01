@@ -1,0 +1,74 @@
+{% extends "wui/base_generic.html" %}
+
+{% block title %} - Login{% endblock %}
+
+{% block css %}
+<style>
+body {
+    background: #1c2c3c;
+    background: -moz-linear-gradient(top, #1c2c3c 0%, #19242f 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#1c2c3c), color-stop(100%,#19242f));
+    background: -webkit-linear-gradient(top, #1c2c3c 0%,#19242f 100%);
+    background: -o-linear-gradient(top, #1c2c3c 0%,#19242f 100%);
+    background: -ms-linear-gradient(top, #1c2c3c 0%,#19242f 100%);
+    background: linear-gradient(to bottom, #1c2c3c 0%,#19242f 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1c2c3c', endColorstr='#19242f',GradientType=0 );
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-sm-offset-3 col-sm-6 col-md-offset-4 col-md-4 js-form-login">
+            <form action="{% url 'dashboard' %}" class="form-login" role="form">
+                {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    Login failed. Please check your credentials.
+                </div>
+                {% endif %}
+                <div class="form-group">
+                    <label for="input-username">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                        <input type="text" class="form-control" id="input-username" placeholder="Username" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="input-password">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                        <input type="password" class="form-control" id="input-password" placeholder="Password" required>
+                    </div>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox"> Remember me
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+            <p class="login-footnote">An overview of all published notebooks is available under the public listing section <a href="/public"><strong>here</strong></a>.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+function centerLoginForm() {
+    var height  = $(window).height();
+    var fheight = form.height();
+    form.css('padding-top', (height - fheight) / 2);
+}
+
+$(function() {
+    form = $('.js-form-login');
+    centerLoginForm();
+});
+
+$(window).resize(function() {
+    centerLoginForm();
+});
+</script>
+{% endblock %}
