@@ -24,7 +24,7 @@ RUN apt-get update && apt-get -y install libpam-ldap sed
 
 # Configure the LDAP client (server to use etc.)
 RUN sed -i 's/base dc=example,dc=net/base dc=ipynbsrv,dc=ldap/' /etc/ldap.conf
-RUN sed -i 's/uri ldapi:\/\/\//uri ldap:\/\/192.168.65.175/' /etc/ldap.conf
+RUN sed -i 's/uri ldapi:\/\/\//uri ldap:\/\/ipynbsrv.ldap/' /etc/ldap.conf
 RUN sed -i 's/rootbinddn cn=manager,dc=example,dc=net/rootbinddn cn=admin,dc=ipynbsrv,dc=ldap/' /etc/ldap.conf
 RUN sed -i 's/compat/compat ldap/' /etc/nsswitch.conf
 

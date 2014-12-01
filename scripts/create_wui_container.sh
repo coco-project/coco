@@ -47,5 +47,6 @@ echo "------------------------------------------------------------"
 
 # create the new container with mounted directories
 docker -H :9999 run --detach=true --interactive=false --name="${CT_NAME}" \
--p 80:80 --link ipynbsrv.mysql:ipynbsrv.mysql -v /srv/ipynbsrv/homes:/srv/ipynbsrv/data/homes \
--v /srv/ipynbsrv/public:/srv/ipynbsrv/data/public -v /srv/ipynbsrv/shares:/srv/ipynbsrv/data/shares ipynbsrv/wui:init $CMD
+-p 80:80 --link ipynbsrv.mysql:ipynbsrv.mysql --link ipynbsrv.ldap:ipynbsrv.ldap \
+-v /srv/ipynbsrv/homes:/srv/ipynbsrv/data/homes -v /srv/ipynbsrv/public:/srv/ipynbsrv/data/public \
+-v /srv/ipynbsrv/shares:/srv/ipynbsrv/data/shares ipynbsrv/wui:init $CMD
