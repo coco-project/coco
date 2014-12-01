@@ -23,6 +23,7 @@ class Host(models.Model):
     ssh_pub_key    = models.TextField(null=False)
     ssh_priv_key   = models.TextField(null=False)
     docker_version = models.CharField(null=False, max_length=12)
+    docker_port    = models.IntegerField(null=False, max_length=6, default=9999)
 
 
 # FIXME: PK should be img_id and host
