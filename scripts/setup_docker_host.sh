@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # This script will setup the host the script is executed on
@@ -22,10 +22,10 @@ echo "Note: During installation, you'll be prompted with a dialog to configure t
 echo "Make sure you enter the correct information for your system."
 
 # detect the package manager
-if [ `which apt-get &> /dev/null` ]; then
+if `which apt-get &> /dev/null`; then
     PS="deb"
     INSTALL="apt-get install -y"
-elif [ `which yum &> /dev/null` ]; then
+elif `which yum &> /dev/null`; then
     PS="rpm"
     INSTALL="yum install -y"
 else
