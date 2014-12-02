@@ -14,7 +14,7 @@ urlpatterns = patterns('',
 
     # /container(s)/...
     url(r'^containers/$', 'ipynbsrv.wui.views.containers.index', name='containers'),
-    url(r'^container/backup$', 'ipynbsrv.wui.views.containers.backup', name='container::backup'),
+    # url(r'^container/backup$', 'ipynbsrv.wui.views.containers.backup', name='container::backup'),
     # url(r'^container/clone$', 'ipynbsrv.wui.views.containers.clone', name='containers'),
     # url(r'^container/create$', 'ipynbsrv.wui.views.containers.create', name='containers'),
     # url(r'^container/delete$', 'ipynbsrv.wui.views.containers.delete', name='containers'),
