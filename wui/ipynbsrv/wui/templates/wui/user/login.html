@@ -1,6 +1,7 @@
 {% extends "wui/base_generic.html" %}
 
-{% block title %} - Login{% endblock %}
+{% load settings %}
+{% load widget_tweaks %}
 
 {% block css %}
 <style>
@@ -21,34 +22,32 @@ body {
 <div class="container">
     <div class="row">
         <div class="col-xs-12 col-sm-offset-3 col-sm-6 col-md-offset-4 col-md-4 js-form-login">
-            <form action="{% url 'dashboard' %}" class="form-login" role="form">
-                {% if error %}
-                <div class="alert alert-danger" role="alert">
-                    Login failed. Please check your credentials.
+            <form action="{% url 'django.contrib.auth.views.login' %}" method="POST" class="form-login" role="form">
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    Your username and password didn't match. Please try again.
                 </div>
                 {% endif %}
+
+                {% csrf_token %}
                 <div class="form-group">
-                    <label for="input-username">Username</label>
+                    {{ form.username.label_tag }}
                     <div class="input-group">
                         <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                        <input type="text" class="form-control" id="input-username" placeholder="Username" required>
+                        {% render_field form.username class+="form-control" placeholder=form.username.label required="" %}
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="input-password">Password</label>
+                    {{ form.password.label_tag }}
                     <div class="input-group">
                         <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
-                        <input type="password" class="form-control" id="input-password" placeholder="Password" required>
+                        {% render_field form.password class+="form-control" placeholder=form.password.label required="" %}
                     </div>
                 </div>
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox"> Remember me
-                    </label>
-                </div>
                 <button type="submit" class="btn btn-default">Submit</button>
+                <input type="hidden" name="next" value="{{ next }}" />
             </form>
-            <p class="login-footnote">An overview of all published notebooks is available under the public listing section <a href="/public/"><strong>here</strong></a>.</p>
+            <p class="login-footnote">An overview of all published notebooks is available under the public listing section <a href="{% settings "PUBLIC_URL" %}"><strong>here</strong></a>.</p>
         </div>
     </div>
 </div>
@@ -56,18 +55,18 @@ body {
 
 {% block js %}
 <script>
-function centerLoginForm() {
+function centerLoginForm () {
     var height  = $(window).height();
     var fheight = form.height();
     form.css('padding-top', (height - fheight) / 2);
 }
 
-$(function() {
+$(function () {
     form = $('.js-form-login');
     centerLoginForm();
 });
 
-$(window).resize(function() {
+$(window).resize(function () {
     centerLoginForm();
 });
 </script>

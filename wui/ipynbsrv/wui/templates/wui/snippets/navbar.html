@@ -1,3 +1,6 @@
+{% load ifnav %}
+{% load settings %}
+
 <nav class="navbar navbar-default" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -12,21 +15,18 @@
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li class="active"><a href="{% url 'dashboard' %}">Dashboard <span class="sr-only">(current)</span></a></li>
-                <li><a href="{% url 'containers' %}">Containers</a></li>
-                <li><a href="{% url 'images' %}">Images</a></li>
-                <li><a href="{% url 'shares' %}">Shares</a></li>
+                <li{% ifnav "^/$" %} class="active"{% endifnav %}><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li{% ifnav "^/containers/" %} class="active"{% endifnav %}><a href="{% url 'containers' %}">Containers</a></li>
+                <li{% ifnav "^/images/" %} class="active"{% endifnav %}><a href="{% url 'images' %}">Images</a></li>
+                <li{% ifnav "^/shares/" %} class="active"{% endifnav %}><a href="{% url 'shares' %}">Shares</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Profile <span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
-                        <li><a href="{% url 'profile/notifications' %}">Notifications</a></li>
-                        <li><a href="{% url 'profile/preferences' %}">Preferences</a></li>
+                        <li><a href="{% settings "PUBLIC_URL" %}michelkaeser">Publications</a></li>
                         <li class="divider"></li>
-                        <li><a href="/public/michelkaeser">Publications</a></li>
-                        <li class="divider"></li>
-                        <li><a href="{% url 'login' %}">Logout</a></li>
+                        <li><a href="{% url 'logout' %}">Logout</a></li>
                     </ul>
                 </li>
             </ul>

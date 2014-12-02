@@ -1,3 +1,4 @@
 django==1.7.1
+django-ifnav-templatetag==1.1
 docker-py==0.6.0
-uwsgi==2.0.8
+widget_tweaks==1.3
