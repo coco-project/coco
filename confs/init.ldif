@@ -1,0 +1,11 @@
+dn: ou=user,dc=ipynbsrv,dc=ldap
+changetype: add
+objectclass: organizatoinalUnit
+objectclass: top
+ou: user
+
+dn: ou=group,dc=ipynbsrv,dc=ldap
+changetype: add
+objectclass: organizatoinalUnit
+objectclass: top
+ou: group
