@@ -22,6 +22,7 @@ echo "------------------------------------------------------------"
 echo "Note: During installation, you'll be prompted with a dialog to configure the LDAP client."
 echo "Make sure you enter 'ldap://127.0.0.1/' and 'dc=ipynbsrv,dc=ldap'."
 echo "------------------------------------------------------------"
+sleep 2
 
 # detect the package manager
 if `which apt-get &> /dev/null`; then
@@ -67,6 +68,7 @@ echo "------------------------------------------------------------"
 echo "Going to install the libpam-ldapd package."
 echo "When asked for the nsswitch services to configure, choose 'group', 'passwd' and 'shadow'."
 echo "------------------------------------------------------------"
+sleep 2
 $INSTALL libpam-ldapd
 # configure that we want to use LDAP for passwd etc.
 #sed -i 's/compat/compat ldap/' /etc/nsswitch.conf

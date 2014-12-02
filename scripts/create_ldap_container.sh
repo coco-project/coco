@@ -19,6 +19,7 @@ echo "------------------------------------------------------------"
 echo "Note: Creating and entering the LDAP server container."
 echo "Make sure you execute the commands from the manual inside."
 echo "------------------------------------------------------------"
+sleep 2
 
 # create the Docker container
 docker -H :9999 run -i -t --name="${CT_NAME}" -p 389:389 phusion/baseimage:0.9.15 /bin/bash

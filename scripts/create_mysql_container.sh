@@ -19,6 +19,7 @@ echo "------------------------------------------------------------"
 echo "Note: Starting and entering the MySQL server container."
 echo "Make sure you execute the commands from the manual inside."
 echo "------------------------------------------------------------"
+sleep 2
 
 # create the Docker container
 docker -H :9999 run -t -i --name="${CT_NAME}" phusion/baseimage:0.9.15 /bin/bash
