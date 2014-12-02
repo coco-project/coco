@@ -47,7 +47,7 @@ fi
 curl --fail -L -O https://github.com/phusion/baseimage-docker/archive/master.tar.gz
 tar xzf master.tar.gz
 ./baseimage-docker-master/install-tools.sh
-rm -rf master.tar.gz baseimage-docker-mages
+rm -rf master.tar.gz baseimage-docker-master
 # pull the base image for our templates
 docker pull phusion/baseimage
 
@@ -78,6 +78,13 @@ else
     echo "DOCKER_OPTS='-H :9999'" >> /etc/default/docker
 fi
 echo "alias docker='docker -H :9999'" >> ~/.bash_aliases
+sed -i 's/docker inspect/docker -H :9999 inspect/' /usr/local/bin/docker-bash
+sed -i 's/docker inspect/docker -H :9999 inspect/' /usr/local/bin/docker-ssh
+if [ $PS == "deb" ]; then
+    service docker.io restart
+else
+    service docker restart
+fi
 
 echo "------------------------------------------------------------"
 echo "All done!"
