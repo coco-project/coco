@@ -15,17 +15,24 @@ def index(request):
 @login_required
 def stopContainer(request):
     container_stopped.send(sender=self.__class__,)
+    c = Container.objects.all.filter(ct_id=id).get(pk=1)
+    c.status = False
+    c.save()
     return render(request, 'wui/containers.html',{})
     
 
 @login_required
 def startContainer(request):
     container_started.send(sender=self.__class__,)
+    c = Container.objects.all.filter(ct_id=id).get(pk=1)
+    c.status = True
+    c.save()
     return render(request, 'wui/containers.html',{})
 
 @login_required
 def restartContainer(request):
     container_stopped.send(sender=self.__class__,)
+    container_started.send(sender=self.__class__,)
     return render(request, 'wui/containers.html',{})
 
 @login_required
@@ -35,6 +42,8 @@ def getContainer(request):
 @login_required
 def delContainer(request):
     container_deleted.send(sender=self.__class__,)
+    c = Container.objects.all.filter(ct_id=id).get(pk=1)
+    c.delete()
     return render(request, 'wui/containers.html',{})
 
 @login_required

@@ -20,7 +20,7 @@ def cloned(sender, **kwargs):
 
 ""
 @receiver(container_created)
-def created(sender, **kwargs)
+def created(sender, **kwargs):
     d.createContainer(img, cmd, name, tty)
     print("Received container_created signal.")
 
