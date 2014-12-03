@@ -2,11 +2,13 @@ from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import Container
 from ipynbsrv.wui.signals.signals import *
+from ipynbsrv.wui.tools.dock import Docker
 
-
+d = Docker()
 ""
 @receiver(container_backuped)
 def backuped(sender, **kwargs):
+    d.commitContainer(id, repo, tag)
     print("Received container_backuped signal.")
 
 
@@ -18,13 +20,18 @@ def cloned(sender, **kwargs):
 
 ""
 @receiver(container_created)
-def created(sender, **kwargs):
+def created(sender, container, **kwargs):
+    cont = d.createContainer('ubuntu:14.10', '/bin/bash', container.name, 'True')
+    container.ct_id = cont['Id']
+    print(container.id)
     print("Received container_created signal.")
 
 
 ""
 @receiver(container_deleted)
 def deleted(sender, **kwargs):
+    c = kwargs.pop()
+    d.delContainer(c.ct_id)
     print("Received container_deleted signal.")
 
 
@@ -47,13 +54,17 @@ def shared(sender, **kwargs):
 
 ""
 @receiver(container_started)
-def started(sender, **kwargs):
+def started(sender, container, **kwargs):
+    c = container
+    d.startContainer(c.ct_id)
     print("Received container_started signal.")
 
 
 ""
 @receiver(container_stopped)
-def stopped(sender, **kwargs):
+def stopped(sender, container, **kwargs):
+    c = container
+    d.stopContainer(c.ct_id)
     print("Received container_stopped signal.")
 
 
@@ -64,7 +75,7 @@ def stopped(sender, **kwargs):
 @receiver(pre_delete, sender=Container)
 def pre_delete(sender, **kwargs):
     print("Received container_pre_delete signal from container.")
-    # TODO: raise signals
+    container_deleted.send(sender=self.__class, **kwargs)
 
 
 ""

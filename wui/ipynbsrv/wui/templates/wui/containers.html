@@ -1,12 +1,12 @@
 {% extends "wui/base.html" %}
 
 {% block title %} - Containers{% endblock %}
-
 {% block content %}
 <div class="row">
     <div class="col-xs-12">
         <h1>Containers</h1>
-        <form role="form">
+	{% include "wui/snippets/messages.html" %}
+	<form role="form">
             <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-container">Create new</button>
         </form>
         <div class="row form-grid-filters">
@@ -43,15 +43,16 @@
                         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                         <h4 class="modal-title">New container</h4>
                     </div>
-                    <form role="form">
-                        <div class="modal-body">
+                    <form role="form" action="{% url "container_create" %}" method="POST">
+                    {% csrf_token %}
+			<div class="modal-body">
                             <div class="form-group">
                                 <label for="modal-name">Name</label>
-                                <input type="text" class="form-control" id="modal-name" placeholder="e.g IPython Notebook" required>
+                                <input name="name" type="text" class="form-control" id="modal-name" placeholder="e.g IPython Notebook" required>
                             </div>
                             <div class="form-group">
                                 <label for="modal-description">Description</label>
-                                <textarea class="form-control" rows="3" placeholder="..."></textarea>
+                                <textarea name="description" class="form-control" rows="3" placeholder="..."></textarea>
                             </div>
                             <div class="form-group">
                                 <label for="modal-image">Image</label>
@@ -65,52 +66,21 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary">Create</button>
+                            <button type="submit" class="btn btn-primary">Create</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-        <!-- end modal -->
-
-        <div class="row container-grid">
-            <!-- container grid -->
-            <!--
-            Foreach container in containers
-            panel-success if running, panel-danger if stopped
-            -->
+	{% for c in containers %}
             <div class="col-xs-12 col-sm-6 col-md-4">
+                {% if c.status == True %}
                 <div class="panel panel-success panel-container">
-                    <div class="panel-heading">IPython Notebook</div>
-                    <div class="panel-body">
-                        <!--<dl class="dl-horizontal">
-                            <dt>Status</dt>
-                            <dd>Running</dd>
-                        </dl>-->
-                        Some useful information here.
-                    </div>
-                    <div class="panel-footer">
-                        <div class="dropdown">
-                            <button class="btn btn-default btn-block dropdown-toggle" type="button" id="actions-container_1" data-toggle="dropdown" aria-expanded="true">
-                            Actions
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Stop</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Backup/Restore</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Clone</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Share</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Delete</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xs-12 col-sm-6 col-md-4">
+                {% else %}
                 <div class="panel panel-danger panel-container">
-                    <div class="panel-heading">Haxe Development Environment</div>
-                    <div class="panel-body">
+		{% endif %}
+		    	<div class="panel-heading">{{ c.name }}</div>
+			<div class="panel-body">
                         <!--<dl class="dl-horizontal">
                             <dt>Status</dt>
                             <dd>Running</dd>
@@ -124,7 +94,16 @@
                                 <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Start</a></li>
+				{% if c.status == True %}
+				<form action="{% url 'container_stop' %}">
+					<input type="submit" value="stop"></input>
+				</form>
+				{% else %}
+				<form action="{% url 'container_start' %}">
+					<input type="submit" value="start"></input>
+				</form>
+				{% endif %}
+				<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Start</a></li>
                                 <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Backup/Restore</a></li>
                                 <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Clone</a></li>
                                 <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Share</a></li>
@@ -134,119 +113,7 @@
                     </div>
                 </div>
             </div>
-
-            <div class="col-xs-12 col-sm-6 col-md-4">
-                <div class="panel panel-danger panel-container">
-                    <div class="panel-heading">GorillaVM Bytecode Dissembler</div>
-                    <div class="panel-body">
-                        <!--<dl class="dl-horizontal">
-                            <dt>Status</dt>
-                            <dd>Running</dd>
-                        </dl>-->
-                        Some useful information here.
-                    </div>
-                    <div class="panel-footer">
-                        <div class="dropdown">
-                            <button class="btn btn-default btn-block dropdown-toggle" type="button" id="actions-container_1" data-toggle="dropdown" aria-expanded="true">
-                            Actions
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Start</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Backup/Restore</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Clone</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Share</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Delete</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xs-12 col-sm-6 col-md-4">
-                <div class="panel panel-danger panel-container">
-                    <div class="panel-heading">IPython Notebook</div>
-                    <div class="panel-body">
-                        <!--<dl class="dl-horizontal">
-                            <dt>Status</dt>
-                            <dd>Running</dd>
-                        </dl>-->
-                        Some useful information here.
-                    </div>
-                    <div class="panel-footer">
-                        <div class="dropdown">
-                            <button class="btn btn-default btn-block dropdown-toggle" type="button" id="actions-container_1" data-toggle="dropdown" aria-expanded="true">
-                            Actions
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Start</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Backup/Restore</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Clone</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Share</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Delete</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xs-12 col-sm-6 col-md-4">
-                <div class="panel panel-success panel-container">
-                    <div class="panel-heading">Haxe Development Environment</div>
-                    <div class="panel-body">
-                        <!--<dl class="dl-horizontal">
-                            <dt>Status</dt>
-                            <dd>Running</dd>
-                        </dl>-->
-                        Some useful information here.
-                    </div>
-                    <div class="panel-footer">
-                        <div class="dropdown">
-                            <button class="btn btn-default btn-block dropdown-toggle" type="button" id="actions-container_1" data-toggle="dropdown" aria-expanded="true">
-                            Actions
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Stop</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Backup/Restore</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Clone</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Share</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Delete</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xs-12 col-sm-6 col-md-4">
-                <div class="panel panel-success panel-container">
-                    <div class="panel-heading">GorillaVM Bytecode Dissembler</div>
-                    <div class="panel-body">
-                        <!--<dl class="dl-horizontal">
-                            <dt>Status</dt>
-                            <dd>Running</dd>
-                        </dl>-->
-                        Some useful information here.
-                    </div>
-                    <div class="panel-footer">
-                        <div class="dropdown">
-                            <button class="btn btn-default btn-block dropdown-toggle" type="button" id="actions-container_1" data-toggle="dropdown" aria-expanded="true">
-                            Actions
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Stop</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Backup/Restore</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Clone</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Share</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Delete</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- end container grid -->
+	    {% endfor %}
         </div>
     </div>
 </div>
