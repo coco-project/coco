@@ -40,5 +40,5 @@ urlpatterns = patterns('',
     # url(r'^share/leave$', 'ipynbsrv.wui.views.shares.leave', name='share::leave'),
 
     # /
-    url(r'^$', 'ipynbsrv.wui.views.mixed.dashboard', name='dashboard'),
+    url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),
 )
