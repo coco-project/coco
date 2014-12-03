@@ -2,7 +2,7 @@ from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import Container
 from ipynbsrv.wui.signals.signals import *
-from ipynbsrv.wui.tools.docker import Docker
+from ipynbsrv.wui.tools.dock import Docker
 
 d = Docker()
 ""
@@ -20,8 +20,10 @@ def cloned(sender, **kwargs):
 
 ""
 @receiver(container_created)
-def created(sender, **kwargs):
-    d.createContainer(img, cmd, name, tty)
+def created(sender, container, **kwargs):
+    cont = d.createContainer('ubuntu:14.10', '/bin/bash', container.name, 'True')
+    container.ct_id = cont['Id']
+    print(container.id)
     print("Received container_created signal.")
 
 
@@ -52,16 +54,16 @@ def shared(sender, **kwargs):
 
 ""
 @receiver(container_started)
-def started(sender, **kwargs):
-    c = kwargs.pop()
+def started(sender, container, **kwargs):
+    c = container
     d.startContainer(c.ct_id)
     print("Received container_started signal.")
 
 
 ""
 @receiver(container_stopped)
-def stopped(sender, **kwargs):
-    c = kwargs.pop()
+def stopped(sender, container, **kwargs):
+    c = container
     d.stopContainer(c.ct_id)
     print("Received container_stopped signal.")
 

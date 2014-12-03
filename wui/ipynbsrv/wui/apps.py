@@ -12,6 +12,6 @@ class WuiAppConfig(AppConfig):
         import ipynbsrv.wui.signals.image_handlers
         import ipynbsrv.wui.signals.share_handlers
 
-        import ipynbsrv.wui.tools.docker
+        import ipynbsrv.wui.tools.dock
         import ipynbsrv.wui.tools.filesystem
         

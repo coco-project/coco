@@ -43,9 +43,9 @@ class ImageAdmin(admin.ModelAdmin):
 
 ""
 class ContainerAdmin(admin.ModelAdmin):
-    list_display  = ('name','host','owner')
-    list_filter   = ('status','host','image','owner')
-    search_fields = ('id','ct_id','name','description','status','host','image','owner','tags')
+    list_display  = ('name',)
+    list_filter   = ('status',)
+    search_fields = ('id','ct_id','name','description','status')
 
 
 admin.site.register(User, UserAdmin)

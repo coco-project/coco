@@ -51,10 +51,10 @@ class Container(models.Model):
     name        = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
     status      = models.BooleanField(default=False)
-    host        = models.ForeignKey(Host)
-    image       = models.ForeignKey(Image)
-    owner       = models.ForeignKey(User)
-    tags        = models.ManyToManyField(Tag)
+    #host        = models.ForeignKey(Host)
+    #image       = models.ForeignKey(Image)
+    #owner       = models.ForeignKey(User)
+    #tags        = models.ManyToManyField(Tag)
 
 
 ""
