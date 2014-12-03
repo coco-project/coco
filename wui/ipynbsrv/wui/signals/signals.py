@@ -26,10 +26,10 @@ image_shared   = Signal(providing_args=['image', 'with_user'])
 
 
 ""
-share_accepted = Signal(providing_args=['share', 'user'])
-share_created  = Signal(providing_args=['share'])
-share_declined = Signal(providing_args=['share', 'user'])
-share_deleted  = Signal(providing_args=['share'])
-share_edited   = Signal(providing_args=['share'])
-share_invited  = Signal(providing_args=['share', 'user'])
-share_leaved   = Signal(providing_args=['share', 'user'])
+share_accepted   = Signal(providing_args=['share', 'user'])
+share_created    = Signal(providing_args=['share'])
+share_declined   = Signal(providing_args=['share', 'user'])
+share_deleted    = Signal(providing_args=['share'])
+share_invited    = Signal(providing_args=['share', 'user'])
+share_leaved     = Signal(providing_args=['share', 'user'])
+share_user_added = Signal(providing_args=['share', 'user'])

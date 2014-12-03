@@ -1,63 +1,60 @@
 from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import Share
-from ipynbsrv.wui.signals.signals import *
+from ipynbsrv.wui.signals.signals import share_accepted, share_created, share_declined, share_deleted, share_invited, share_leaved, share_user_added
 
 
 ""
 @receiver(share_accepted)
-def accepted(sender, **kwargs):
+def accepted(sender, share, user, **kwargs):
     print("Received share_accepted signal.")
 
 
 ""
 @receiver(share_created)
-def created(sender, **kwargs):
-    print("Received share_created signal.")
+def created(sender, share, **kwargs):
+    print "created share"
 
 
 ""
 @receiver(share_declined)
-def declined(sender, **kwargs):
+def declined(sender, share, user, **kwargs):
     print("Received share_declined signal.")
 
 
 ""
 @receiver(share_deleted)
-def deleted(sender, **kwargs):
-    print("Received share_deleted signal.")
-
-
-""
-@receiver(share_edited)
-def edited(sender, **kwargs):
-    print("Received share_edited signal.")
+def deleted(sender, share, **kwargs):
+    print "deleted share"
 
 
 ""
 @receiver(share_invited)
-def invited(sender, **kwargs):
+def invited(sender, share, user, **kwargs):
     print("Received share_invited signal.")
 
 
 ""
 @receiver(share_leaved)
-def leaved(sender, **kwargs):
+def leaved(sender, share, user, **kwargs):
     print("Received share_leaved signal.")
 
+
+""
+@receiver(share_user_added)
+def user_added(sender, share, user, **kwargs):
+    print("Received share_user_added signal.")
 
 #
 # Bridges
 #
 ""
 @receiver(pre_delete, sender=Share)
-def pre_delete(sender, **kwargs):
-    print("Received pre_delete signal from share.")
-    # TODO: raise signals
+def pre_delete(sender, instance, using, **kwargs):
+    share_deleted.send(sender, share=instance)
 
 
 ""
 @receiver(pre_save, sender=Share)
-def pre_save(sender, **kwargs):
-    print("Received pre_save signal from share.")
-    # TODO: raise signals
+def pre_save(sender, instance, using, **kwargs):
+    share_created.send(sender, share=instance)

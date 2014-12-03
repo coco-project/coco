@@ -32,13 +32,14 @@ urlpatterns = patterns('',
 
     # /share(s)/...
     url(r'^shares/$', 'ipynbsrv.wui.views.shares.index', name='shares'),
-    # url(r'^share/accept$', 'ipynbsrv.wui.views.shares.accept', name='share::accept'),
-    # url(r'^share/create$', 'ipynbsrv.wui.views.shares.create', name='share::create'),
-    # url(r'^share/decline$', 'ipynbsrv.wui.views.shares.decline', name='share::decline'),
-    # url(r'^share/delete$', 'ipynbsrv.wui.views.shares.delete', name='share::delete'),
-    # url(r'^share/edit$', 'ipynbsrv.wui.views.shares.edit', name='share::edit'),
-    # url(r'^share/invite$', 'ipynbsrv.wui.views.shares.invite', name='share::invite'),
-    # url(r'^share/leave$', 'ipynbsrv.wui.views.shares.leave', name='share::leave'),
+    url(r'^share/accept$', 'ipynbsrv.wui.views.shares.accept', name='share_accept'),
+    url(r'^share/adduser$', 'ipynbsrv.wui.views.shares.adduser', name='share_adduser'),
+    url(r'^share/create$', 'ipynbsrv.wui.views.shares.create', name='share_create'),
+    url(r'^share/decline$', 'ipynbsrv.wui.views.shares.decline', name='share_decline'),
+    url(r'^share/delete$', 'ipynbsrv.wui.views.shares.delete', name='share_delete'),
+    url(r'^share/invite$', 'ipynbsrv.wui.views.shares.invite', name='share_invite'),
+    url(r'^share/leave$', 'ipynbsrv.wui.views.shares.leave', name='share_leave'),
+    url(r'^share/manage/(\d+)$', 'ipynbsrv.wui.views.shares.manage', name='share_manage'),
 
     # /
     url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),

@@ -57,13 +57,21 @@ class Container(models.Model):
     tags        = models.ManyToManyField(Tag)
 
 
-""
+"FIXME: PK should be name"
 class Share(models.Model):
-    name        = models.CharField(primary_key=True, null=False, max_length=75)
+    id          = models.AutoField(primary_key=True)
+    name        = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
-    owner       = models.ForeignKey(User)
-    group       = models.ForeignKey(Group)
     tags        = models.ManyToManyField(Tag)
+    # owner       = models.ForeignKey(User)
+    # group       = models.ForeignKey(Group)
+    owner       = models.CharField(null=True, blank=True, max_length=75)
+    group       = models.CharField(null=True, blank=True, max_length=75)
+
+
+    ""
+    def __str__(self):
+        return self.name
 
 
 "FIXME: check either uid or gid, not both"
@@ -71,3 +79,4 @@ class ImageShare(models.Model):
     img_id = models.ForeignKey(Image)
     uid    = models.ForeignKey(User,  null=True, blank=True)
     gid    = models.ForeignKey(Group, null=True, blank=True)
+    status = models.IntegerField(default='0', null=False) # 0: pending, 1: accepted, 2: declined

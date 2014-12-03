@@ -85,3 +85,9 @@ USE_TZ = True
 LOGIN_REDIRECT_URL = '/'
 PUBLIC_URL = '/public/'
 STATIC_URL = '/static/'
+
+# Messages
+# https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-MESSAGE_TAGS
+MESSAGE_TAGS = {
+    40: 'danger'
+}
