@@ -1,4 +1,4 @@
 django==1.7.1
 django-ifnav-templatetag==1.1
+django-widget-tweaks==1.3
 docker-py==0.6.0
-widget_tweaks==1.3
