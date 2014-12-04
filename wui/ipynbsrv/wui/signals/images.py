@@ -2,7 +2,10 @@ from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import Image
 from ipynbsrv.wui.signals.signals import *
+from ipynbsrv.wui.tools import Docker
 
+
+d = Docker()
 
 ""
 @receiver(image_created)
@@ -12,7 +15,8 @@ def created(sender, **kwargs):
 
 ""
 @receiver(image_deleted)
-def deleted(sender, **kwargs):
+def deleted(sender, id, **kwargs):
+    d.delImage(id)
     print("Received image_deleted signal.")
 
 
@@ -43,3 +47,4 @@ def pre_delete(sender, **kwargs):
 def pre_save(sender, **kwargs):
     print("Received pre_save signal from image.")
     # TODO: raise signals
+

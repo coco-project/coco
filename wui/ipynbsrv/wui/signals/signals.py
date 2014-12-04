@@ -25,6 +25,7 @@ container_restored = Signal(providing_args=['container', 'backup'])
 container_shared   = Signal(providing_args=['container', 'with_user'])
 container_started  = Signal(providing_args=['container'])
 container_stopped  = Signal(providing_args=['container'])
+container_commited = Signal(providing_args=['container'])
 
 
 # ""

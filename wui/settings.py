@@ -72,12 +72,6 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
-    'ldap': {
-        'ENGINE': 'ldapdb.backends.ldap',
-        'NAME': 'ldap://ipynbsrv.ldap/',
-        'USER': 'cn=admin,dc=ipynbsrv,dc=ldap',
-        'PASSWORD': '123456',
-    }
 }
 DATABASE_ROUTERS = ['ldapdb.router.Router']
 
@@ -98,15 +92,10 @@ MESSAGE_TAGS = {
 }
 
 
-# URLs and filesystem paths
+# URLs
 LOGIN_REDIRECT_URL = '/'
 PUBLIC_URL = '/public/'
 STATIC_URL = '/static/'
-
-DATA_ROOT = '/srv/ipynbsrv/data/'
-HOME_ROOT = os.path.join(DATA_ROOT, 'homes')
-PUBLIC_ROOT = os.path.join(DATA_ROOT, 'public')
-SHARE_ROOT = os.path.join(DATA_ROOT, 'shares')
 
 
 # LDAP Authentication

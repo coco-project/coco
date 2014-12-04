@@ -122,10 +122,10 @@ class Image(models.Model):
     ports       = models.CharField(null=True, blank=True, max_length=25)
     name        = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
-    host        = models.ForeignKey(Host)
-    owner       = models.ForeignKey(User)
-    tags        = models.ManyToManyField(Tag)
-    parent      = models.ForeignKey('self', null=True, blank=True)
+#    host        = models.ForeignKey(Host)
+#    owner       = models.ForeignKey(User)
+#    tags        = models.ManyToManyField(Tag)
+#    parent      = models.ForeignKey('self', null=True, blank=True)
     is_backup   = models.BooleanField(default=False)
 
 

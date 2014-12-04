@@ -1,12 +1,12 @@
 # Django development DB
 *.sqlite3
+wui/ipynbsrv/wui/migrations/
 
 # Python compiled files
 *.pyc
 
 # Bower packages
-/wui/ipynbsrv/wui/static/bower_components
+wui/ipynbsrv/wui/static/bower_components
 
 # LESS generated CSS
-/wui/ipynbsrv/wui/static/css/main.css
-wui/ipynbsrv/wui/static/main/main.css
+wui/ipynbsrv/wui/static/css/main.css
