@@ -118,11 +118,22 @@
 					<input name="id" type="hidden" value="{{ c.ct_id }}"></input>
 					<input type="submit" value="delete"></input>
 				</form>
-				<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Start</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Backup/Restore</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Clone</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Share</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Delete</a></li>
+				<form action="{% url 'containers_clone' %}" method="POST">
+					{% csrf_token %}
+					<input name="name" type="hidden" value="{{ c.name }}"></input>
+					<input name="id" type="hidden" value="{{ c.ct_id }}"></input>
+					<input type="submit" value="clone"></input>
+				</form>
+				<form action="{% url 'containers_share' %}" method="POST">
+				    {%csrf_token %}
+                                    <input value="backup" type="submit" data-toggle="modal" data-target="#modal-image-create" title="Add new members" data-tooltip></input>
+				    <input type="hidden" id="modal-create-image_share" name="share" value="{{ c.name }}"></input>
+				</form>
+				<form action="{% url 'containers_share' %}" method="POST">
+				    {%csrf_token %}
+                                    <input value="share" type="submit" data-toggle="modal2" data-target="#modal-image-create" title="Add new members" data-tooltip></input>
+				    <input type="hidden" id="modal-create-image_share" name="share" value="{{ c.name }}"></input>
+				</form>
                             </ul>
                         </div>
                     </div>
@@ -134,3 +145,29 @@
 </div>
 {% endblock %}
 
+{% block js %}
+<script src="//cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js"></script>
+<script src="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+<script>
+$(function() {
+    $('[data-toggle="modal"]').click(function (e) {
+	val = document.getElementById("modal-create-image_share").value;
+	createCookie('share', val , 1);
+    });
+    $('[data-toggle="modal2"]').click(function (e) {
+	val = document.getElementById("modal-create-image_share").value;
+	createCookie('share', val , 1);	
+	createCookie('public', '1' , 1);	
+    });
+});
+function createCookie(name,value,days) {
+	if (days) {
+		var date = new Date();
+		date.setTime(date.getTime()+(days*24*60*60*1000));
+		var expires = "; expires="+date.toGMTString();
+	}
+	else var expires = "";
+	document.cookie = name+"="+value+expires+"; path=/";
+}
+</script>
+{% endblock %}

@@ -78,7 +78,17 @@ def create(request):
     return render(request, 'wui/containers.html',{})
 
 @login_required
-def commitContainer(request):
-    #container_backuped.send(sender=self.__class__,)
+def clone(request):
+    ct_id = request.POST.get('id')
+    name = request.POST.get('name')+'_clone'
+    i = Image(cmd='/bin/bash', ports=[80], name=name, description='Clone')
+    container_commited.send(sender='', image=i, ct_id=ct_id, name=name)
+    i.save()
+    c = Container(name=name, description='Clone')
+    container_created.send(sender='',container=c, image=i.name+':latest')
+    c.save()
+    return redirect('containers')
     return render(request, 'wui/containers.html',{})
 
+def share(request):
+    return redirect('images')
