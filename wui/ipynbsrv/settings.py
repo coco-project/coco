@@ -126,13 +126,7 @@ AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,dc=ipynbsrv,dc=ldap",
 )
 AUTH_LDAP_GROUP_TYPE = PosixGroupType()
 
-AUTH_LDAP_USER_ATTR_MAP = {
-    "uid": "uidNumber",
-    "username": "uid",
-    "password": "userPassword",
-    "group": "gidNumber",
-    "home_directory": "homeDirectory",
-}
+AUTH_LDAP_USER_ATTR_MAP = {}
 
 AUTH_LDAP_ALWAYS_UPDATE_USER = True
 # Cache group memberships for an hour to minimize LDAP traffic

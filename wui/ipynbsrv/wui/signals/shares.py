@@ -14,11 +14,9 @@ from ipynbsrv.wui.tools import Filesystem
 @receiver(share_created)
 def created_handler(sender, share, **kwargs):
     print "created share via signal"
-
     # create the directory
     path = os.path.join(settings.SHARE_ROOT, share.name)
     Filesystem.ensure_directory(path)
-
     # set owner and permissions
     ldap_group = LdapGroup.objects.filter(name="share_" + share.name)
     if ldap_group:
