@@ -13,7 +13,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 CT_NAME="ipynbsrv.wui"
-CMD="/sbin/my_init -- /usr/local/bin/uwsgi --ini /srv/ipynbsrv/_repo/confs/uwsgi/ipynbsrv.ini"
+CMD="/sbin/my_init -- /usr/bin/uwsgi_python --ini /srv/ipynbsrv/_repo/confs/uwsgi/ipynbsrv.ini"
 
 echo "------------------------------------------------------------"
 echo "Note: Starting and entering the WUI server container creation."
@@ -22,8 +22,7 @@ echo "------------------------------------------------------------"
 sleep 2
 
 # create the Docker container
-docker -H :9999 run -t -i --name="${CT_NAME}" -p 80:80 \
---link ipynbsrv.mysql:ipynbsrv.mysql phusion/baseimage:0.9.15 /bin/bash
+docker -H :9999 run -t -i --name="${CT_NAME}" phusion/baseimage:0.9.15 /bin/bash
 
 echo "------------------------------------------------------------"
 echo "Note: Committing the WUI container so we can create a new one from it."

@@ -3,4 +3,5 @@ django-ifnav-templatetag==1.1
 django-ldapdb==0.3.2
 docker-py==0.6.0
 django-widget-tweaks==1.3
-#django-ldap-auth :: apt-get -y install python-django-auth-ldap
+django-ldap-auth
+# http://stackoverflow.com/questions/6857680/django-auth-ldap-no-module-named-ldap

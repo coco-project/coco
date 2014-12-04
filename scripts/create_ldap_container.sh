@@ -22,7 +22,7 @@ echo "------------------------------------------------------------"
 sleep 2
 
 # create the Docker container
-docker -H :9999 run -i -t --name="${CT_NAME}" -p 389:389 phusion/baseimage:0.9.15 /bin/bash
+docker -H :9999 run -i -t --name="${CT_NAME}" phusion/baseimage:0.9.15 /bin/bash
 
 echo "------------------------------------------------------------"
 echo "Note: Committing the container so we can create a new one from it."
@@ -39,4 +39,4 @@ echo "------------------------------------------------------------"
 
 # create the new container with mounted directories
 docker -H :9999 run --detach=true --interactive=false --name="${CT_NAME}" \
--p 389:389 ipynbsrv/ldap:init $CMD
+-p 49150:80 -p 389:389 ipynbsrv/ldap:init $CMD
