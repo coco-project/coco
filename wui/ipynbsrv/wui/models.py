@@ -20,8 +20,8 @@ class LdapGroup(ldapdb.models.Model):
 
     def get_members(self):
         members = []
-        for uid in self.members:
-            members.append(LdapUser.objects.filter(uid=uid))
+        for member_id in self.members:
+            members.append(LdapUser.objects.filter(uid=member_id))
         return members
 
     def is_member(self, user):
@@ -51,6 +51,10 @@ class LdapUser(ldapdb.models.Model):
     group = IntegerField(db_column='gidNumber')
     home_directory = CharField(db_column='homeDirectory')
 
+    @staticmethod
+    def for_user(user):
+        return LdapUser.objects.get(pk=user.username)
+
     def get_groups(self):
         groups = []
         for group in LdapGroup.objects.all():
@@ -59,7 +63,7 @@ class LdapUser(ldapdb.models.Model):
         return groups
 
     def get_primary_group(self):
-        return LdapGroup.objects.get(name=self.username)
+        return LdapGroup.objects.get(pk=self.pk)
 
     def __str__(self):
         return smart_unicode(self.username)

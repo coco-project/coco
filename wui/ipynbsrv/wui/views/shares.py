@@ -33,8 +33,8 @@ def adduser(request):
                 if user:
                     user = user[0]
                     share.group.user_set.add(user)
-                    share.group.save()
                     share_user_added.send(None, share=share, user=user)
+            share.group.save()
 
             messages.success(request, "Sucessfully added the new member(s).")
         else:
