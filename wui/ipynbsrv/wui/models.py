@@ -43,10 +43,10 @@ class LdapUser(ldapdb.models.Model):
     object_classes = ['inetOrgPerson', 'posixAccount']
 
     # inetOrgPerson
-    cn = CharField(db_column='cn', primary_key=True)
+    cn = CharField(db_column='cn', unique=True)
     sn = CharField(db_column='sn', unique=True)
     uid = IntegerField(db_column='uidNumber', unique=True)
-    username = CharField(db_column='uid')
+    username = CharField(db_column='uid', max_length=200, primary_key=True)
     password = CharField(db_column='userPassword')
     group = IntegerField(db_column='gidNumber')
     home_directory = CharField(db_column='homeDirectory')

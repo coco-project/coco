@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from ipynbsrv.wui.models import LdapGroup
+from ipynbsrv.wui.models import LdapGroup, LdapUser
 from ipynbsrv.wui.signals.signals import group_created, group_deleted, group_modified
 
 
@@ -22,7 +22,7 @@ def created_handler(sender, group, **kwargs):
 def deleted_handler(sender, group, **kwargs):
     print "deleted LDAP group via signal"
 
-    group = LdapGroup.objects.filter(name=group.name)
+    group = LdapGroup.objects.filter(pk=group.name)
     if group:
         group[0].delete()
 
@@ -34,7 +34,7 @@ Note: Supports only updating the group members
 def modified_handler(sender, group, fields, **kwargs):
     print "modified LDAP group via signal"
 
-    ldap_group = LdapGroup.objects.get(name=group.name)
+    ldap_group = LdapGroup.objects.get(pk=group.name)
     members = []
     for member in group.user_set.all():
         members.append(member.uid)
