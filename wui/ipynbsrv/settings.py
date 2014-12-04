@@ -128,10 +128,10 @@ AUTH_LDAP_GROUP_TYPE = PosixGroupType()
 
 AUTH_LDAP_USER_ATTR_MAP = {
     "uid": "uidNumber",
+    "username": "uid",
+    "password": "userPassword",
     "group": "gidNumber",
     "home_directory": "homeDirectory",
-    "username": "uid",
-    "password": "userPassword"
 }
 
 AUTH_LDAP_ALWAYS_UPDATE_USER = True

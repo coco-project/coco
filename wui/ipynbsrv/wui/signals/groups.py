@@ -11,8 +11,8 @@ from ipynbsrv.wui.signals.signals import group_created, group_deleted, group_mod
 def created_handler(sender, group, **kwargs):
     print "created LDAP group via signal"
 
-    next_guid = LdapGroup.objects.all().latest('gid').gid + 1
-    ldap_group = LdapGroup(gid=next_guid, name=group.name, members="")
+    next_gid = LdapGroup.objects.all().latest('gid').gid + 1
+    ldap_group = LdapGroup(gid=next_gid, name=group.name, members="")
     ldap_group.save()
 
 
@@ -22,7 +22,7 @@ def created_handler(sender, group, **kwargs):
 def deleted_handler(sender, group, **kwargs):
     print "deleted LDAP group via signal"
 
-    group = LdapGroup.objects.filter(pk=group.name)
+    group = LdapGroup.objects.filter(name=group.name)
     if group:
         group[0].delete()
 
@@ -34,10 +34,10 @@ Note: Supports only updating the group members
 def modified_handler(sender, group, fields, **kwargs):
     print "modified LDAP group via signal"
 
-    ldap_group = LdapGroup.objects.get(pk=group.name)
+    ldap_group = LdapGroup.objects.get(name=group.name)
     members = []
     for member in group.user_set.all():
-        members.append(member.username)
+        members.append(member.uid)
     if members:
         ldap_group.members = members
         ldap_group.save()

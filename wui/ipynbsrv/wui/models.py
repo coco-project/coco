@@ -1,8 +1,9 @@
 from django.contrib.auth.models import Group, User
-from django.utils.encoding import smart_unicode
 from django.db import models
+from django.utils.encoding import smart_unicode
 import ldapdb.models
-from ldapdb.models.fields import CharField, IntegerField, ListField
+from ldapdb.models.fields import (CharField, DateField, ImageField, ListField,
+                                  IntegerField, FloatField)
 
 
 class LdapGroup(ldapdb.models.Model):
@@ -27,7 +28,7 @@ class LdapGroup(ldapdb.models.Model):
         return user in self.get_members()
 
     def __str__(self):
-        return self.__unicode__()
+        return smart_unicode(self.name)
 
     def __unicode__(self):
         return smart_unicode(self.name)
@@ -39,13 +40,16 @@ class LdapUser(ldapdb.models.Model):
     """
     # LDAP meta-data
     base_dn = "ou=users,dc=ipynbsrv,dc=ldap"
-    object_classes = ['posixAccount']
+    object_classes = ['inetOrgPerson', 'posixAccount']
 
+    # inetOrgPerson
+    cn = CharField(db_column='cn', primary_key=True)
+    sn = CharField(db_column='sn', unique=True)
     uid = IntegerField(db_column='uidNumber', unique=True)
+    username = CharField(db_column='uid')
+    password = CharField(db_column='userPassword')
     group = IntegerField(db_column='gidNumber')
     home_directory = CharField(db_column='homeDirectory')
-    username = CharField(db_column='uid', primary_key=True)
-    password = CharField(db_column='userPassword')
 
     def get_groups(self):
         groups = []
@@ -58,7 +62,7 @@ class LdapUser(ldapdb.models.Model):
         return LdapGroup.objects.get(name=self.username)
 
     def __str__(self):
-        return self.__unicode__()
+        return smart_unicode(self.username)
 
     def __unicode__(self):
         return smart_unicode(self.username)
