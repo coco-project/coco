@@ -94,6 +94,9 @@ class Share(models.Model):
                 shares.append(share[0])
         return shares
 
+    def get_members(self):
+        return self.group.user_set.all()
+
     def __str__(self):
         return self.__unicode__()
 

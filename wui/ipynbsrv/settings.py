@@ -98,10 +98,15 @@ MESSAGE_TAGS = {
 }
 
 
-# URLs
+# URLs and filesystem paths
 LOGIN_REDIRECT_URL = '/'
 PUBLIC_URL = '/public/'
 STATIC_URL = '/static/'
+
+DATA_ROOT = '/srv/ipynbsrv/data/'
+HOME_ROOT = os.path.join(DATA_ROOT, 'homes')
+PUBLIC_ROOT = os.path.join(DATA_ROOT, 'public')
+SHARE_ROOT = os.path.join(DATA_ROOT, 'shares')
 
 
 # LDAP Authentication
