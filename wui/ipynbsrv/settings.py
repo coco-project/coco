@@ -98,10 +98,12 @@ MESSAGE_TAGS = {
 }
 
 
-# URLs
+# URLs and filesystem paths
 LOGIN_REDIRECT_URL = '/'
 PUBLIC_URL = '/public/'
 STATIC_URL = '/static/'
+
+DATA_ROOT = '/srv/ipynbsrv/data/'
 
 
 # LDAP Authentication
