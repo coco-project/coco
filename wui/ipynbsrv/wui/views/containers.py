@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from ipynbsrv.wui.models import Container, Host, Image
-from ipynbsrv.wui.signals.container_handlers import *
+from ipynbsrv.wui.signals.containers import *
 from django.contrib import messages
 from django.shortcuts import redirect
 
