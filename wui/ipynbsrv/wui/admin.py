@@ -1,5 +1,12 @@
 from django.contrib import admin
-from ipynbsrv.wui.models import User, Group, Tag, Host, Image, Container, Share
+from ipynbsrv.wui.models import Container, Host, Image, LdapGroup, LdapUser, Share, Tag
+
+
+""
+class ContainerAdmin(admin.ModelAdmin):
+    list_display  = ('name',)
+    list_filter   = ('status',)
+    search_fields = ('id','ct_id','name','description','status')
 
 
 ""
@@ -10,15 +17,22 @@ class HostAdmin(admin.ModelAdmin):
 
 
 ""
-class GroupAdmin(admin.ModelAdmin):
-    list_display  = ('gid','groupname')
-    search_fields = ('gid','groupname')
+class ImageAdmin(admin.ModelAdmin):
+    list_display  = ('name','host','owner')
+    list_filter   = ('img_id','host','owner')
+    search_fields = ('id','img_id','name','description','host','owner','tags')
 
 
-""
-class UserAdmin(admin.ModelAdmin):
-    list_display  = ('uid','username')
-    search_fields = ('uid','username')
+class LdapGroupAdmin(admin.ModelAdmin):
+    exclude = ['dn', 'usernames']
+    list_display = ['name', 'gid']
+    search_fields = ['name']
+
+
+class LdapUserAdmin(admin.ModelAdmin):
+    exclude = ['dn', 'password']
+    list_display = ['username', 'uid']
+    search_fields = ['username']
 
 
 ""
@@ -27,31 +41,9 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('label',)
 
 
-""
-class ShareAdmin(admin.ModelAdmin):
-    list_display  = ('name','owner')
-    list_filter   = ('owner','group')
-    search_fields = ('name','description','owner','group','tags')
-
-
-""
-class ImageAdmin(admin.ModelAdmin):
-    list_display  = ('name','host','owner')
-    list_filter   = ('img_id','host','owner')
-    search_fields = ('id','img_id','name','description','host','owner','tags')
-
-
-""
-class ContainerAdmin(admin.ModelAdmin):
-    list_display  = ('name',)
-    list_filter   = ('status',)
-    search_fields = ('id','ct_id','name','description','status')
-
-
-admin.site.register(User, UserAdmin)
-admin.site.register(Group, GroupAdmin)
-admin.site.register(Tag, TagAdmin)
+admin.site.register(Container, ContainerAdmin)
 admin.site.register(Host, HostAdmin)
 admin.site.register(Image, ImageAdmin)
-admin.site.register(Container, ContainerAdmin)
-admin.site.register(Share, ShareAdmin)
+admin.site.register(LdapGroup, LdapGroupAdmin)
+admin.site.register(LdapUser, LdapUserAdmin)
+admin.site.register(Tag, TagAdmin)

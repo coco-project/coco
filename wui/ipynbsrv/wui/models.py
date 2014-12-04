@@ -1,22 +1,104 @@
+from django.contrib.auth.models import Group, User
+from django.utils.encoding import smart_unicode
 from django.db import models
+import ldapdb.models
+from ldapdb.models.fields import CharField, IntegerField, ListField
 
 
-""
-class User(models.Model):
-    uid      = models.IntegerField(primary_key=True, max_length=10)
-    username = models.CharField(null=False, blank=False, max_length=50)
+class LdapGroup(ldapdb.models.Model):
+    """
+    Model for representing an LDAP group entry.
+    """
+    # LDAP meta-data
+    base_dn = "ou=groups,dc=ipynbsrv,dc=ldap"
+    object_classes = ['posixGroup']
+
+    gid = IntegerField(db_column='gidNumber', unique=True)
+    name = CharField(db_column='cn', max_length=200, primary_key=True)
+    members = ListField(db_column='memberUid')
+
+    def get_members(self):
+        members = []
+        for uid in self.members:
+            members.append(LdapUser.objects.filter(uid=uid))
+        return members
+
+    def is_member(self, user):
+        return user in self.get_members()
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        return smart_unicode(self.name)
 
 
-""
-class Group(models.Model):
-    gid       = models.IntegerField(primary_key=True, max_length=10)
-    groupname = models.CharField(null=False, blank=False, max_length=100)
-    is_system = models.BooleanField(default=True)
+class LdapUser(ldapdb.models.Model):
+    """
+    Model for representing an LDAP user entry.
+    """
+    # LDAP meta-data
+    base_dn = "ou=users,dc=ipynbsrv,dc=ldap"
+    object_classes = ['posixAccount']
+
+    uid = IntegerField(db_column='uidNumber', unique=True)
+    group = IntegerField(db_column='gidNumber')
+    home_directory = CharField(db_column='homeDirectory')
+    username = CharField(db_column='uid', primary_key=True)
+    password = CharField(db_column='userPassword')
+
+    def get_groups(self):
+        groups = []
+        for group in LdapGroup.objects.all():
+            if group.is_member(self):
+                groups.append(group)
+        return groups
+
+    def get_primary_group(self):
+        return LdapGroup.objects.get(name=self.username)
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        return smart_unicode(self.username)
 
 
-""
 class Tag(models.Model):
-    label = models.CharField(primary_key=True, null=False, max_length=50)
+    """
+    """
+    label = models.CharField(primary_key=True, max_length=50)
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        return smart_unicode(self.label)
+
+
+class Share(models.Model):
+    """
+    """
+    name        = models.CharField(null=False, max_length=75)
+    description = models.TextField(null=True, blank=True)
+    tags        = models.ManyToManyField(Tag)
+    owner       = models.ForeignKey(User)
+    group       = models.ForeignKey(Group)
+
+    @staticmethod
+    def for_user(user):
+        shares = []
+        for group in user.groups.all():
+            share = Share.objects.filter(group=group)
+            if share:
+                shares.append(share[0])
+        return shares
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        return smart_unicode(self.name)
 
 
 ""
@@ -55,24 +137,6 @@ class Container(models.Model):
     #image       = models.ForeignKey(Image)
     #owner       = models.ForeignKey(User)
     #tags        = models.ManyToManyField(Tag)
-
-
-"FIXME: PK should be name"
-class Share(models.Model):
-    id          = models.AutoField(primary_key=True)
-    name        = models.CharField(null=False, max_length=75)
-    description = models.TextField(null=True, blank=True)
-    tags        = models.ManyToManyField(Tag)
-    # owner       = models.ForeignKey(User)
-    # group       = models.ForeignKey(Group)
-    owner       = models.CharField(null=True, blank=True, max_length=75)
-    group       = models.CharField(null=True, blank=True, max_length=75)
-
-
-    ""
-    def __str__(self):
-        return self.name
-
 
 "FIXME: check either uid or gid, not both"
 class ImageShare(models.Model):

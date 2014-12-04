@@ -5,6 +5,7 @@
 {% block external_css %}
 <link rel="stylesheet" href="//cdn.datatables.net/1.10.4/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.css">
+<link rel="stylesheet" href="{% static "bower_components/jquery-tagsinput-jurgen/jquery.tagsinput.css" %}">
 {% endblock %}
 
 {% block content %}
@@ -20,7 +21,7 @@
         {% if shares %}
         <div class="row shares-table">
             <div class="col-xs-12">
-                <table class="table table-hover table-striped table-smart" cellspacing="0" width="100%">
+                <table class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
                     <thead>
                         <tr>
                             <th width="20%">Name</th>
@@ -37,37 +38,40 @@
                             <td>{{ share.description }}</td>
                             <td>
                                 {% if share.owner == request.user %}
-                                    <span class="label label-info">Owner</span>
+                                    Owner
                                 {% else %}
                                     Member
                                 {% endif %}
                             </td>
                             <td>
                                 {% for tag in share.tags.all %}
-                                <span class="label label-default">{{ tag.label }}</span>
+                                    <span class="label label-default">{{ tag.label }}</span>
                                 {% endfor %}
                             </td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-share-adduser" title="Add new member" data-tooltip>
-                                    <i class="glyphicon glyphicon-plus"></i>
-                                </button>
-                                <a href="/share/manage/{{ share.id }}" class="btn btn-sm btn-default" title="Manage members" data-tooltip>
-                                    <i class="glyphicon glyphicon-th-list"></i>
-                                </a>
-                                <form action="{% url 'share_leave' %}" method="POST" role="form" class="form-action">
-                                    {% csrf_token %}
-                                    <input type="hidden" id="{{ share.id }}">
-                                    <button class="btn btn-sm btn-warning" title="Leave this share?" data-toggle="confirmation" data-placement="left">
-                                        <i class="glyphicon glyphicon-minus"></i>
+                            <td style="text-align: right">
+                                {% if share.owner == request.user %}
+                                    <button type="button" class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-share-adduser" title="Add new members" data-tooltip>
+                                        <i class="glyphicon glyphicon-plus"></i>
                                     </button>
-                                </form>
-                                <form action="{% url 'share_delete' %}" method="POST" role="form" class="form-action">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="id" value="{{ share.id }}">
-                                    <button class="btn btn-sm btn-danger" title="Delete this share?" data-toggle="confirmation" data-placement="left">
-                                        <i class="glyphicon glyphicon-remove"></i>
-                                    </button>
-                                </form>
+                                    <a href="/share/manage/{{ share.id }}" class="btn btn-sm btn-default" title="Manage members" data-tooltip>
+                                        <i class="glyphicon glyphicon-th-list"></i>
+                                    </a>
+                                    <form action="{% url 'share_delete' %}" method="POST" role="form" class="form-action">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="id" value="{{ share.id }}">
+                                        <button class="btn btn-sm btn-danger" title="Delete this share?" data-toggle="confirmation" data-placement="left">
+                                            <i class="glyphicon glyphicon-remove"></i>
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <form action="{% url 'share_leave' %}" method="POST" role="form" class="form-action">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="id" value="{{ share.id }}">
+                                        <button class="btn btn-sm btn-warning" title="Leave this share?" data-toggle="confirmation" data-placement="left">
+                                            <i class="glyphicon glyphicon-minus"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -89,13 +93,20 @@
 <script src="//cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js"></script>
 <script src="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.js"></script>
 <script src="{% static "bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js" %}"></script>
+<script src="{% static "bower_components/jquery-tagsinput-jurgen/jquery.tagsinput.js" %}"></script>
 <script>
 $(function() {
     $('[data-tooltip]').tooltip();
     $('[data-toggle="confirmation"]').confirmation({
         popout: true
     });
-    $('.table-smart').dataTable({
+    $('#tags, #users').tagsInput({
+        width:              '100%',
+        height:             '40px',
+        defaultText:        '',
+        removeWithBackspace: true
+    });
+    $('.js-table-smart').dataTable({
         columnDefs: [{
             aTargets:    [ 4 ],
             bSearchable: false,

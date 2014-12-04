@@ -1,31 +1,41 @@
 from django.contrib import messages
+from django.contrib.auth.models import Group, User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-from ipynbsrv.wui.models import User, Share, Tag
-from ipynbsrv.wui.signals.signals import share_accepted, share_declined, share_invited, share_leaved, share_user_added
+from ipynbsrv.wui.models import Share, Tag
+from ipynbsrv.wui.signals.signals import share_user_added, share_user_removed
 
 
 ""
 @login_required
 def adduser(request):
-    if request.method != "POST":
-        messages.error(request, "Invalid request method.")
-        return redirect('shares')
+    # if request.method != "POST":
+    #     messages.error(request, "Invalid request method.")
+    #     return redirect('shares')
 
-    # TODO: check if user is owner of share
-    # id = share id; user = username
-    # add user to group
+    # if not 'id' in request.POST or not 'users' in request.POST:
+    #     messages.error(request, "Invalid POST request.")
+    #     return redirect('shares')
 
-    if not 'id' in request.POST or not 'user' in request.POST:
-        messages.error(request, "Invalid POST request.")
-        return redirect('shares')
+    # user = LdapUser.for_user(request.user)
+    # usernames = request.POST.get('users', "")
+    # share = Share.objects.filter(id=request.POST.get('id'))
 
-    share = request.POST.get('id')
-    user  = request.POST.get('user')
-    share = Share.objects.get(id=share)
+    # if share:
+    #     share = share[0]
+    #     if share.owner == user:
+    #         for username in usernames.split(","):
+    #             luser = LdapUser.objects.filter(username=username)
+    #             if luser:
+    #                 luser = luser[0]
+    #                 # TODO: add user to group if not already member
+    #                 share_user_added.send(None, share=share, user=luser)
 
-    share_user_added.send(None, share=share, user=user)
-    messages.success(request, "User '{0}' added successfully to share '{1}'.".format(user, share.name))
+    #         messages.success(request, "Sucessfully added the new member(s).")
+    #     else:
+    #         messages.error(request, "Not enough permissions to add a new user to that share.")
+    # else:
+    #     messages.error(request, "Share does not exist.")
 
     return redirect('shares')
 
@@ -33,21 +43,18 @@ def adduser(request):
 ""
 @login_required
 def index(request):
-    # TODO: filter user account
-    shares = Share.objects.filter(owner=request.user.get_full_name())
+    user = request.user
     return render(request, 'wui/shares/index.html', {
         'title':  "Shares",
-        'shares': shares
+        'shares': Share.for_user(user)
     })
 
 
-""
-@login_required
-def accept(request):
-    # ansure user is allowed to accept
-    # add user to group of share
-    share_accepted.send(None, share="", user=request.user)
-    return render(request, 'wui/shares/index.html', {})
+# ""
+# @login_required
+# def accept(request):
+#     share_accepted.send(None, share="", user=request.user)
+#     return render(request, 'wui/shares/index.html', {})
 
 
 ""
@@ -64,33 +71,40 @@ def create(request):
     name  = request.POST.get('name')
     desc  = request.POST.get('description', "")
     tags  = request.POST.get('tags', "")
-    owner = request.user.get_full_name()
+    owner = request.user
 
-    try:
-        share = Share(name=name, description=desc, owner=owner, group="")
+    if Share.objects.filter(name=name):
+        messages.error(request, "A share with that name already exists.")
+    else:
+        group = Group(name=name)
+        group.save()
+        group.user_set.add(owner)
+
+        share = Share(name=name, description=desc, owner=owner, group=group)
         share.save()
+        if tags:
+            for tag in tags.split(","):
+                tag = Tag.objects.filter(label=tag)
+                if tag:
+                    tag = tag[0]
+                else:
+                    tag = Tag(label=tag)
+                    tag.save()
+                share.tags.add(tag)
 
-        tags = tags.split(", ")
-        for tag in tags:
-            tag = Tag(label=tag)
-            tag.save()
-            share.tags.add(tag)
-
-        messages.success(request, "Share '{0}' created sucessfully.".format(name))
-    except:
-        messages.error(request, "Error creating the '{0}' share.".format(name))
+        messages.success(request, "Share created sucessfully.")
 
     return redirect('shares')
 
 
+# ""
+# @login_required
+# def decline(request):
+#     share_declined.send(None, share="", user=request.user)
+#     return render(request, 'wui/shares/index.html', {})
+
+
 ""
-@login_required
-def decline(request):
-    share_declined.send(None, share="", user=request.user)
-    return render(request, 'wui/shares/index.html', {})
-
-
-"Deletes the share specified by POST[name]"
 @login_required
 def delete(request):
     if request.method != "POST":
@@ -101,39 +115,73 @@ def delete(request):
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    id    = request.POST.get('id')
-    share = Share.objects.get(id=id)
-    # check if is owner
-    # remove share from other members
-    try:
-        share.delete()
-        messages.success(request, "Share '{0}' deleted sucessfully.".format(share.name))
-    except:
-        messages.error(request, "Error deleting the '{0}' share.".format(share.name))
+    id = request.POST.get('id')
+    share = Share.objects.filter(id=id)
+    if share:
+        share = share[0]
+        if share.owner == request.user:
+            group = share.group
+            share.delete()
+            group.delete()
+            messages.success(request, "Share deleted sucessfully.")
+        else:
+            messages.error(request, "Not enough permissions to delete this share.")
+    else:
+        messages.error(request, "Share does not exist.")
+
+    return redirect('shares')
+
+
+# ""
+# @login_required
+# def invite(request):
+#     share_invited.send(None, share="", user=request.user)
+#     return render(request, 'wui/shares/index.html', {})
+
+
+"DONE"
+@login_required
+def leave(request):
+    # if request.method != "POST":
+    #     messages.error(request, "Invalid request method.")
+    #     return redirect('shares')
+
+    # if not 'id' in request.POST:
+    #     messages.error(request, "Invalid POST request.")
+    #     return redirect('shares')
+
+    # id = request.POST.get('id')
+    # share = Share.objects.filter(id=id)
+    # if share:
+    #     if share[0].owner == request.user:
+    #         messages.error(request, "Cannot leave a managed share.")
+    #     else:
+    #         share = share[0]
+    #         # TODO: remove user from share group
+    #         messages.success(request, "Successfully leaved the share.")
+    # else:
+    #     messages.error(request, "Share does not exist.")
 
     return redirect('shares')
 
 
 ""
 @login_required
-def invite(request):
-    share_invited.send(None, share="", user=request.user)
-    return render(request, 'wui/shares/index.html', {})
-
-
-""
-@login_required
-def leave(request):
-    share_leaved.send(None, share="", user=request.user)
-    return render(request, 'wui/shares/index.html', {})
-
-
-""
-@login_required
 def manage(request, id):
-    share = Share.objects.get(id=id)
+    # if request.method == "POST":
+    #     messages.error(request, "Invalid request method.")
+    #     return redirect('shares')
 
-    return render(request, 'wui/shares/manage.html', {
-        'title': "Share :: {0}".format(share.name),
-        'share': share
-    })
+    # share = Share.objects.filter(id=id)
+    # if share:
+    #     if share[0].owner == request.user:
+    #         return render(request, 'wui/shares/manage.html', {
+    #             'title': "Manage Share",
+    #             'share': share[0]
+    #         })
+    #     else:
+    #         messages.error(request, "Not enough permissions to manage this share.")
+    # else:
+    #     messages.error(request, "Share does not exist.")
+
+    return redirect('shares')

@@ -13,7 +13,7 @@ def index(request):
         'title': 'Containers',
     	'containers' : c
     }
-    
+
     return render(request, 'wui/containers.html', context)
 
 @login_required
@@ -27,7 +27,7 @@ def stop(request):
     messages.success(request, 'Container ' + c.name + ' successfully stopped')
     return redirect('containers')
     return render(request, 'wui/containers.html',{})
-    
+
 
 @login_required
 def start(request):

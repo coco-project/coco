@@ -25,23 +25,23 @@ urlpatterns = patterns('',
     url(r'^containers/stop$', 'ipynbsrv.wui.views.containers.stop', name='container_stop'),
     url(r'^containers/start$', 'ipynbsrv.wui.views.containers.start', name='container_start'),
 
-    # /images(s)/...
+    # # /images(s)/...
     url(r'^images/$', 'ipynbsrv.wui.views.images.index', name='images'),
-    # url(r'^image/create$', 'ipynbsrv.wui.views.images.create', name='image::create'),
-    # url(r'^image/delete$', 'ipynbsrv.wui.views.images.delete', name='image::delete'),
-    # url(r'^image/edit$', 'ipynbsrv.wui.views.images.edit', name='image::edit'),
+    # # url(r'^image/create$', 'ipynbsrv.wui.views.images.create', name='image::create'),
+    # # url(r'^image/delete$', 'ipynbsrv.wui.views.images.delete', name='image::delete'),
+    # # url(r'^image/edit$', 'ipynbsrv.wui.views.images.edit', name='image::edit'),
     # url(r'^image/share$', 'ipynbsrv.wui.views.images.share', name='image::share'),
 
     # /share(s)/...
     url(r'^shares/$', 'ipynbsrv.wui.views.shares.index', name='shares'),
-    url(r'^share/accept$', 'ipynbsrv.wui.views.shares.accept', name='share_accept'),
+    # url(r'^share/accept$', 'ipynbsrv.wui.views.shares.index', name='share_accept'),
     url(r'^share/adduser$', 'ipynbsrv.wui.views.shares.adduser', name='share_adduser'),
     url(r'^share/create$', 'ipynbsrv.wui.views.shares.create', name='share_create'),
-    url(r'^share/decline$', 'ipynbsrv.wui.views.shares.decline', name='share_decline'),
+    # url(r'^share/decline$', 'ipynbsrv.wui.views.shares.index', name='share_decline'),
     url(r'^share/delete$', 'ipynbsrv.wui.views.shares.delete', name='share_delete'),
-    url(r'^share/invite$', 'ipynbsrv.wui.views.shares.invite', name='share_invite'),
-    url(r'^share/leave$', 'ipynbsrv.wui.views.shares.leave', name='share_leave'),
-    url(r'^share/manage/(\d+)$', 'ipynbsrv.wui.views.shares.manage', name='share_manage'),
+    # url(r'^share/invite$', 'ipynbsrv.wui.views.shares.index', name='share_invite'),
+    url(r'^share/leave$', 'ipynbsrv.wui.views.shares.index', name='share_leave'),
+    url(r'^share/manage/(\d+)$', 'ipynbsrv.wui.views.shares.index', name='share_manage'),
 
     # /
     url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),

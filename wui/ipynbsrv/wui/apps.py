@@ -1,17 +1,17 @@
-from django.apps import AppConfig
+from django import apps
 
 
-""
-class WuiAppConfig(AppConfig):
+class AppConfig(apps.AppConfig):
+    """
+    IPython Notebook Server Web Interface app configuration class.
+    """
     name = 'ipynbsrv.wui'
     verbose_name = 'IPython Notebook Server Web Interface'
 
     def ready(self):
-        import ipynbsrv.wui.signals.common_handlers
-        import ipynbsrv.wui.signals.container_handlers
-        import ipynbsrv.wui.signals.image_handlers
-        import ipynbsrv.wui.signals.share_handlers
+        import ipynbsrv.wui.signals.containers
+        import ipynbsrv.wui.signals.groups
+        import ipynbsrv.wui.signals.images
+        import ipynbsrv.wui.signals.shares
 
         import ipynbsrv.wui.tools.dock
-        import ipynbsrv.wui.tools.filesystem
-        

@@ -8,6 +8,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.7/ref/settings/
 """
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -17,7 +18,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'q+z-_4mbulgmhe(f%7c-+w5i#u2ji_f!ot*pujtyc58bnn%aez'
+SECRET_KEY = 'uj^n9qt_dgbsb)+r7dbnx&+s6(*)b!i+gv&qrbrg159ixr!ax3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -26,6 +27,7 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
+
 INSTALLED_APPS = (
     'ipynbsrv.wui',
     'django.contrib.admin',
@@ -69,16 +71,31 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    'ldap': {
+        'ENGINE': 'ldapdb.backends.ldap',
+        'NAME': 'ldap://192.168.65.178/',
+        'USER': 'cn=admin,dc=ipynbsrv,dc=ldap',
+        'PASSWORD': '123456',
     }
 }
+DATABASE_ROUTERS = ['ldapdb.router.Router']
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Europe/Zurich'
+TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+
+
+# Messages
+# https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-MESSAGE_TAGS
+MESSAGE_TAGS = {
+    40: 'danger'
+}
 
 
 # URLs
@@ -86,8 +103,38 @@ LOGIN_REDIRECT_URL = '/'
 PUBLIC_URL = '/public/'
 STATIC_URL = '/static/'
 
-# Messages
-# https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-MESSAGE_TAGS
-MESSAGE_TAGS = {
-    40: 'danger'
+
+# LDAP Authentication
+import ldap
+from django_auth_ldap.config import LDAPSearch, PosixGroupType
+
+
+AUTH_LDAP_SERVER_URI = DATABASES['ldap']['NAME']
+AUTH_LDAP_BIND_DN = DATABASES['ldap']['USER']
+AUTH_LDAP_BIND_PASSWORD = DATABASES['ldap']['PASSWORD']
+
+AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=ipynbsrv,dc=ldap",
+    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,dc=ipynbsrv,dc=ldap",
+    ldap.SCOPE_SUBTREE, "(objectClass=posixGroup)"
+)
+AUTH_LDAP_GROUP_TYPE = PosixGroupType()
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    "uid": "uidNumber",
+    "group": "gidNumber",
+    "home_directory": "homeDirectory",
+    "username": "uid",
+    "password": "userPassword"
 }
+
+AUTH_LDAP_ALWAYS_UPDATE_USER = True
+# Cache group memberships for an hour to minimize LDAP traffic
+AUTH_LDAP_CACHE_GROUPS = True
+AUTH_LDAP_GROUP_CACHE_TIMEOUT = 3600
+
+AUTHENTICATION_BACKENDS = (
+    'django_auth_ldap.backend.LDAPBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)

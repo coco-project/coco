@@ -8,5 +8,4 @@ def index(request):
     context = {
         'title': 'Images'
     }
-
     return render(request, 'wui/images.html', context)

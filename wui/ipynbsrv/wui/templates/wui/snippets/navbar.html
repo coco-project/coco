@@ -18,7 +18,7 @@
                 <li{% ifnav "^/$" %} class="active"{% endifnav %}><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li{% ifnav "^/containers/" %} class="active"{% endifnav %}><a href="{% url 'containers' %}">Containers</a></li>
                 <li{% ifnav "^/images/" %} class="active"{% endifnav %}><a href="{% url 'images' %}">Images</a></li>
-                <li{% ifnav "^/shares/" %} class="active"{% endifnav %}><a href="{% url 'shares' %}">Shares</a></li>
+                <li{% ifnav "^/share" %} class="active"{% endifnav %}><a href="{% url 'shares' %}">Shares</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
