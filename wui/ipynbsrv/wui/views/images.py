@@ -13,10 +13,6 @@ def index(request):
 	'imgs': i,
 	'conts' : c
     }
-<<<<<<< HEAD
-=======
-    print(c)
->>>>>>> feature/container
     return render(request, 'wui/images.html', context)
 
 def delete(request):
