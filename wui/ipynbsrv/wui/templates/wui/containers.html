@@ -56,11 +56,11 @@
                             </div>
                             <div class="form-group">
                                 <label for="modal-image">Image</label>
-                                <select class="form-control" id="modal-image" required>
+                                <select name="image" class="form-control" id="modal-image" required>
                                     <option></option>
-                                    <option>fhnw/ipython</option>
-                                    <option>haxe/dev</option>
-                                    <option>...</option>
+				    {% for i in images %}
+                                    <option>{{ i.name }}</option>
+				    {% endfor %}
                                 </select>
                             </div>
                         </div>
@@ -72,6 +72,7 @@
                 </div>
             </div>
         </div>
+	<div class="row container-grid">
 	{% for c in containers %}
             <div class="col-xs-12 col-sm-6 col-md-4">
                 {% if c.status == True %}
@@ -85,7 +86,7 @@
                             <dt>Status</dt>
                             <dd>Running</dd>
                         </dl>-->
-                        Some useful information here.
+                        {{ c.description }}
                     </div>
                     <div class="panel-footer">
                         <div class="dropdown">
@@ -95,14 +96,28 @@
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
 				{% if c.status == True %}
-				<form action="{% url 'container_stop' %}">
+				<form action="{% url 'container_stop' %}" method="POST">
+					{% csrf_token %}
+					<input name="id" type="hidden" value="{{ c.ct_id }}"></input>
 					<input type="submit" value="stop"></input>
 				</form>
+				<form action="{% url 'container_restart' %}" method="POST">
+					{% csrf_token %}
+					<input name="id" type="hidden" value="{{ c.ct_id }}"></input>
+					<input type="submit" value="restart"></input>
+				</form>
 				{% else %}
-				<form action="{% url 'container_start' %}">
+				<form action="{% url 'container_start' %}" method="POST">
+					{% csrf_token %}
+					<input name="id" type="hidden" value="{{ c.ct_id }}"></input>
 					<input type="submit" value="start"></input>
 				</form>
 				{% endif %}
+				<form action="{% url 'containers_delete' %}" method="POST">
+					{% csrf_token %}
+					<input name="id" type="hidden" value="{{ c.ct_id }}"></input>
+					<input type="submit" value="delete"></input>
+				</form>
 				<li role="presentation"><a role="menuitem" tabindex="-1" href="#">Start</a></li>
                                 <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Backup/Restore</a></li>
                                 <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Clone</a></li>
@@ -118,3 +133,4 @@
     </div>
 </div>
 {% endblock %}
+

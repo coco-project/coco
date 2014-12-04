@@ -18,17 +18,18 @@ urlpatterns = patterns('',
     # url(r'^container/backup$', 'ipynbsrv.wui.views.containers.backup', name='container::backup'),
     # url(r'^container/clone$', 'ipynbsrv.wui.views.containers.clone', name='containers'),
     url(r'^containers/create$', 'ipynbsrv.wui.views.containers.create', name='container_create'),
-    # url(r'^container/delete$', 'ipynbsrv.wui.views.containers.delete', name='containers'),
+    url(r'^containers/delete$', 'ipynbsrv.wui.views.containers.delCont', name='containers_delete'),
     # url(r'^container/edit$', 'ipynbsrv.wui.views.containers.edit', name='containers'),
     # url(r'^container/restore$', 'ipynbsrv.wui.views.containers.restore', name='containers'),
     # url(r'^container/share$', 'ipynbsrv.wui.views.containers.share', name='containers'),
     url(r'^containers/stop$', 'ipynbsrv.wui.views.containers.stop', name='container_stop'),
     url(r'^containers/start$', 'ipynbsrv.wui.views.containers.start', name='container_start'),
+    url(r'^containers/restart$', 'ipynbsrv.wui.views.containers.restart', name='container_restart'),
 
     # /images(s)/...
     url(r'^images/$', 'ipynbsrv.wui.views.images.index', name='images'),
-    # url(r'^image/create$', 'ipynbsrv.wui.views.images.create', name='image::create'),
-    # url(r'^image/delete$', 'ipynbsrv.wui.views.images.delete', name='image::delete'),
+    url(r'^images/commit$', 'ipynbsrv.wui.views.images.commit', name='image_commit'),
+    url(r'^images/delete$', 'ipynbsrv.wui.views.images.delete', name='image_delete'),
     # url(r'^image/edit$', 'ipynbsrv.wui.views.images.edit', name='image::edit'),
     # url(r'^image/share$', 'ipynbsrv.wui.views.images.share', name='image::share'),
 
@@ -46,3 +47,4 @@ urlpatterns = patterns('',
     # /
     url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),
 )
+

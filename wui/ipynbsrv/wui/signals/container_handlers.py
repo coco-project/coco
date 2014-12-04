@@ -8,7 +8,6 @@ d = Docker()
 ""
 @receiver(container_backuped)
 def backuped(sender, **kwargs):
-    d.commitContainer(id, repo, tag)
     print("Received container_backuped signal.")
 
 
@@ -17,20 +16,32 @@ def backuped(sender, **kwargs):
 def cloned(sender, **kwargs):
     print("Received container_cloned signal.")
 
+""
+@receiver(container_commited)
+def commited(sender, image, ct_id, name, **kwargs):
+    d.commitContainer(ct_id, name, 'latest')
+    c_name = name + ":latest"
+    cont = d.images(name)
+    print(cont[0])    
+    image.img_id = cont[0]['Id']
 
 ""
 @receiver(container_created)
-def created(sender, container, **kwargs):
-    cont = d.createContainer('ubuntu:14.10', '/bin/bash', container.name, 'True')
-    container.ct_id = cont['Id']
+def created(sender, container, image, **kwargs):
+    cont = d.createContainer(image, '/bin/bash', container.name, 'True')
+    id = cont['Id']
+    print(id)
+    id = str(id)
+    print(id)
+    container.ct_id = id
     print(container.id)
     print("Received container_created signal.")
 
 
 ""
 @receiver(container_deleted)
-def deleted(sender, **kwargs):
-    c = kwargs.pop()
+def delete(sender, container, **kwargs):
+    c = container
     d.delContainer(c.ct_id)
     print("Received container_deleted signal.")
 
@@ -75,7 +86,7 @@ def stopped(sender, container, **kwargs):
 @receiver(pre_delete, sender=Container)
 def pre_delete(sender, **kwargs):
     print("Received container_pre_delete signal from container.")
-    container_deleted.send(sender=self.__class, **kwargs)
+    #container_deleted.send(sender='', **kwargs)
 
 
 ""
@@ -83,3 +94,4 @@ def pre_delete(sender, **kwargs):
 def pre_save(sender, **kwargs):
     print("Received pre_save signal from container.")
     # TODO: raise signals
+

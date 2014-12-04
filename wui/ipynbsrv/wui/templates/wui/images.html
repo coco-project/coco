@@ -25,24 +25,25 @@
                         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                         <h4 class="modal-title">New image</h4>
                     </div>
-                    <form role="form">
-                        <div class="modal-body">
+                    <form role="form" action="{% url 'image_commit' %}" method="POST">
+                        {% csrf_token %}
+			<div class="modal-body">
                             <div class="form-group">
                                 <label for="modal-base">Base container</label>
-                                <select class="form-control" id="modal-base" required>
+                                <select name="ct_name" class="form-control" id="modal-base" required>
                                     <option></option>
-                                    <option>fhnw/ipython</option>
-                                    <option>haxe/dev</option>
-                                    <option>...</option>
+                                    {% for c in conts %}
+				    <option>{{ c.name }}</option>
+				    {% endfor %}
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="modal-name">Name</label>
-                                <input type="text" class="form-control" id="modal-name" placeholder="e.g fhnw-maths " required>
+                                <input name="name"  type="text" class="form-control" id="modal-name" placeholder="e.g fhnw-maths " required>
                             </div>
                             <div class="form-group">
                                 <label for="modal-description">Description</label>
-                                <textarea class="form-control" rows="3" placeholder="..."></textarea>
+                                <textarea name="description" class="form-control" rows="3" placeholder="..."></textarea>
                             </div>
                             <div class="form-group">
                                 <div class="checkbox">
@@ -56,7 +57,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary">Create</button>
+                            <button type="submit" class="btn btn-primary">Create</button>
                         </div>
                     </form>
                 </div>
@@ -77,42 +78,26 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>ipython-nb-extended</td>
-                                <td>IPython Notebook base image extended with various pip packages.</td>
+			   {% for i in imgs %} 
+                           <tr>
+                                <td>{{ i.name }}</td>
+                                <td>{{ i.description }}</td>
+				{% if i.is_backup == True %}
                                 <td style="text-align: center"><input type="checkbox" data-sort="1" checked></td>
-                                <td>
-                                    <form class="pull-right" role="form">
-                                        <button class="btn btn-sm btn-danger" type="submit" name="" title="Delete this image" data-toggle="tooltip" data-placement="top">
+                                {% else %}
+                                <td style="text-align: center"><input type="checkbox" data-sort="1"></td>
+				{% endif %}
+				<td>
+                                    <form action="{% url 'image_delete' %}" method="POST" class="pull-right" role="form">
+					{% csrf_token %}
+					<input type="hidden" name="id" value="{{ i.img_id }}"></input>
+					<button class="btn btn-sm btn-danger" type="submit" name="" title="Delete this image" data-toggle="tooltip" data-placement="top">
                                             <i class="glyphicon glyphicon-remove"></i>
                                         </button>
                                     </form>
                                 </td>
                             </tr>
-                            <tr>
-                                <td>haxe-dev-stable</td>
-                                <td>Haxe development environment (stable release).</td>
-                                <td style="text-align: center"><input data-sort="0" type="checkbox"></td>
-                                <td>
-                                    <form class="pull-right" role="form">
-                                        <button class="btn btn-sm btn-danger" type="submit" name="" title="Delete this image" data-toggle="tooltip" data-placement="top">
-                                            <i class="glyphicon glyphicon-remove"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>ipython-fhnw_an1</td>
-                                <td>IPython Notebook used @FHNW in module "Analysis 1".</td>
-                                <td style="text-align: center"><input data-sort="0" type="checkbox"></td>
-                                <td>
-                                    <form class="pull-right" role="form">
-                                        <button class="btn btn-sm btn-danger" type="submit" name="" title="Delete this image" data-toggle="tooltip" data-placement="top">
-                                            <i class="glyphicon glyphicon-remove"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
+			    {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -156,3 +141,4 @@ $(function() {
 });
 </script>
 {% endblock %}
+

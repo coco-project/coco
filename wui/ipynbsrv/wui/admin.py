@@ -10,15 +10,10 @@ class HostAdmin(admin.ModelAdmin):
 
 
 ""
-class GroupAdmin(admin.ModelAdmin):
-    list_display  = ('gid','groupname')
-    search_fields = ('gid','groupname')
-
-
-""
-class UserAdmin(admin.ModelAdmin):
-    list_display  = ('uid','username')
-    search_fields = ('uid','username')
+class ImageAdmin(admin.ModelAdmin):
+    list_display  = ('name',)
+    list_filter   = ('img_id',)
+    search_fields = ('id','img_id','name','description')
 
 
 ""
@@ -34,11 +29,6 @@ class ShareAdmin(admin.ModelAdmin):
     search_fields = ('name','description','owner','group','tags')
 
 
-""
-class ImageAdmin(admin.ModelAdmin):
-    list_display  = ('name','host','owner')
-    list_filter   = ('img_id','host','owner')
-    search_fields = ('id','img_id','name','description','host','owner','tags')
 
 
 ""
@@ -48,8 +38,6 @@ class ContainerAdmin(admin.ModelAdmin):
     search_fields = ('id','ct_id','name','description','status')
 
 
-admin.site.register(User, UserAdmin)
-admin.site.register(Group, GroupAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Host, HostAdmin)
 admin.site.register(Image, ImageAdmin)
