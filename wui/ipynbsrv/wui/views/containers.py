@@ -5,8 +5,9 @@ from ipynbsrv.wui.signals.containers import *
 from django.contrib import messages
 from django.shortcuts import redirect
 
+
 ""
-@login_required
+@user_passes_test(login_allowed)
 def index(request):
     c = Container.objects.all()
     i = Image.objects.all()
@@ -18,7 +19,8 @@ def index(request):
 
     return render(request, 'wui/containers.html', context)
 
-@login_required
+
+@user_passes_test(login_allowed)
 def stop(request):
     c = Container.objects.all().filter(ct_id=request.POST.get('id')).get()
     container_stopped.send(sender='', container=c)
@@ -31,7 +33,7 @@ def stop(request):
     return render(request, 'wui/containers.html',{})
 
 
-@login_required
+@user_passes_test(login_allowed)
 def start(request):
     print(request.POST.get('id'))
     c = Container.objects.all().filter(ct_id=request.POST.get('id')).get()
@@ -42,7 +44,8 @@ def start(request):
     return redirect('containers')
     return render(request, 'wui/containers.html',{})
 
-@login_required
+
+@user_passes_test(login_allowed)
 def restart(request):
     c = Container.objects.all().filter(ct_id=request.POST.get('id')).get()
     container_stopped.send(sender='', container=c)
@@ -51,11 +54,13 @@ def restart(request):
     return redirect('containers')
     return render(request, 'wui/containers.html',{})
 
-@login_required
+
+@user_passes_test(login_allowed)
 def get(request):
     return render(request, 'wui/containers.html',{})
 
-@login_required
+
+@user_passes_test(login_allowed)
 def delCont(request):
     c = Container.objects.all()
     c = Container.objects.all().filter(ct_id=request.POST.get('id')).get()
@@ -65,7 +70,8 @@ def delCont(request):
     return redirect('containers')
     return render(request, 'wui/containers.html',{})
 
-@login_required
+
+@user_passes_test(login_allowed)
 def create(request):
     #i = Image.objects.all().filter(name=request.POST.get('image')).get()
     name = request.POST.get('name')
@@ -77,7 +83,8 @@ def create(request):
     return redirect('containers')
     return render(request, 'wui/containers.html',{})
 
-@login_required
+
+@user_passes_test(login_allowed)
 def clone(request):
     ct_id = request.POST.get('id')
     name = request.POST.get('name')+'_clone'
@@ -90,5 +97,7 @@ def clone(request):
     return redirect('containers')
     return render(request, 'wui/containers.html',{})
 
+
+@user_passes_test(login_allowed)
 def share(request):
     return redirect('images')

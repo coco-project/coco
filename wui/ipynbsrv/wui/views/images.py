@@ -1,10 +1,12 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, redirect
+from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.signals.images import *
 from ipynbsrv.wui.models import Image, Container
 
+
 ""
-@login_required
+@user_passes_test(login_allowed)
 def index(request):
     c = Container.objects.all()
     i = Image.objects.all()
@@ -15,6 +17,8 @@ def index(request):
     }
     return render(request, 'wui/images.html', context)
 
+
+@user_passes_test(login_allowed)
 def delete(request):
     id = request.POST.get('id')
     print(id)
@@ -24,6 +28,8 @@ def delete(request):
     return redirect('images')
     return render(request, 'wui/images.html', {})
 
+
+@user_passes_test(login_allowed)
 def commit(request):
     ct_name = request.POST.get('ct_name')
     name = request.POST.get('name')
