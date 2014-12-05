@@ -21,7 +21,7 @@ def adduser(request):
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    id = request.POST.get('id')
+    id = request.POST.get('id', -1)
     usernames = request.POST.get('users')
     share = Share.objects.filter(pk=id)
 
@@ -30,7 +30,7 @@ def adduser(request):
         if share.owner == request.user:
             for username in usernames.split(","):
                 user = User.objects.filter(username=username)
-                if user:
+                if user and not share.is_member(user):
                     user = user[0]
                     share.group.user_set.add(user)
                     share_user_added.send(None, share=share, user=user)
