@@ -105,6 +105,9 @@ class Share(models.Model):
     def get_members(self):
         return self.group.user_set.all()
 
+    def is_member(self, user):
+        return user in self.get_members()
+
     def __str__(self):
         return self.__unicode__()
 
