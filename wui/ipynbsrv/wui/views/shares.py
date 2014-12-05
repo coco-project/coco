@@ -30,9 +30,8 @@ def adduser(request):
             for username in usernames.split(","):
                 user = User.objects.filter(username=username).first()
                 if user and not share.is_member(user):
-                    share.group.user_set.add(user)
+                    share.group.user_set.add(user) # doesn't raise group_modified signal => post_save
                     share_user_added.send(None, share=share, user=user)
-            share.group.save() # needed so the group_modified signal is raised
 
             messages.success(request, "Sucessfully added the new member(s).")
         else:
@@ -81,7 +80,6 @@ def create(request):
         group = Group(name="share_" + name)
         group.save()
         group.user_set.add(owner)
-        group.save()
         # creating the share itself
         share = Share(name=name, description=desc, owner=owner, group=group)
         share.save()
@@ -90,7 +88,6 @@ def create(request):
             for tag in tags.split(","):
                 tag = Tag.objects.get_or_create(label=tag)
                 share.tags.add(tag)
-            #share.save()
 
         messages.success(request, "Share created sucessfully.")
 
@@ -114,9 +111,7 @@ def delete(request):
     share = Share.objects.filter(pk=id).first()
     if share:
         if share.owner == request.user:
-            group = share.group
             share.delete()
-            group.delete()
             messages.success(request, "Share deleted sucessfully.")
         else:
             messages.error(request, "Not enough permissions to delete this share.")
@@ -146,7 +141,6 @@ def leave(request):
             messages.error(request, "Cannot leave a managed share.")
         else:
             share.group.user_set.remove(request.user)
-            share.group.save()
             share_user_leaved.send(None, share=share, user=request.user)
 
             messages.success(request, "Successfully leaved the share.")
@@ -203,9 +197,8 @@ def remove_user(request):
         if share.owner == request.user:
             if user:
                 share.group.user_set.remove(user)
-                share.group.save()
-
                 share_user_removed.send(None, share=share, user=user)
+
                 messages.success(request, "Removed used from share.")
                 request.method = "GET"
                 return redirect('share_manage', share.id)

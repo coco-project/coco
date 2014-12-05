@@ -20,8 +20,8 @@ class LdapGroup(ldapdb.models.Model):
 
     def get_members(self):
         members = []
-        for member_id in self.members:
-            members.append(LdapUser.objects.filter(uid=member_id))
+        for member_uid in self.members:
+            members.append(LdapUser.objects.get(pk=member_uid))
         return members
 
     def is_member(self, user):
@@ -96,10 +96,9 @@ class Share(models.Model):
     @staticmethod
     def for_user(user):
         shares = []
-        for group in user.groups.all():
-            share = Share.objects.filter(group=group)
-            if share:
-                shares.append(share[0])
+        for share in Share.objects.all():
+            if share.is_member(user)
+                shares.append(share)
         return shares
 
     def get_members(self):
