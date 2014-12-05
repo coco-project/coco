@@ -13,7 +13,8 @@ from ipynbsrv.wui.tools import Filesystem
 """
 @receiver(share_created)
 def created_handler(sender, share, **kwargs):
-    print "created share via signal"
+    if settings.DEBUG:
+        print "Created share via signal"
     # create the directory
     path = os.path.join(settings.SHARE_ROOT, share.name)
     Filesystem.ensure_directory(path)
@@ -21,7 +22,7 @@ def created_handler(sender, share, **kwargs):
     ldap_group = LdapGroup.objects.filter(name="share_" + share.name).first()
     if ldap_group:
         os.chown(path, -1, ldap_group.gid)
-        os.chmod(path, stat.S_IRWXO | stat.S_IRWXG | stat.S_ISGID)
+        os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_ISGID)
     else:
         raise "required LDAP group '{0}' does not exist.".format(share.name)
 
@@ -30,7 +31,8 @@ def created_handler(sender, share, **kwargs):
 """
 @receiver(share_deleted)
 def deleted_handler(sender, share, **kwargs):
-    print "deleted share via signal"
+    if settings.DEBUG:
+        print "Deleted share via signal"
     # make sure the group is removed too
     share.group.delete()
     # remove the directory
@@ -41,28 +43,32 @@ def deleted_handler(sender, share, **kwargs):
 """
 @receiver(share_modified)
 def modified_handler(sender, share, fields, **kwargs):
-    print "modified share via signal"
+    if settings.DEBUG:
+        print "Modified share via signal"
 
 
 """
 """
 @receiver(share_user_added)
 def user_added_handler(sender, share, user, **kwargs):
-    print "user added share via signal"
+    if settings.DEBUG:
+        print "User added to share via signal"
 
 
 """
 """
 @receiver(share_user_leaved)
 def user_leaved_handler(sender, share, user, **kwargs):
-    print "user leaved share via signal"
+    if settings.DEBUG:
+        print "User leaved share via signal"
 
 
 """
 """
 @receiver(share_user_removed)
 def user_removed_handler(sender, share, user, **kwargs):
-    print "user removed from share via signal"
+    if settings.DEBUG:
+        print "User removed from share via signal"
 
 
 #
