@@ -3,7 +3,8 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from ipynbsrv.wui.models import Share, Tag
-from ipynbsrv.wui.signals.signals import share_created, share_user_added, share_user_leaved, share_user_removed
+from ipynbsrv.wui.signals.signals import (group_modified,
+                                          share_created, share_user_added, share_user_leaved, share_user_removed)
 
 
 """
@@ -30,7 +31,8 @@ def adduser(request):
             for username in usernames.split(","):
                 user = User.objects.filter(username=username).first()
                 if user and not share.is_member(user):
-                    share.group.user_set.add(user) # doesn't raise group_modified signal => post_save
+                    share.group.user_set.add(user)
+                    group_modified.send(None, group=share.group) # should fire by Django
                     share_user_added.send(None, share=share, user=user)
 
             messages.success(request, "Sucessfully added the new member(s).")
@@ -111,7 +113,9 @@ def delete(request):
     share = Share.objects.filter(pk=id).first()
     if share:
         if share.owner == request.user:
+            group = share.group
             share.delete()
+            group.delete()
             messages.success(request, "Share deleted sucessfully.")
         else:
             messages.error(request, "Not enough permissions to delete this share.")
@@ -197,6 +201,7 @@ def remove_user(request):
         if share.owner == request.user:
             if user:
                 share.group.user_set.remove(user)
+                group_modified.send(None, group=share.group) # should fire by Django
                 share_user_removed.send(None, share=share, user=user)
 
                 messages.success(request, "Removed used from share.")

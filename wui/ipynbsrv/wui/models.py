@@ -97,7 +97,7 @@ class Share(models.Model):
     def for_user(user):
         shares = []
         for share in Share.objects.all():
-            if share.is_member(user)
+            if share.is_member(user):
                 shares.append(share)
         return shares
 
