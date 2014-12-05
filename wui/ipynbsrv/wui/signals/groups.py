@@ -21,13 +21,13 @@ def created_handler(sender, group, **kwargs):
 def deleted_handler(sender, group, **kwargs):
     print "deleted LDAP group via signal"
     ldap_group = LdapGroup.objects.filter(pk=group.name).first()
-    share = Share.objects.filter(group=group)
     if ldap_group:
         ldap_group.delete()
         # make sure to also delete the share for this group
+        share = Share.objects.filter(group=group).first()
         if share:
             share.delete()
-            share_deleted.send(None, share=share) # Django should do that
+            #share_deleted.send(None, share=share) # Django should do that
 
 
 """

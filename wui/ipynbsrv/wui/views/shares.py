@@ -112,9 +112,7 @@ def delete(request):
     share = Share.objects.filter(pk=id).first()
     if share:
         if share.owner == request.user:
-            group = share.group
             share.delete()
-            group.delete()
             messages.success(request, "Share deleted sucessfully.")
         else:
             messages.error(request, "Not enough permissions to delete this share.")
