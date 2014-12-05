@@ -1,5 +1,5 @@
 from django.contrib import admin
-from ipynbsrv.wui.models import Container, Host, Image, LdapGroup, LdapUser, Share, Tag
+from ipynbsrv.wui.models import Container, Host, Image, Share, Tag
 
 
 """
@@ -28,18 +28,10 @@ class ImageAdmin(admin.ModelAdmin):
 
 """
 """
-class LdapGroupAdmin(admin.ModelAdmin):
-    exclude = ['dn', 'usernames']
-    list_display = ['name', 'gid']
-    search_fields = ['name']
-
-
-"""
-"""
-class LdapUserAdmin(admin.ModelAdmin):
-    exclude = ['dn', 'password']
-    list_display = ['username', 'uid']
-    search_fields = ['username']
+class ShareAdmin(admin.ModelAdmin):
+    list_display  = ['name', 'description', 'owner']
+    list_filter   = ['owner']
+    search_fields = ['name', 'description', 'owner', 'group']
 
 
 """
@@ -49,16 +41,7 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ['label']
 
 
-"""
-"""
-class ShareAdmin(admin.ModelAdmin):
-    list_display  = ['name', 'owner']
-    list_filter   = ['owner', 'group']
-    search_fields = ['name', 'description', 'owner', 'group', 'tags']
-
-
 admin.site.register(Host, HostAdmin)
 admin.site.register(Image, ImageAdmin)
-admin.site.register(LdapGroup, LdapGroupAdmin)
-admin.site.register(LdapUser, LdapUserAdmin)
+admin.site.register(Share, ShareAdmin)
 admin.site.register(Tag, TagAdmin)

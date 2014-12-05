@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from ipynbsrv.wui.models import Share, Tag
-from ipynbsrv.wui.signals.signals import share_created, share_user_added, share_user_leaved, share_user_removed
+from ipynbsrv.wui.signals.signals import (group_modified, share_created, share_user_added, share_user_leaved, share_user_removed)
 
 
 """
@@ -21,19 +21,17 @@ def adduser(request):
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    id = request.POST.get('id')
+    id = request.POST.get('id', -1)
     usernames = request.POST.get('users')
-    share = Share.objects.filter(pk=id)
+    share = Share.objects.filter(pk=id).first()
 
     if share:
-        share = share[0]
         if share.owner == request.user:
             for username in usernames.split(","):
-                user = User.objects.filter(username=username)
-                if user:
-                    user = user[0]
+                user = User.objects.filter(username=username).first()
+                if user and not share.is_member(user):
                     share.group.user_set.add(user)
-                    share.group.save()
+                    group_modified.send(None, group=share.group, fields=None) # should fire by Django
                     share_user_added.send(None, share=share, user=user)
 
             messages.success(request, "Sucessfully added the new member(s).")
@@ -83,22 +81,14 @@ def create(request):
         group = Group(name="share_" + name)
         group.save()
         group.user_set.add(owner)
-        group.save()
-
+        group_modified.send(None, group=group, fields=None) # should fire by Django
         # creating the share itself
         share = Share(name=name, description=desc, owner=owner, group=group)
         share.save()
-
         # adding tags to the share
-        if tags:
-            for tag in tags.split(","):
-                tag = Tag.objects.filter(label=tag)
-                if tag:
-                    tag = tag[0]
-                else:
-                    tag = Tag(label=tag)
-                    tag.save()
-                share.tags.add(tag)
+        for tag in tags.split(","):
+            tag = Tag.objects.get_or_create(label=tag)
+            share.tags.add(tag)
 
         messages.success(request, "Share created sucessfully.")
 
@@ -119,13 +109,10 @@ def delete(request):
         return redirect('shares')
 
     id = request.POST.get('id')
-    share = Share.objects.filter(pk=id)
+    share = Share.objects.filter(pk=id).first()
     if share:
-        share = share[0]
         if share.owner == request.user:
-            group = share.group
             share.delete()
-            group.delete()
             messages.success(request, "Share deleted sucessfully.")
         else:
             messages.error(request, "Not enough permissions to delete this share.")
@@ -149,14 +136,13 @@ def leave(request):
         return redirect('shares')
 
     id = request.POST.get('id')
-    share = Share.objects.filter(pk=id)
+    share = Share.objects.filter(pk=id).first()
     if share:
-        if share[0].owner == request.user:
+        if share.owner == request.user:
             messages.error(request, "Cannot leave a managed share.")
         else:
-            share = share[0]
             share.group.user_set.remove(request.user)
-            share.group.save()
+            group_modified.send(None, group=share.group, fields=None) # should fire by Django
             share_user_leaved.send(None, share=share, user=request.user)
 
             messages.success(request, "Successfully leaved the share.")
@@ -175,9 +161,8 @@ def manage(request, id):
         messages.error(request, "Invalid request method.")
         return redirect('shares')
 
-    share = Share.objects.filter(pk=id)
+    share = Share.objects.filter(pk=id).first()
     if share:
-        share = share[0]
         if share.owner == request.user:
             return render(request, 'wui/shares/manage.html', {
                 'title':   "Manage Share",
@@ -207,18 +192,16 @@ def remove_user(request):
 
     share_id = request.POST.get('share_id')
     user_id = request.POST.get('user_id')
-    share = Share.objects.filter(pk=share_id)
-    user = User.objects.filter(pk=user_id)
+    share = Share.objects.filter(pk=share_id).first()
+    user = User.objects.filter(pk=user_id).first()
 
     if share:
-        share = share[0]
         if share.owner == request.user:
             if user:
-                user = user[0]
                 share.group.user_set.remove(user)
-                share.group.save()
-
+                group_modified.send(None, group=share.group, fields=None) # should fire by Django
                 share_user_removed.send(None, share=share, user=user)
+
                 messages.success(request, "Removed used from share.")
                 request.method = "GET"
                 return redirect('share_manage', share.id)

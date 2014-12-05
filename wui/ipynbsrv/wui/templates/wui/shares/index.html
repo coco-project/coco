@@ -5,7 +5,7 @@
 {% block external_css %}
 <link rel="stylesheet" href="//cdn.datatables.net/1.10.4/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.css">
-<link rel="styleshee" href="//rawgit.com/matixmatix/jQuery-Tags-Input/master/jquery.tagsinput.css">
+<link rel="stylesheet" href="//rawgit.com/matixmatix/jQuery-Tags-Input/master/jquery.tagsinput.css">
 <!-- <link rel="stylesheet" href="{% static "bower_components/jquery-tagsinput-jurgen/jquery.tagsinput.css" %}"> -->
 {% endblock %}
 
@@ -45,6 +45,8 @@
                     <td>
                         {% for tag in share.tags.all %}
                             <span class="label label-default">{{ tag.label }}</span>
+                        {% empty %}
+                            -
                         {% endfor %}
                     </td>
                     <td style="text-align: right">
@@ -99,18 +101,28 @@ $(function() {
     $('[data-toggle="confirmation"]').confirmation({
         popout: true
     });
-    // $('#tags').tagsInput({
-    //     width:              '100%',
-    //     height:             '43px',
-    //     defaultText:        '',
-    //     removeWithBackspace: true
-    // });
-    // $('#users').tagsInput({
-    //     width:              '100%',
-    //     height:             '43px',
-    //     defaultText:        '',
-    //     removeWithBackspace: true
-    // });
+
+    var tags = $('#tags');
+    tags.tagsInput({
+        width:              '100%',
+        height:             'auto',
+        defaultText:        '',
+        removeWithBackspace: true,
+        onChange: function () {
+            tags.val(tags.val());
+        }
+    });
+    var users = $('#users');
+    users.tagsInput({
+        width:              '100%',
+        height:             'auto',
+        defaultText:        '',
+        removeWithBackspace: true,
+        onChange: function () {
+            users.val(users.val());
+        }
+    });
+
     $('.js-table-smart').dataTable({
         columnDefs: [{
             aTargets:    [ 4 ],
@@ -126,7 +138,7 @@ $(function() {
         switch (modal) {
             case "#modal-share-adduser": {
                 var id = btn.closest('tr').data('id');
-                $('' + modal).find('#modal-share-adduser_id').val(id);
+                $(modal).find('#modal-share-adduser_id').val(id);
                 break;
             }
         }

@@ -1,8 +1,9 @@
 from django.contrib.auth.models import Group, User
-from django.utils.encoding import smart_unicode
 from django.db import models
+from django.utils.encoding import smart_unicode
 import ldapdb.models
-from ldapdb.models.fields import CharField, IntegerField, ListField
+from ldapdb.models.fields import (CharField, DateField, ImageField, ListField,
+                                  IntegerField, FloatField)
 
 
 class LdapGroup(ldapdb.models.Model):
@@ -19,15 +20,15 @@ class LdapGroup(ldapdb.models.Model):
 
     def get_members(self):
         members = []
-        for uid in self.members:
-            members.append(LdapUser.objects.filter(uid=uid))
+        for member_uid in self.members:
+            members.append(LdapUser.objects.get(pk=member_uid))
         return members
 
     def is_member(self, user):
         return user in self.get_members()
 
     def __str__(self):
-        return self.__unicode__()
+        return smart_unicode(self.name)
 
     def __unicode__(self):
         return smart_unicode(self.name)
@@ -39,13 +40,20 @@ class LdapUser(ldapdb.models.Model):
     """
     # LDAP meta-data
     base_dn = "ou=users,dc=ipynbsrv,dc=ldap"
-    object_classes = ['posixAccount']
+    object_classes = ['inetOrgPerson', 'posixAccount']
 
+    # inetOrgPerson
+    cn = CharField(db_column='cn', unique=True)
+    sn = CharField(db_column='sn', unique=True)
     uid = IntegerField(db_column='uidNumber', unique=True)
+    username = CharField(db_column='uid', max_length=200, primary_key=True)
+    password = CharField(db_column='userPassword')
     group = IntegerField(db_column='gidNumber')
     home_directory = CharField(db_column='homeDirectory')
-    username = CharField(db_column='uid', primary_key=True)
-    password = CharField(db_column='userPassword')
+
+    @staticmethod
+    def for_user(user):
+        return LdapUser.objects.get(pk=user.username)
 
     def get_groups(self):
         groups = []
@@ -55,10 +63,10 @@ class LdapUser(ldapdb.models.Model):
         return groups
 
     def get_primary_group(self):
-        return LdapGroup.objects.get(name=self.username)
+        return LdapGroup.objects.get(pk=self.pk)
 
     def __str__(self):
-        return self.__unicode__()
+        return smart_unicode(self.username)
 
     def __unicode__(self):
         return smart_unicode(self.username)
@@ -88,14 +96,16 @@ class Share(models.Model):
     @staticmethod
     def for_user(user):
         shares = []
-        for group in user.groups.all():
-            share = Share.objects.filter(group=group)
-            if share:
-                shares.append(share[0])
+        for share in Share.objects.all():
+            if share.is_member(user):
+                shares.append(share)
         return shares
 
     def get_members(self):
         return self.group.user_set.all()
+
+    def is_member(self, user):
+        return user in self.get_members()
 
     def __str__(self):
         return self.__unicode__()
