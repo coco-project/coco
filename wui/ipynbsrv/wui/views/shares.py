@@ -23,15 +23,13 @@ def adduser(request):
 
     id = request.POST.get('id', -1)
     usernames = request.POST.get('users')
-    share = Share.objects.filter(pk=id)
+    share = Share.objects.filter(pk=id).first()
 
     if share:
-        share = share[0]
         if share.owner == request.user:
             for username in usernames.split(","):
-                user = User.objects.filter(username=username)
+                user = User.objects.filter(username=username).first()
                 if user and not share.is_member(user):
-                    user = user[0]
                     share.group.user_set.add(user)
                     share_user_added.send(None, share=share, user=user)
             share.group.save()
@@ -88,14 +86,9 @@ def create(request):
         share = Share(name=name, description=desc, owner=owner, group=group)
         share.save()
         # adding tags to the share
-        if tags:
+        if tags != "[]": # jquery.tagsinput's default value if empty
             for tag in tags.split(","):
-                tag = Tag.objects.filter(label=tag)
-                if tag:
-                    tag = tag[0]
-                else:
-                    tag = Tag(label=tag)
-                    tag.save()
+                tag = Tag.objects.get_or_create(label=tag)
                 share.tags.add(tag)
 
         messages.success(request, "Share created sucessfully.")
@@ -117,9 +110,8 @@ def delete(request):
         return redirect('shares')
 
     id = request.POST.get('id')
-    share = Share.objects.filter(pk=id)
+    share = Share.objects.filter(pk=id).first()
     if share:
-        share = share[0]
         if share.owner == request.user:
             group = share.group
             share.delete()
@@ -147,12 +139,11 @@ def leave(request):
         return redirect('shares')
 
     id = request.POST.get('id')
-    share = Share.objects.filter(pk=id)
+    share = Share.objects.filter(pk=id).first()
     if share:
-        if share[0].owner == request.user:
+        if share.owner == request.user:
             messages.error(request, "Cannot leave a managed share.")
         else:
-            share = share[0]
             share.group.user_set.remove(request.user)
             share.group.save()
             share_user_leaved.send(None, share=share, user=request.user)
@@ -173,9 +164,8 @@ def manage(request, id):
         messages.error(request, "Invalid request method.")
         return redirect('shares')
 
-    share = Share.objects.filter(pk=id)
+    share = Share.objects.filter(pk=id).first()
     if share:
-        share = share[0]
         if share.owner == request.user:
             return render(request, 'wui/shares/manage.html', {
                 'title':   "Manage Share",
@@ -205,14 +195,12 @@ def remove_user(request):
 
     share_id = request.POST.get('share_id')
     user_id = request.POST.get('user_id')
-    share = Share.objects.filter(pk=share_id)
-    user = User.objects.filter(pk=user_id)
+    share = Share.objects.filter(pk=share_id).first()
+    user = User.objects.filter(pk=user_id).first()
 
     if share:
-        share = share[0]
         if share.owner == request.user:
             if user:
-                user = user[0]
                 share.group.user_set.remove(user)
                 share.group.save()
 

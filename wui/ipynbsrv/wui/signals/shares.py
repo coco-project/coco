@@ -18,9 +18,8 @@ def created_handler(sender, share, **kwargs):
     path = os.path.join(settings.SHARE_ROOT, share.name)
     Filesystem.ensure_directory(path)
     # set owner and permissions
-    ldap_group = LdapGroup.objects.filter(name="share_" + share.name)
+    ldap_group = LdapGroup.objects.filter(name="share_" + share.name).first()
     if ldap_group:
-        ldap_group = ldap_group[0]
         os.chown(path, -1, ldap_group.gid)
         os.chmod(path, stat.S_IRWXO | stat.S_IRWXG | stat.S_ISGID)
     else:
