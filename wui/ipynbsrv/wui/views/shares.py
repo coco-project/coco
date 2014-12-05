@@ -1,7 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.models import Group, User
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import redirect, render
+from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Share, Tag
 from ipynbsrv.wui.signals.signals import (group_modified, share_created, share_user_added, share_user_leaved, share_user_removed)
 
@@ -11,7 +12,7 @@ TODO:
   - randomly fails with id = ''
   - autocompletion in user form input
 """
-@login_required
+@user_passes_test(login_allowed)
 def adduser(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
@@ -46,7 +47,7 @@ def adduser(request):
 """
 DONE
 """
-@login_required
+@user_passes_test(login_allowed)
 def index(request):
     user = request.user
     return render(request, 'wui/shares/index.html', {
@@ -59,7 +60,7 @@ def index(request):
 TODO
   - adding tags fails
 """
-@login_required
+@user_passes_test(login_allowed)
 def create(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
@@ -98,7 +99,7 @@ def create(request):
 """
 DONE
 """
-@login_required
+@user_passes_test(login_allowed)
 def delete(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
@@ -125,7 +126,7 @@ def delete(request):
 """
 DONE
 """
-@login_required
+@user_passes_test(login_allowed)
 def leave(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
@@ -155,7 +156,7 @@ def leave(request):
 """
 DONE
 """
-@login_required
+@user_passes_test(login_allowed)
 def manage(request, id):
     if request.method == "POST":
         messages.error(request, "Invalid request method.")
@@ -180,7 +181,7 @@ def manage(request, id):
 TODO:
   - redirect to correct manage page
 """
-@login_required
+@user_passes_test(login_allowed)
 def remove_user(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
