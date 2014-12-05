@@ -34,7 +34,7 @@ def modified_handler(sender, group, fields, **kwargs):
     ldap_group = LdapGroup.objects.get(pk=group.name)
     members = []
     for member in group.user_set.all():
-        members.append(unicode(LdapUser.for_user(member).uid))
+        members.append(member.username)
     if members:
         ldap_group.members = members
         ldap_group.save()

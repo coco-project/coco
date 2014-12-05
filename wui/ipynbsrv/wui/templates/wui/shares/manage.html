@@ -34,7 +34,7 @@
                 <tr>
                     <td>Tags</td>
                     <td>
-                        {% for tag in share.tags %}
+                        {% for tag in share.tags.all %}
                             <span class="label label-default">{{ tag.label }}</span>
                         {% endfor %}
                     </td>

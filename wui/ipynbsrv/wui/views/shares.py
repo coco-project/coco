@@ -32,7 +32,7 @@ def adduser(request):
                 if user and not share.is_member(user):
                     share.group.user_set.add(user)
                     share_user_added.send(None, share=share, user=user)
-            #share.group.save()
+            share.group.save() # needed so the group_modified signal is raised
 
             messages.success(request, "Sucessfully added the new member(s).")
         else:
