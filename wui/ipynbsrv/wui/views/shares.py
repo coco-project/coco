@@ -32,7 +32,7 @@ def adduser(request):
                 if user and not share.is_member(user):
                     share.group.user_set.add(user)
                     share_user_added.send(None, share=share, user=user)
-            share.group.save()
+            #share.group.save()
 
             messages.success(request, "Sucessfully added the new member(s).")
         else:
@@ -71,7 +71,7 @@ def create(request):
 
     name  = request.POST.get('name')
     desc  = request.POST.get('description', "")
-    tags  = request.POST.get('tags', "")
+    tags  = request.POST.get('tags', None)
     owner = request.user
 
     if Share.objects.filter(name=name):
@@ -86,10 +86,11 @@ def create(request):
         share = Share(name=name, description=desc, owner=owner, group=group)
         share.save()
         # adding tags to the share
-        if tags != "[]": # jquery.tagsinput's default value if empty
+        if tags: # jquery.tagsinput's default value if empty
             for tag in tags.split(","):
                 tag = Tag.objects.get_or_create(label=tag)
                 share.tags.add(tag)
+            #share.save()
 
         messages.success(request, "Share created sucessfully.")
 
