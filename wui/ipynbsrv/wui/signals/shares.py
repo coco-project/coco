@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import Group, LdapGroup, Share
-from ipynbsrv.wui.signals.signals import share_created, share_deleted, share_modified, share_user_added, share_user_leaved, share_user_removed
+from ipynbsrv.wui.signals.signals import (group_deleted, share_created, share_deleted, share_modified, share_user_added, share_user_leaved, share_user_removed)
 from ipynbsrv.wui.tools import Filesystem
 
 
@@ -35,6 +35,7 @@ def deleted_handler(sender, share, **kwargs):
     group = Group.objects.filter(name=share.name).first()
     if group:
         group.delete()
+        group_deleted.send(None, group=group) # Django should do that
     # remove the directory
     shutil.rmtree(path = os.path.join(settings.SHARE_ROOT, share.name), ignore_errors=not settings.DEBUG)
 

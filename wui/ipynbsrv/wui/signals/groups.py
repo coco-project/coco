@@ -2,7 +2,7 @@ from django.contrib.auth.models import Group
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import LdapGroup, LdapUser, Share
-from ipynbsrv.wui.signals.signals import group_created, group_deleted, group_modified
+from ipynbsrv.wui.signals.signals import group_created, group_deleted, group_modified, share_deleted
 
 
 """
@@ -27,6 +27,7 @@ def deleted_handler(sender, group, **kwargs):
         # make sure to also delete the share for this group
         if share:
             share.delete()
+            share_deleted.send(None, share=share) # Django should do that
 
 
 """
