@@ -28,19 +28,20 @@ class ImageAdmin(admin.ModelAdmin):
 
 """
 """
+class ShareAdmin(admin.ModelAdmin):
+    list_display  = ['name', 'description', 'owner']
+    list_filter   = ['owner']
+    search_fields = ['name', 'description', 'owner', 'group']
+
+
+"""
+"""
 class TagAdmin(admin.ModelAdmin):
     list_display  = ['label']
     search_fields = ['label']
 
 
-"""
-"""
-class ShareAdmin(admin.ModelAdmin):
-    list_display  = ['name', 'owner']
-    list_filter   = ['owner', 'group']
-    search_fields = ['name', 'description', 'owner', 'group', 'tags']
-
-
 admin.site.register(Host, HostAdmin)
 admin.site.register(Image, ImageAdmin)
+admin.site.register(Share, ShareAdmin)
 admin.site.register(Tag, TagAdmin)
