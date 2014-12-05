@@ -32,10 +32,7 @@ def created_handler(sender, share, **kwargs):
 def deleted_handler(sender, share, **kwargs):
     print "deleted share via signal"
     # make sure the group is removed too
-    group = Group.objects.filter(name=share.name).first()
-    if group:
-        group.delete()
-        group_deleted.send(None, group=group) # Django should do that
+    share.group.delete()
     # remove the directory
     shutil.rmtree(path = os.path.join(settings.SHARE_ROOT, share.name), ignore_errors=not settings.DEBUG)
 
