@@ -1,5 +1,6 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render
+from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Container, Host, Image
 from ipynbsrv.wui.signals.containers import *
 from django.contrib import messages
