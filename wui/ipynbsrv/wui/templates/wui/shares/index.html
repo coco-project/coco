@@ -45,6 +45,8 @@
                     <td>
                         {% for tag in share.tags.all %}
                             <span class="label label-default">{{ tag.label }}</span>
+                        {% empty %}
+                            -
                         {% endfor %}
                     </td>
                     <td style="text-align: right">

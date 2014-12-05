@@ -71,7 +71,7 @@ def create(request):
 
     name  = request.POST.get('name')
     desc  = request.POST.get('description', "")
-    tags  = request.POST.get('tags', None)
+    tags  = request.POST.get('tags', "")
     owner = request.user
 
     if Share.objects.filter(name=name):
@@ -81,14 +81,14 @@ def create(request):
         group = Group(name="share_" + name)
         group.save()
         group.user_set.add(owner)
+        group_modified.send(None, group=group, fields=None) # should fire by Django
         # creating the share itself
         share = Share(name=name, description=desc, owner=owner, group=group)
         share.save()
         # adding tags to the share
-        if tags: # jquery.tagsinput's default value if empty
-            for tag in tags.split(","):
-                tag = Tag.objects.get_or_create(label=tag)
-                share.tags.add(tag)
+        for tag in tags.split(","):
+            tag = Tag.objects.get_or_create(label=tag)
+            share.tags.add(tag)
 
         messages.success(request, "Share created sucessfully.")
 
