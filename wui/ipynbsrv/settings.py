@@ -129,9 +129,7 @@ AUTH_LDAP_GROUP_TYPE = PosixGroupType()
 AUTH_LDAP_USER_ATTR_MAP = {}
 
 AUTH_LDAP_ALWAYS_UPDATE_USER = True
-# Cache group memberships for an hour to minimize LDAP traffic
-AUTH_LDAP_CACHE_GROUPS = True
-AUTH_LDAP_GROUP_CACHE_TIMEOUT = 3600
+AUTH_LDAP_CACHE_GROUPS = False
 
 AUTHENTICATION_BACKENDS = (
     'django_auth_ldap.backend.LDAPBackend',

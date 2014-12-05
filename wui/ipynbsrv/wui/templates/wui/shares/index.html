@@ -99,18 +99,18 @@ $(function() {
     $('[data-toggle="confirmation"]').confirmation({
         popout: true
     });
-    // $('#tags').tagsInput({
-    //     width:              '100%',
-    //     height:             '43px',
-    //     defaultText:        '',
-    //     removeWithBackspace: true
-    // });
-    // $('#users').tagsInput({
-    //     width:              '100%',
-    //     height:             '43px',
-    //     defaultText:        '',
-    //     removeWithBackspace: true
-    // });
+    $('#tags').tagsInput({
+        width:              '100%',
+        height:             '43px',
+        defaultText:        '',
+        removeWithBackspace: true
+    });
+    $('#users').tagsInput({
+        width:              '100%',
+        height:             '43px',
+        defaultText:        '',
+        removeWithBackspace: true
+    });
     $('.js-table-smart').dataTable({
         columnDefs: [{
             aTargets:    [ 4 ],

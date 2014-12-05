@@ -72,10 +72,11 @@ class LdapUser(ldapdb.models.Model):
         return smart_unicode(self.username)
 
 
+"FIXME: label should be PK"
 class Tag(models.Model):
     """
     """
-    label = models.CharField(primary_key=True, max_length=50)
+    label = models.CharField(unique=True, max_length=50)
 
     def __str__(self):
         return self.__unicode__()

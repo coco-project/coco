@@ -84,11 +84,9 @@ def create(request):
         group.save()
         group.user_set.add(owner)
         group.save()
-
         # creating the share itself
         share = Share(name=name, description=desc, owner=owner, group=group)
         share.save()
-
         # adding tags to the share
         if tags:
             for tag in tags.split(","):
