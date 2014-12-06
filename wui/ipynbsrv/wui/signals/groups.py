@@ -12,7 +12,7 @@ from ipynbsrv.wui.signals.signals import group_created, group_deleted, group_mod
 def created_handler(sender, group, **kwargs):
     if settings.DEBUG:
         print "Created LDAP group via signal"
-    next_gid = LdapGroup.objects.all().latest('gid').gid + 1
+    next_gid = LdapGroup.objects.all().latest('gid').gid + settings.SHARE_GROUPS_OFFSET + 1
     ldap_group = LdapGroup(gid=next_gid, name=group.name, members="")
     ldap_group.save()
 

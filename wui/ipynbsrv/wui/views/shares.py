@@ -24,6 +24,7 @@ def adduser(request):
 
     id = request.POST.get('id', -1)
     usernames = request.POST.get('users')
+    origin = request.POST.get('origin', None)
     share = Share.objects.filter(pk=id).first()
 
     if share:
@@ -41,6 +42,9 @@ def adduser(request):
     else:
         messages.error(request, "Share does not exist.")
 
+    if origin:
+        request.method = "GET"
+        return redirect('share_manage', share.id)
     return redirect('shares')
 
 
@@ -88,7 +92,9 @@ def create(request):
         share.save()
         # adding tags to the share
         for tag in tags.split(","):
-            tag = Tag.objects.get_or_create(label=tag)
+            tag, created = Tag.objects.get_or_create(label=tag)
+            if created:
+                tag.save()
             share.tags.add(tag)
 
         messages.success(request, "Share created sucessfully.")
