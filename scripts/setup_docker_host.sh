@@ -65,28 +65,14 @@ chmod -R 755 $DATA
 # install the LDAP client tools
 # we need to know all LDAP users because the home/share directories will belong to them
 echo "------------------------------------------------------------"
-echo "Going to install the libpam-ldapd package."
+echo "Going to install the libpam-ldap package."
 echo "When asked for the nsswitch services to configure, choose 'group', 'passwd' and 'shadow'."
 echo "------------------------------------------------------------"
 sleep 2
-$INSTALL libpam-ldapd
+$INSTALL libpam-ldap
 # configure that we want to use LDAP for passwd etc.
 #sed -i 's/compat/compat ldap/' /etc/nsswitch.conf
 
-# tell the Docker daemon to listen on TCP port 9999
-if [ $PS == "deb" ]; then
-    echo "DOCKER_OPTS='-H :9999'" >> /etc/default/docker.io
-else
-    echo "DOCKER_OPTS='-H :9999'" >> /etc/default/docker
-fi
-echo "alias docker='docker -H :9999'" >> ~/.bash_aliases
-sed -i 's/docker inspect/docker -H :9999 inspect/' /usr/local/bin/docker-bash
-sed -i 's/docker inspect/docker -H :9999 inspect/' /usr/local/bin/docker-ssh
-if [ $PS == "deb" ]; then
-    service docker.io restart
-else
-    service docker restart
-fi
 
 echo "------------------------------------------------------------"
 echo "All done!"
