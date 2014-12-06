@@ -22,7 +22,7 @@ echo "------------------------------------------------------------"
 sleep 2
 
 # create the Docker container
-docker -H :9999 run -i -t --name="${CT_NAME}" phusion/baseimage:0.9.15 /bin/bash
+docker run -i -t --name="${CT_NAME}" phusion/baseimage:0.9.15 /bin/bash
 
 echo "------------------------------------------------------------"
 echo "Note: Committing the container so we can create a new one from it."
@@ -30,13 +30,13 @@ echo "------------------------------------------------------------"
 
 # after initialization has been done, commit the container
 # so we can create a new one from it with mounted volumes
-docker -H :9999 commit $CT_NAME ipynbsrv/ldap:init
-docker -H :9999 rm $CT_NAME
+docker commit $CT_NAME ipynbsrv/ldap:init
+docker rm $CT_NAME
 
 echo "------------------------------------------------------------"
 echo "Note: Creating the new and final ipynbsrv LDAP server container."
 echo "------------------------------------------------------------"
 
 # create the new container with mounted directories
-docker -H :9999 run --detach=true --interactive=false --name="${CT_NAME}" \
+docker run --detach=true --interactive=false --name="${CT_NAME}" \
 -p 49150:80 -p 389:389 ipynbsrv/ldap:init $CMD
