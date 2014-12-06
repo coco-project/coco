@@ -27,7 +27,6 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
 INSTALLED_APPS = (
     'ipynbsrv.wui',
     'django.contrib.admin',
@@ -135,3 +134,7 @@ AUTHENTICATION_BACKENDS = (
     'django_auth_ldap.backend.LDAPBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
+
+
+# Misc
+SHARE_GROUPS_OFFSET = 999
