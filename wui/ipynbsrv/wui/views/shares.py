@@ -88,7 +88,9 @@ def create(request):
         share.save()
         # adding tags to the share
         for tag in tags.split(","):
-            tag = Tag.objects.get_or_create(label=tag)
+            tag, created = Tag.objects.get_or_create(label=tag)
+            if created:
+                tag.save()
             share.tags.add(tag)
 
         messages.success(request, "Share created sucessfully.")
