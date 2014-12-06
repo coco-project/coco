@@ -51,7 +51,7 @@
                     </td>
                     <td style="text-align: right">
                         {% if share.owner == request.user %}
-                            <button type="button" class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-share-adduser" title="Add new members" data-tooltip>
+                            <button type="button" class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-share-adduser" title="Add new member(s)" data-tooltip>
                                 <i class="glyphicon glyphicon-plus"></i>
                             </button>
                             <a href="/share/manage/{{ share.id }}" class="btn btn-sm btn-default" title="Manage members" data-tooltip>
@@ -102,25 +102,17 @@ $(function() {
         popout: true
     });
 
-    var tags = $('#tags');
-    tags.tagsInput({
+    $('#tags').tagsInput({
         width:              '100%',
         height:             'auto',
         defaultText:        '',
-        removeWithBackspace: true,
-        onChange: function () {
-            tags.val(tags.val());
-        }
+        removeWithBackspace: true
     });
-    var users = $('#users');
-    users.tagsInput({
+    $('#users').tagsInput({
         width:              '100%',
         height:             'auto',
         defaultText:        '',
-        removeWithBackspace: true,
-        onChange: function () {
-            users.val(users.val());
-        }
+        removeWithBackspace: true
     });
 
     $('.js-table-smart').dataTable({
