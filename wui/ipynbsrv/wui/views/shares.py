@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import redirect, render
 from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Share, Tag
-from ipynbsrv.wui.signals.signals import (group_modified, share_created, share_user_added, share_user_leaved, share_user_removed)
+from ipynbsrv.wui.signals.signals import (group_modified, share_user_added, share_user_leaved, share_user_removed)
 
 
 """
@@ -22,10 +22,10 @@ def adduser(request):
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    id = request.POST.get('id', -1)
+    share_id = request.POST.get('id', -1)
     usernames = request.POST.get('users')
     origin = request.POST.get('origin', None)
-    share = Share.objects.filter(pk=id).first()
+    share = Share.objects.filter(pk=share_id).first()
 
     if share:
         if share.owner == request.user:
@@ -115,8 +115,8 @@ def delete(request):
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    id = request.POST.get('id')
-    share = Share.objects.filter(pk=id).first()
+    share_id = request.POST.get('id')
+    share = Share.objects.filter(pk=share_id).first()
     if share:
         if share.owner == request.user:
             share.delete()
@@ -142,8 +142,8 @@ def leave(request):
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    id = request.POST.get('id')
-    share = Share.objects.filter(pk=id).first()
+    share_id = request.POST.get('id')
+    share = Share.objects.filter(pk=share_id).first()
     if share:
         if share.owner == request.user:
             messages.error(request, "Cannot leave a managed share.")
@@ -163,12 +163,12 @@ def leave(request):
 DONE
 """
 @user_passes_test(login_allowed)
-def manage(request, id):
+def manage(request, share_id):
     if request.method == "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
 
-    share = Share.objects.filter(pk=id).first()
+    share = Share.objects.filter(pk=share_id).first()
     if share:
         if share.owner == request.user:
             return render(request, 'wui/shares/manage.html', {
