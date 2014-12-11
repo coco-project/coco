@@ -16,6 +16,7 @@ def created(sender, **kwargs):
 ""
 @receiver(image_deleted)
 def deleted(sender, id, **kwargs):
+    print("Received image_deleted signal.")
     images = d.images()
     tmp=False
     for imgs in images:
@@ -25,7 +26,6 @@ def deleted(sender, id, **kwargs):
     	d.delImage(id)
     else:
 	print("image doesnt exist")
-    print("Received image_deleted signal.")
 
 
 ""

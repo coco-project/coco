@@ -9,6 +9,7 @@ d = Docker()
 ""
 @receiver(container_commited)
 def commited(sender, image, ct_id, name, **kwargs):
+    print("Received container_commited signal.")
     d.commitContainer(ct_id, name, 'latest')
     c_name = name + ":latest"
     cont = d.images_name(name)
@@ -17,16 +18,17 @@ def commited(sender, image, ct_id, name, **kwargs):
 ""
 @receiver(container_created)
 def created(sender, container, image, **kwargs):
+    print("Received container_created signal.")
     cont = d.createContainer(image, '/bin/bash', container.name, 'True')
     id = cont['Id']
     id = str(id)
     container.ct_id = id
-    print("Received container_created signal.")
 
 
 ""
 @receiver(container_deleted)
 def delete(sender, container, **kwargs):
+    print("Received container_deleted signal.")
     containers = d.containersall()
     tmp = False
     for cont in containers:
@@ -36,7 +38,6 @@ def delete(sender, container, **kwargs):
 	d.delContainer(container.ct_id)
     else:
 	print("Container allready deleted")	
-    print("Received container_deleted signal.")
 
 
 ""

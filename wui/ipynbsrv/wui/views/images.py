@@ -24,7 +24,6 @@ def index(request):
 def delete(request):
     id = request.POST.get('id')
     i = Image.objects.filter(owner=request.user).filter(img_id=id)
-    image_deleted.send(sender='', id=id)
     i.delete()
     return redirect('images')
 
