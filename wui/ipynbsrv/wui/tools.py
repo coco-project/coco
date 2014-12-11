@@ -6,14 +6,14 @@ from docker import Client
 """
 class Docker(object):
     def __init__(self):
-        self.docker = Client(base_url='tcp://192.168.182.129:9999',version='1.2.1')
+        self.docker = Client(base_url='tcp://172.17.42.1:9999',version='1.12')
 
     ## Container Commands ##
     def stopContainer(self, id):
         self.docker.stop(container=id)
 
     def startContainer(self, id):
-        self.docker.start(container=id)#, port_bindings={80: ('0.0.0.0',500)})
+        self.docker.start(container=id, port_bindings={8888: None})
 
     def restartContainer(self, id):
         self.docker.restart(container=id)
@@ -28,8 +28,18 @@ class Docker(object):
     def commitContainer(self, id,name,tag):
         self.docker.commit(container=id,repository=name,tag=tag)
 
+    def containers(self):
+	return self.docker.containers()
+
+    def containersall(self):
+	return self.docker.containers(all=True)
+
     ## Image Commands ##
-    def images(self, name):
+    def images(self):
+        img = self.docker.images(all=True, quiet=False)
+        return img
+
+    def images_name(self, name):
         img = self.docker.images(name=name, all=True, quiet=False)
         return img
 

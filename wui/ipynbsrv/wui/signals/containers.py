@@ -5,24 +5,13 @@ from ipynbsrv.wui.signals.signals import *
 from ipynbsrv.wui.tools import Docker
 
 d = Docker()
-""
-@receiver(container_backuped)
-def backuped(sender, **kwargs):
-    print("Received container_backuped signal.")
-
-
-""
-@receiver(container_cloned)
-def cloned(sender, **kwargs):
-    print("Received container_cloned signal.")
 
 ""
 @receiver(container_commited)
 def commited(sender, image, ct_id, name, **kwargs):
     d.commitContainer(ct_id, name, 'latest')
     c_name = name + ":latest"
-    cont = d.images(name)
-    print(cont[0])
+    cont = d.images_name(name)
     image.img_id = cont[0]['Id']
 
 ""
@@ -30,53 +19,68 @@ def commited(sender, image, ct_id, name, **kwargs):
 def created(sender, container, image, **kwargs):
     cont = d.createContainer(image, '/bin/bash', container.name, 'True')
     id = cont['Id']
-    print(id)
     id = str(id)
-    print(id)
     container.ct_id = id
-    print(container.id)
     print("Received container_created signal.")
 
 
 ""
 @receiver(container_deleted)
 def delete(sender, container, **kwargs):
-    c = container
-    d.delContainer(c.ct_id)
+    containers = d.containersall()
+    tmp = False
+    for cont in containers:
+	if cont['Id'] == container.ct_id:
+	    tmp=True
+    if tmp:
+	d.delContainer(container.ct_id)
+    else:
+	print("Container allready deleted")	
     print("Received container_deleted signal.")
 
 
 ""
-@receiver(container_edited)
-def edited(sender, **kwargs):
-    print("Received container_edited signal.")
-
-
-""
-@receiver(container_restored)
-def restored(sender, **kwargs):
-    print("Received container_restored signal.")
-
-
-""
-@receiver(container_shared)
-def shared(sender, **kwargs):
-    print("Received container_shared signal.")
-
-""
 @receiver(container_started)
 def started(sender, container, **kwargs):
-    c = container
-    d.startContainer(c.ct_id)
     print("Received container_started signal.")
+    containers = d.containersall()
+    tmp = False
+    for cont in containers:
+	if cont['Id'] == container.ct_id:
+	    tmp=True
+    if tmp:
+    	d.startContainer(container.ct_id)
+    else:
+	raise Exception("Container doesnt exist")
 
 
 ""
 @receiver(container_stopped)
 def stopped(sender, container, **kwargs):
-    c = container
-    d.stopContainer(c.ct_id)
     print("Received container_stopped signal.")
+    containers = d.containersall()
+    tmp = False
+    for cont in containers:
+	if cont['Id'] == container.ct_id:
+	    tmp=True
+    if tmp:
+    	d.stopContainer(container.ct_id)
+    else:
+	raise Exception("Container doesnt exist")
+
+""
+@receiver(container_restarted)
+def restarted(sender, container, **kwargs):
+    print("Received container_stopped signal.")
+    containers = d.containersall()
+    tmp = False
+    for cont in containers:
+	if cont['Id'] == container.ct_id:
+	    tmp=True
+    if tmp:
+    	d.restartContainer(container.ct_id)
+    else:
+	raise Exception("Container doesnt exist")
 
 
 #
@@ -84,14 +88,26 @@ def stopped(sender, container, **kwargs):
 #
 ""
 @receiver(pre_delete, sender=Container)
-def pre_delete(sender, **kwargs):
+def pre_delete(sender, instance, **kwargs):
     print("Received container_pre_delete signal from container.")
-    #container_deleted.send(sender='', **kwargs)
-
+    containers = d.containers()
+    tmp = False
+    for cont in containers:
+	if cont['Id'] == instance.ct_id:
+	    tmp=True
+    if tmp:
+	container_stopped.send(sender='', container=instance)
+    container_deleted.send(sender='', container=instance)
+    if instance.is_clone:
+	image_deleted.send(sender='', id=instance.image.img_id)
 
 ""
 @receiver(pre_save, sender=Container)
-def pre_save(sender, **kwargs):
+def pre_save(sender, instance, **kwargs):
     print("Received pre_save signal from container.")
+    if instance.status == True:
+	container_started.send(sender='',container=instance)
+    else:
+	container_stopped.send(sender='',container=instance)
     # TODO: raise signals
 

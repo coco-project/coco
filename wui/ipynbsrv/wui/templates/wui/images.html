@@ -48,7 +48,7 @@
                             <div class="form-group">
                                 <div class="checkbox">
                                     <label for="modal-public">
-                                        <input id="modal-create-image_public" type="checkbox" id="modal-public" value="yes" aria-describedby="modal-public_help">
+                                        <input id="modal-create-image_public" type="checkbox" name="public" id="modal-public" value="True" aria-describedby="modal-public_help">
                                         Make the image available to the public
                                     </label>
                                     <span id="modal-public_help" class="help-block">If chosen, other registered users are able to create containers based on this image.</span>
@@ -82,12 +82,13 @@
                            <tr>
                                 <td>{{ i.name }}</td>
                                 <td>{{ i.description }}</td>
-				{% if i.is_backup == True %}
+				{% if i.is_public == True %}
                                 <td style="text-align: center"><input type="checkbox" data-sort="1" checked></td>
                                 {% else %}
                                 <td style="text-align: center"><input type="checkbox" data-sort="1"></td>
 				{% endif %}
 				<td>
+				    {% if i.owner == owner %}
                                     <form action="{% url 'image_delete' %}" method="POST" class="pull-right" role="form">
 					{% csrf_token %}
 					<input type="hidden" name="id" value="{{ i.img_id }}"></input>
@@ -95,6 +96,7 @@
                                             <i class="glyphicon glyphicon-remove"></i>
                                         </button>
                                     </form>
+				    {% endif %}
                                 </td>
                             </tr>
 			    {% endfor %}
@@ -141,7 +143,6 @@ $(function() {
     var x = readCookie('share');
     var y = readCookie('public');
     if (x) {
-	document.getElementById("modal-create-image_button").click();
 	if(y) {
 		document.getElementById("modal-create-image_public").checked = true;
 	}
@@ -149,6 +150,7 @@ $(function() {
 		document.getElementById("modal-create-image_public").checked = false;	
 	}
 	document.getElementById('modal-create-image_ct-name').value = x;
+	document.getElementById("modal-create-image_button").click();
 	eraseCookie('share');
 	eraseCookie('public');
     }
