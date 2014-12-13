@@ -183,6 +183,7 @@ def manage(request, share_id):
 
     return redirect('shares')
 
+
 """
 TODO:
   - redirect to correct manage page
