@@ -15,7 +15,6 @@ def dashboard(request):
     return render(request, 'wui/dashboard.html', context)
 
 
-@user_passes_test(login_allowed)
 class WorkspaceProxy(HttpProxy):
     """
     """
@@ -25,5 +24,7 @@ class WorkspaceProxy(HttpProxy):
     """
     """
     def dispatch(self, request, *args, **kwargs):
-        # TODO: check if user is allowed here
+        # TODO: we need the container ID via param, get the port from it and check if user
+        # is allowed to use this container.
+        # the reverse proxy expects URLs in the form of /<port>/<uri>
         return super(WorkspaceProxy, self).dispatch(request, *args, **kwargs)

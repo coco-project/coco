@@ -41,7 +41,7 @@ urlpatterns = patterns('',
     url(r'^share/remove_user$', 'ipynbsrv.wui.views.shares.remove_user', name='share_remove_user'),
 
     # /workspace/...
-    url(r'^workspace/(?P<url>.*)$', WorkspaceProxy.as_view()),
+    url(r'^workspace/(?P<url>.*)$', WorkspaceProxy.as_view(), name='workspace'),
 
     # /
     url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),
