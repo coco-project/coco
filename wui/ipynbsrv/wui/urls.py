@@ -35,7 +35,7 @@ urlpatterns = patterns('',
 
     # /share(s)/...
     url(r'^shares/$', 'ipynbsrv.wui.views.shares.index', name='shares'),
-    url(r'^share/adduser$', 'ipynbsrv.wui.views.shares.adduser', name='share_adduser'),
+    url(r'^share/add_user$', 'ipynbsrv.wui.views.shares.adduser', name='share_add_user'),
     url(r'^share/create$', 'ipynbsrv.wui.views.shares.create', name='share_create'),
     url(r'^share/delete$', 'ipynbsrv.wui.views.shares.delete', name='share_delete'),
     url(r'^share/leave$', 'ipynbsrv.wui.views.shares.leave', name='share_leave'),
@@ -45,4 +45,3 @@ urlpatterns = patterns('',
     # /
     url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),
 )
-

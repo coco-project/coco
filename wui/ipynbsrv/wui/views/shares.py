@@ -13,7 +13,7 @@ TODO:
   - autocompletion in user form input
 """
 @user_passes_test(login_allowed)
-def adduser(request):
+def add_user(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')

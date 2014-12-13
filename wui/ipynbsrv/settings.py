@@ -121,8 +121,7 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=ipynbsrv,dc=ldap",
     ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
 
 AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,dc=ipynbsrv,dc=ldap",
-    ldap.SCOPE_SUBTREE, "(objectClass=posixGroup)"
-)
+    ldap.SCOPE_SUBTREE, "(objectClass=posixGroup)")
 AUTH_LDAP_GROUP_TYPE = PosixGroupType()
 
 AUTH_LDAP_USER_ATTR_MAP = {}
@@ -136,5 +135,5 @@ AUTHENTICATION_BACKENDS = (
 )
 
 
-# Misc
+# Various
 SHARE_GROUPS_OFFSET = 999
