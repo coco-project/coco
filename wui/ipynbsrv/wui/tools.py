@@ -13,7 +13,7 @@ class Docker(object):
         self.docker.stop(container=id)
 
     def startContainer(self, id):
-        self.docker.start(container=id, port_bindings={8888: None})
+        self.docker.start(container=id, port_bindings={8888: None}, links=[('ipynbsrv.ldap','ipynbsrv.ldap')], binds={'/srv/ipynbsrv/homes/mk':{'bind':'/home/mk'},'/srv/ipynbsrv/public':{'bind':'/data/public'},'/srv/ipynbsrv/shares':{'bind':'/data/shares'}})
 
     def restartContainer(self, id):
         self.docker.restart(container=id)
@@ -21,8 +21,8 @@ class Docker(object):
     def delContainer(self, id):
         self.docker.remove_container(container=id)
 
-    def createContainer(self, img, cmd, name, tty):
-        cont = self.docker.create_container(image=img, command=cmd, tty=tty, name=name, ports=[80])
+    def createContainer(self, img, name, tty):
+        cont = self.docker.create_container(image=img.img_id, tty=tty, name=name, ports=[80], command=img.cmd, volumes=['/srv/ipynbsrv/homes','/srv/ipynbsrv/public','/srv/ipynbsrv/shares'])
         return cont
 
     def commitContainer(self, id,name,tag):

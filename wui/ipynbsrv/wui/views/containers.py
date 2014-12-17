@@ -40,7 +40,7 @@ def stop(request):
 def start(request):
     c = Container.objects.filter(owner=request.user).filter(ct_id=request.POST.get('id')).get()
     try:
-    	c.status = True
+	c.status = True
     	c.save()
     	messages.success(request, 'Container ' + c.name + ' successfully stopped')
     except:
@@ -78,7 +78,7 @@ def delCont(request):
 def create(request):
     i = Image.objects.filter(name=request.POST.get('image')).get()
     name = request.POST.get('name')
-    c = Container(name=name, description=request.POST.get('description'), owner=request.user, image=i)
+    c = Container(name=name, description=request.POST.get('description'), owner=request.user, image=i, status=True)
     container_created.send(sender='', container=c, image=i)
     c.save()
     messages.success(request, 'Container ' + c.name + ' successfully created')
@@ -93,7 +93,7 @@ def clone(request):
     container_commited.send(sender='', image=i, ct_id=ct_id, name=name)
     i.save()
     c = Container(name=name, description='Clone', is_clone=True, owner=request.user, status=True, image=i)
-    container_created.send(sender='',container=c, image=i.name+':latest')
+    container_created.send(sender='',container=c, image=i)
     c.save()
     return redirect('containers')
 
