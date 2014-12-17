@@ -120,7 +120,7 @@ $(function() {
         }]
     });
 
-    var search_input = table.find('input');
+    var search_input = $('#shares-table_filter').find('input');
     table.find('.label').click(function (e) {
         var label = $(e.target);
         search_input.val(label.text());
