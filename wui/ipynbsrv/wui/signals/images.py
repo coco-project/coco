@@ -16,8 +16,16 @@ def created(sender, **kwargs):
 ""
 @receiver(image_deleted)
 def deleted(sender, id, **kwargs):
-    d.delImage(id)
     print("Received image_deleted signal.")
+    images = d.images()
+    tmp=False
+    for imgs in images:
+	if imgs['Id'] == id:
+	    tmp=True
+    if tmp:
+    	d.delImage(id)
+    else:
+	print("image doesnt exist")
 
 
 ""
@@ -37,10 +45,9 @@ def shared(sender, **kwargs):
 #
 ""
 @receiver(pre_delete, sender=Image)
-def pre_delete(sender, **kwargs):
+def pre_delete(sender, instance, **kwargs):
     print("Received pre_delete signal from image.")
-    # TODO: raise signals
-
+    image_deleted.send(sender='', id=instance.img_id)
 
 ""
 @receiver(pre_save, sender=Image)

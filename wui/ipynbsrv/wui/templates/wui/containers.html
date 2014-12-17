@@ -126,12 +126,12 @@
 				</form>
 				<form action="{% url 'containers_share' %}" method="POST">
 				    {%csrf_token %}
-                                    <input value="backup" type="submit" data-toggle="modal" data-target="#modal-image-create" title="Add new members" data-tooltip></input>
+                                    <input value="backup" type="submit" data-toggle="modal2" data-target="#modal-image-create" title="Add new members" data-tooltip></input>
 				    <input type="hidden" id="modal-create-image_share" name="share" value="{{ c.name }}"></input>
 				</form>
 				<form action="{% url 'containers_share' %}" method="POST">
 				    {%csrf_token %}
-                                    <input value="share" type="submit" data-toggle="modal2" data-target="#modal-image-create" title="Add new members" data-tooltip></input>
+                                    <input value="share" type="submit" data-toggle="modal3" data-target="#modal-image-create" title="Add new members" data-tooltip></input>
 				    <input type="hidden" id="modal-create-image_share" name="share" value="{{ c.name }}"></input>
 				</form>
                             </ul>
@@ -150,11 +150,11 @@
 <script src="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.js"></script>
 <script>
 $(function() {
-    $('[data-toggle="modal"]').click(function (e) {
+    $('[data-toggle="modal2"]').click(function (e) {
 	val = document.getElementById("modal-create-image_share").value;
 	createCookie('share', val , 1);
     });
-    $('[data-toggle="modal2"]').click(function (e) {
+    $('[data-toggle="modal3"]').click(function (e) {
 	val = document.getElementById("modal-create-image_share").value;
 	createCookie('share', val , 1);	
 	createCookie('public', '1' , 1);	

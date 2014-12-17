@@ -43,5 +43,6 @@ class TagAdmin(admin.ModelAdmin):
 
 admin.site.register(Host, HostAdmin)
 admin.site.register(Image, ImageAdmin)
+admin.site.register(Container, ContainerAdmin)
 admin.site.register(Share, ShareAdmin)
 admin.site.register(Tag, TagAdmin)
