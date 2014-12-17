@@ -24,7 +24,7 @@
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Profile <span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu">
-                        <li><a href="{% settings "PUBLIC_URL" %}{{ request.user.username }}">Publications</a></li>
+                        <li><a href="{% settings "PUBLIC_URL" %}{{ request.user.username }}" target="_blank">Publications</a></li>
                         <li class="divider"></li>
                         <li><a href="{% url 'logout' %}">Logout</a></li>
                     </ul>

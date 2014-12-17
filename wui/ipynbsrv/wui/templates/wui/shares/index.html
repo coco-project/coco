@@ -20,7 +20,7 @@
         </form>
 
         {% if shares %}
-        <table class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
+        <table id="shares-table" class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
             <thead>
                 <tr>
                     <th width="20%">Name</th>
@@ -102,25 +102,28 @@ $(function() {
         popout: true
     });
 
-    $('#tags').tagsInput({
-        width:              '100%',
-        height:             'auto',
-        defaultText:        '',
+    var tag_options = {
+        width: '100%',
+        height: 'auto',
+        defaultText: '',
         removeWithBackspace: true
-    });
-    $('#users').tagsInput({
-        width:              '100%',
-        height:             'auto',
-        defaultText:        '',
-        removeWithBackspace: true
+    };
+    $('#tags').tagsInput(tag_options);
+    $('#users').tagsInput(tag_options);
+
+    var table = $('.js-table-smart');
+    table.dataTable({
+        columnDefs: [{
+            aTargets: [ 4 ],
+            bSearchable: false,
+            bSortable: false
+        }]
     });
 
-    $('.js-table-smart').dataTable({
-        columnDefs: [{
-            aTargets:    [ 4 ],
-            bSearchable: false,
-            bSortable:   false
-        }]
+    var search_input = $('#DataTables_Table_0_filter').find('input');
+    table.find('.label').click(function (e) {
+        var label = $(e.target);
+        search_input.val(label.text());
     });
 
     $('[data-toggle="modal"]').click(function (e) {
