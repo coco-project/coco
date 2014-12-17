@@ -16,15 +16,11 @@ user_modified = Signal(providing_args=['user', 'fields'])
 
 
 # ""
-container_backuped = Signal(providing_args=['container'])
-container_cloned   = Signal(providing_args=['container', 'clone'])
 container_created  = Signal(providing_args=['container'])
 container_deleted  = Signal(providing_args=['container'])
-container_edited   = Signal(providing_args=['container'])
-container_restored = Signal(providing_args=['container', 'backup'])
-container_shared   = Signal(providing_args=['container', 'with_user'])
 container_started  = Signal(providing_args=['container'])
 container_stopped  = Signal(providing_args=['container'])
+container_restarted= Signal(providing_args=['container'])
 container_commited = Signal(providing_args=['container'])
 
 

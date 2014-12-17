@@ -127,29 +127,29 @@ class Host(models.Model):
 "FIXME: PK should be img_id and host"
 class Image(models.Model):
     id          = models.AutoField(primary_key=True)
-    img_id      = models.CharField(null=False, max_length=12)
+    img_id      = models.CharField(null=False, max_length=64)
     cmd         = models.CharField(null=True, blank=True, max_length=100)
     ports       = models.CharField(null=True, blank=True, max_length=25)
     name        = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
 #    host        = models.ForeignKey(Host)
-#    owner       = models.ForeignKey(User)
+    owner       = models.ForeignKey(User)
 #    tags        = models.ManyToManyField(Tag)
-#    parent      = models.ForeignKey('self', null=True, blank=True)
-    is_backup   = models.BooleanField(default=False)
-
+    is_public   = models.BooleanField(default=False)
+    is_clone    = models.BooleanField(default=False)
 
 "FIXME: PK should be ct_id and host"
 class Container(models.Model):
     id          = models.AutoField(primary_key=True)
-    ct_id       = models.CharField(null=False, max_length=12) # TODO: check default length
+    ct_id       = models.CharField(null=False, max_length=64) # TODO: check default length
     name        = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
     status      = models.BooleanField(default=False)
     #host        = models.ForeignKey(Host)
-    #image       = models.ForeignKey(Image)
-    #owner       = models.ForeignKey(User)
+    image       = models.ForeignKey(Image)
+    owner       = models.ForeignKey(User)
     #tags        = models.ManyToManyField(Tag)
+    is_clone	= models.BooleanField(default=False)
 
 "FIXME: check either uid or gid, not both"
 class ImageShare(models.Model):
