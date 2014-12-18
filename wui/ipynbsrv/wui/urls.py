@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, url
+from ipynbsrv.wui.views.common import WorkspaceProxy
 
 
 ""
@@ -38,6 +39,9 @@ urlpatterns = patterns('',
     url(r'^share/leave$', 'ipynbsrv.wui.views.shares.leave', name='share_leave'),
     url(r'^share/manage/(\d+)$', 'ipynbsrv.wui.views.shares.manage', name='share_manage'),
     url(r'^share/remove_user$', 'ipynbsrv.wui.views.shares.remove_user', name='share_remove_user'),
+
+    # /workspace/...
+    url(r'^workspace/(?P<url>.*)$', WorkspaceProxy.as_view(), name='workspace'),
 
     # /
     url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),
