@@ -124,6 +124,7 @@ $(function() {
     table.find('.label').click(function (e) {
         var label = $(e.target);
         search_input.val(label.text());
+	search_input.submit();
     });
 
     $('[data-toggle="modal"]').click(function (e) {

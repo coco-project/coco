@@ -68,8 +68,8 @@ def restart(request):
 def delCont(request):
     c = Container.objects.filter(ct_id=request.POST.get('id')).get()
     c.delete()
-#    if c.is_clone:
-#	c.image.delete()
+    if c.is_clone:
+	c.image.delete()
     messages.success(request, 'Container ' + c.name + ' successfully deleted')
     return redirect('containers')
 

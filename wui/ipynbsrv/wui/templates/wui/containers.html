@@ -96,6 +96,10 @@
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
 				{% if c.status == True %}
+				<form action="/workspace/{{ c.ct_id }}" method="POST">
+					{% csrf_token %}
+					<input type="submit" value="connect"></input>
+				</form>
 				<form action="{% url 'container_stop' %}" method="POST">
 					{% csrf_token %}
 					<input name="id" type="hidden" value="{{ c.ct_id }}"></input>
