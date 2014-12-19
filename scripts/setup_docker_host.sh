@@ -3,14 +3,14 @@
 #
 # This script will setup the host the script is executed on
 # as an ipynbsrv Docker host.
-# For that, it installes the Docker environment, creates the
+# For that, it installs the Docker environment, creates the
 # required directories and configures the system to be an
 # LDAP client.
 #
 # TODO:
 #   - detect CentOS/EL version: CentOS 6 has Docker packages in EPEL repo
 #
-# last updated: 01.12.2014
+# last updated: 19.12.2014
 #
 
 if [ "$EUID" -ne 0 ]; then
@@ -44,7 +44,7 @@ if [ $PS == "deb" ]; then
 else
     $INSTALL docker
 fi
-# install docker-bash/-ssh (optional)
+# install docker-bash/-ssh
 curl --fail -L -O https://github.com/phusion/baseimage-docker/archive/master.tar.gz
 tar xzf master.tar.gz
 ./baseimage-docker-master/install-tools.sh
@@ -52,9 +52,12 @@ rm -rf master.tar.gz baseimage-docker-master
 # pull the base image for our templates
 docker pull phusion/baseimage
 
-# create the directories for the users and shares
 DATA="/srv/ipynbsrv"
 mkdir -p $DATA
+# create the LDAP/MySQL container data directories
+mkdir -p $DATA/ldap
+mkdir -p $DATA/mysql
+# create the directories for the users and shares
 mkdir -p $DATA/homes
 mkdir -p $DATA/public
 mkdir -p $DATA/shares
@@ -65,14 +68,13 @@ chmod -R 755 $DATA
 # install the LDAP client tools
 # we need to know all LDAP users because the home/share directories will belong to them
 echo "------------------------------------------------------------"
-echo "Going to install the libpam-ldap package."
+echo "Going to install the libpam-ldap package..."
 echo "When asked for the nsswitch services to configure, choose 'group', 'passwd' and 'shadow'."
 echo "------------------------------------------------------------"
 sleep 2
 $INSTALL libpam-ldap
 # configure that we want to use LDAP for passwd etc.
 #sed -i 's/compat/compat ldap/' /etc/nsswitch.conf
-
 
 echo "------------------------------------------------------------"
 echo "All done!"
