@@ -1,4 +1,4 @@
-FROM fhnw/ldap:1
+FROM ipynbsrv/base-ldap:latest
 MAINTAINER FHNW <ipynbsrv@fhnw.ch>
 
 ENV HOME /root
