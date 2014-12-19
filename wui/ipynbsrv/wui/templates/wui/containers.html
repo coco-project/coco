@@ -96,7 +96,7 @@
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
 				{% if c.status == True %}
-				<form action="/workspace/{{ c.ct_id }}" method="POST">
+				<form action="/workspace/{{ c.ports }}/" method="GET" target="_blank">
 					{% csrf_token %}
 					<input type="submit" value="connect"></input>
 				</form>
@@ -160,8 +160,8 @@ $(function() {
     });
     $('[data-toggle="modal3"]').click(function (e) {
 	val = document.getElementById("modal-create-image_share").value;
-	createCookie('share', val , 1);	
-	createCookie('public', '1' , 1);	
+	createCookie('share', val , 1);
+	createCookie('public', '1' , 1);
     });
 });
 function createCookie(name,value,days) {
