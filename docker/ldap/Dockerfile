@@ -29,6 +29,9 @@ RUN sed -i 's/rootbinddn cn=manager,dc=example,dc=net/rootbinddn cn=admin,dc=ipy
 RUN sed -i 's/compat/compat ldap/' /etc/nsswitch.conf
 
 # Allow password based SSH login
+RUN echo "# -- DO NOT REMOVE THE LINES BELOW --" >> /etc/ssh/sshd_config
+RUN echo "UsePAM yes" >> /etc/ssh/sshd_config
+RUN echo "#AllowUsers" >> /etc/ssh/sshd_config
 RUN echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
 
 # Disallow login for users where the home directory does not exist -> in our case, those are not the container owner
