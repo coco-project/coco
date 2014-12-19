@@ -1,19 +1,31 @@
 #!/bin/sh
 
+# make sure the exposed port is passed as an argument
+# we need that one for the IPython notebook base_url
+if [ $# -eq 1 ] || exit 65
+
+PORT=$1
 # get the user to which this container belongs
-# since we only mount the owner's home directory and noone is able to create dirs in /home
+# since we only mount the owner's home directory and no one is able to create dirs in /home
 # we can be sure there is only one dir with the username's name
 USER=`ls /home/`
-
-# chown the /data directory so the user is able to store his personal per-container
-# files in there
-chown ${USER}:${USER} /data
 
 # chown all python modules to the current user
 # cloned containers may otherwise contain files by other users so we wouldn't have permissions
 chown -R ${USER} /usr/local/lib/python3.4/dist-packages/
 
+# chown the /data directory so the user is able to store his personal per-container
+# files in there
+chown ${USER}:${USER} /data
+
+# create the IPython profile
+# we need it before we start so we can set the base_url
+/sbin/setuser ${USER} \
+ipython profile create default --ipython-dir=/data/.ipython
+sed -i 's/c.NotebookApp/#c.NotebookApp/' /data/.ipython/profile_default/ipython_notebook_config.py
+echo "c.NotebookApp.base_url = '/workspace/49154/'" >> /data/.ipython/profile_default/ipython_notebook_config.py
+
 # start the IPython notebook server
 /sbin/setuser ${USER} \
-ipython3 notebook --no-browser --init --ip=0.0.0.0 \
---ipython-dir=/home/${USER}/.ipython --notebook-dir=/data --user=${USER}
+ipython3 notebook --no-browser --ip=0.0.0.0 \
+--ipython-dir=/data/.ipython --notebook-dir=/data --user=${USER}

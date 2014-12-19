@@ -39,4 +39,4 @@ echo "------------------------------------------------------------"
 
 # create the new container with mounted directories
 docker run --detach=true --interactive=false --name="${CT_NAME}" \
--p 49150:80 -p 389:389 ipynbsrv/ldap:init $CMD
+-p 80 -p 389:389 ipynbsrv/ldap:init $CMD

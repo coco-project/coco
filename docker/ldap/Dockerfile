@@ -39,7 +39,7 @@ RUN [ "echo", "[[ ! -x $HOME ]] && exit 1", ">", "/etc/bash.bashrc" ]
 RUN cat /etc/bash.bashrc_pkg >> /etc/bash.bashrc
 RUN rm /etc/bash.bashrc_pkg
 
-# Create the data directory. /home and /shares will be mounted inside
+# Create the data directory. /home, /public and /shares will be mounted inside
 RUN mkdir /data
 
 # Expose SSH port
