@@ -37,9 +37,9 @@ sleep 2
 docker run \
     --name "${CT_NAME}" \
     -v /srv/ipynbsrv/mysql:/var/lib/mysql \
-    -e MYSQL_ROOT_PASSWORD="{ROOT_PASSWORD}" \
+    -e MYSQL_ROOT_PASSWORD="${ROOT_PASSWORD}" \
     -e MYSQL_USER="ipynbsrv" \
-    -e MYSQL_PASSWORD="{PASSWORD}" \
+    -e MYSQL_PASSWORD="${PASSWORD}" \
     -e MYSQL_DATABASE="ipynbsrv_wui" \
     -d mysql:5.5
 
