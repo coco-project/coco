@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import user_passes_test
+from django.http import HttpRequest
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from ipynbsrv.wui.auth.checks import login_allowed
@@ -17,9 +18,13 @@ def dashboard(request):
 """
 """
 def workspace_auth_check(request):
-    # TODO
-    print request.user
-    print request.path
-    print request
+    if request.method != "POST":
+        uri = request.META.get('X_Original_URI', None)
+        if uri:
+            print uri
+            print request.user
+            return HttpResponse(status=200)
+        else:
+            print request.META
 
-    return HttpResponse(status=200)
+    return HttpResponse(status=403)
