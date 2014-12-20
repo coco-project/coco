@@ -2,9 +2,9 @@
 
 #
 # This script will create the Docker container that will be used
-# by the ipynbsrv web interface as the database (MySQL) server.
+# by ipynbsrv as the MySQL server.
 #
-# last updated: 02.12.2014
+# last updated: 19.12.2014
 #
 
 if [ "$EUID" -ne 0 ]; then
@@ -13,29 +13,36 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 CT_NAME="ipynbsrv.mysql"
-CMD="/sbin/my_init -- /usr/sbin/mysqld"
 
 echo "------------------------------------------------------------"
-echo "Note: Starting and entering the MySQL server container."
-echo "Make sure you execute the commands from the manual inside."
+echo "Pulling the MySQL server image..."
 echo "------------------------------------------------------------"
 sleep 2
 
-# create the Docker container
-docker run -t -i --name="${CT_NAME}" phusion/baseimage:0.9.15 /bin/bash
+docker pull mysql
 
 echo "------------------------------------------------------------"
-echo "Note: Committing the container so we can create a new one from it."
+echo "Please define the MySQL server passwords now..."
 echo "------------------------------------------------------------"
+sleep 2
 
-# after initialization has been done, commit the container
-# so we can create a new one from it with mounted volumes
-docker commit $CT_NAME ipynbsrv/mysql:init
-docker rm $CT_NAME
+read -p "New root password: " ROOT_PASSWORD
+read -p "New ipynbsrv password: " PASSWORD
 
 echo "------------------------------------------------------------"
-echo "Note: Creating the new and final ipynbsrv MySQL server container."
+echo "Creating the container..."
 echo "------------------------------------------------------------"
+sleep 2
 
-# create the new container with mounted directories
-docker run --detach=true --interactive=false --name="${CT_NAME}" ipynbsrv/mysql:init $CMD
+docker run \
+    --name "${CT_NAME}" \
+    -v /srv/ipynbsrv/mysql:/var/lib/mysql \
+    -e MYSQL_ROOT_PASSWORD="${ROOT_PASSWORD}" \
+    -e MYSQL_USER="ipynbsrv" \
+    -e MYSQL_PASSWORD="${PASSWORD}" \
+    -e MYSQL_DATABASE="ipynbsrv_wui" \
+    -d mysql:5.5
+
+echo "------------------------------------------------------------"
+echo "All done!"
+echo "------------------------------------------------------------"
