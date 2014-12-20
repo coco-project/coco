@@ -14,7 +14,7 @@ for that purpose.
 @user_passes_test(login_allowed)
 def flag(request):
     response = HttpResponseRedirect('/')
-    response.set_secure_cookie('username', request.user.username, httponly=True)
+    response.set_signed_cookie('username', request.user.username, httponly=True)
     return response
 
 
