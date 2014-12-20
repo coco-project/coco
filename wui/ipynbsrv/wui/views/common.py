@@ -1,8 +1,8 @@
-from django.conf import settings
-from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
-from django.shortcuts import redirect, render
-from djproxy.views import HttpProxy
+from django.contrib.auth.models import User
+from django.http import HttpRequest
+from django.http.response import HttpResponse
+from django.shortcuts import render
 from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Container
 
@@ -14,29 +14,28 @@ def dashboard(request):
         'title': 'Dashboard'
     }
 
-    return render(request, 'wui/dashboard.html', context)
+    response = HttpResponse("Hi there")
+    response.set_signed_cookie('username', request.user.username)
+
+    return response
 
 
-class WorkspaceProxy(HttpProxy):
-    """
-    """
-    base_url = settings.WORKSPACE_PROXY_URL
+"""
+"""
+def workspace_auth_check(request):
+    if request.method == "GET":
+        username = request.get_signed_cookie('username', default=None)
+        print username
+        #user = User.objects.filter(username=username).first()
+        if username:
+            uri = request.META.get('HTTP_X_ORIGINAL_URI')
+            if uri:
+                splits = uri.split('/')
+                if len(splits) >= 4:
+                    port = splits[2]
+                    # container = Container.objects.filter(port=port).first()
+                    # if container:
+                    #     if container.owner == user
+                    return HttpResponse(status=200)
 
-
-    """
-    """
-    def dispatch(self, request, *args, **kwargs):
-        splits = request.path.split('/')
-        if len(splits) >= 3:
-            container = Container.objects.filter(ports=splits[2]).first()
-            if container:
-                if container.owner == request.user:
-                    return super(WorkspaceProxy, self).dispatch(request, *args, **kwargs)
-                else:
-                    messages.error(request, "You have no permissions to access this container.")
-            else:
-                messages.error(request, "Container does not exist.")
-        else:
-            messages.error(request, "Invalid URL.")
-
-        return redirect('containers')
+    return HttpResponse(status=403)

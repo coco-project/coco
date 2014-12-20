@@ -1,5 +1,4 @@
 from django.conf.urls import patterns, url
-from ipynbsrv.wui.views.common import WorkspaceProxy
 
 
 ""
@@ -40,8 +39,11 @@ urlpatterns = patterns('',
     url(r'^share/manage/(\d+)$', 'ipynbsrv.wui.views.shares.manage', name='share_manage'),
     url(r'^share/remove_user$', 'ipynbsrv.wui.views.shares.remove_user', name='share_remove_user'),
 
-    # /workspace/...
-    url(r'^workspace/(?P<url>.*)$', WorkspaceProxy.as_view(), name='workspace'),
+    # workspace auth check url
+    # Nginx/OpenResty will query this URL for each request to /workspace/...
+    # to ensure the user is allowed to access it
+    # we therefor need to check the user and user = container owner in there
+    url(r'^_workspace_auth_check$', 'ipynbsrv.wui.views.common.workspace_auth_check', name='workspace_auth_check'),
 
     # /
     url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),
