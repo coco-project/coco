@@ -98,7 +98,7 @@ MESSAGE_TAGS = {
 
 
 # URLs and filesystem paths
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/accounts/flag'
 PUBLIC_URL = '/public/'
 STATIC_URL = '/static/'
 
@@ -112,7 +112,6 @@ SHARE_ROOT = os.path.join(DATA_ROOT, 'shares')
 # LDAP Authentication
 import ldap
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
-
 
 AUTH_LDAP_SERVER_URI = DATABASES['ldap']['NAME']
 AUTH_LDAP_BIND_DN = DATABASES['ldap']['USER']

@@ -1,7 +1,6 @@
 from django.conf.urls import patterns, url
 
 
-""
 urlpatterns = patterns('',
     # /accounts/...
     url(r'^accounts/login/$', 'django.contrib.auth.views.login', {
@@ -11,7 +10,9 @@ urlpatterns = patterns('',
             }
         }
     ),
-    url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='logout'),
+    url(r'^accounts/flag/$', 'ipynbsrv.wui.views.accounts.flag', name='accounts_flag'),
+    url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='accounts_logout'),
+    url(r'^accounts/unflag/$', 'ipynbsrv.wui.views.accounts.unflag', name='accounts_unflag'),
 
     # /container(s)/...
     url(r'^containers/$', 'ipynbsrv.wui.views.containers.index', name='containers'),
