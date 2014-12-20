@@ -34,7 +34,6 @@ echo "------------------------------------------------------------"
 sleep 2
 
 docker run \
-    -p 5432 \
     --name "${CT_NAME}" \
     -v /srv/ipynbsrv/postgresql:/var/lib/postgresql/data \
     -e POSTGRES_USER="ipynbsrv" \
