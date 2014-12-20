@@ -4,9 +4,6 @@ from django.shortcuts import redirect
 from ipynbsrv.wui.auth.checks import login_allowed
 
 
-COOKIE_NAME='username'
-
-
 """
 The flag view is called after a successful user login.
 
@@ -17,7 +14,7 @@ for that purpose.
 @user_passes_test(login_allowed)
 def flag(request):
     response = HttpResponseRedirect('/')
-    response.set_secure_cookie(COOKIE_NAME, request.user.username, httponly=True)
+    response.set_secure_cookie('username', request.user.username, httponly=True)
     return response
 
 
@@ -30,5 +27,5 @@ which authorizes him to access his workspaces.
 @user_passes_test(login_allowed)
 def unflag(request):
     response = HttpResponseRedirect('/accounts/logout')
-    response.delete_cookie(COOKIE_NAME)
+    response.delete_cookie('username')
     return response

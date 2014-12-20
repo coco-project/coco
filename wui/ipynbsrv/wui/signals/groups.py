@@ -7,11 +7,15 @@ from ipynbsrv.wui.signals.signals import group_created, group_deleted, group_mod
 
 
 """
+Signal receiver that creates an LDAP group when ever a regular Django
+group is created.
+
+This is important for us so share groups are created.
 """
 @receiver(group_created)
 def created_handler(sender, group, **kwargs):
     if settings.DEBUG:
-        print "Created LDAP group via signal"
+        print "Creating LDAP group via signal..."
     next_gid = LdapGroup.objects.all().latest('gid').gid + 1
     if next_gid < settings.SHARE_GROUPS_OFFSET:
         next_gid = settings.SHARE_GROUPS_OFFSET + 1
@@ -20,28 +24,33 @@ def created_handler(sender, group, **kwargs):
 
 
 """
+Signal receiver to delete (share) groups from the LDAP server when
+they are deleted from Django.
 """
 @receiver(group_deleted)
 def deleted_handler(sender, group, **kwargs):
     ldap_group = LdapGroup.objects.filter(pk=group.name).first()
     if ldap_group:
         if settings.DEBUG:
-            print "Deleted LDAP group via signal"
+            print "Deleting LDAP group via signal..."
         ldap_group.delete()
         # make sure to also delete the share for this group
         share = Share.objects.filter(group=group).first()
         if share:
             share.delete()
-            share_deleted.send(None, share=share) # Django should do that
+            share_deleted.send(None, share=share)  # Django should do that for us
 
 
 """
-Note: Supports only updating the group members
+Method triggered by group_modified signals.
+
+Currently it updates the members of the passed in group
+and is only used when adding/removing users from a share.
 """
 @receiver(group_modified)
 def modified_handler(sender, group, fields, **kwargs):
     if settings.DEBUG:
-        print "Modified LDAP group via signal"
+        print "Modifiying LDAP group via signal..."
     ldap_group = LdapGroup.objects.get(pk=group.name)
     # update the group memberships
     members = []
@@ -52,18 +61,13 @@ def modified_handler(sender, group, fields, **kwargs):
         ldap_group.save()
 
 
-#
-# Bridges
-#
 """
+Internal receivers to map the Django built-in signals into custom ones.
 """
 @receiver(post_delete, sender=Group, dispatch_uid='ipynbsrv.wui.signals.groups.post_delete_handler')
 def post_delete_handler(sender, instance, **kwargs):
     group_deleted.send(sender=sender, group=instance)
 
-
-"""
-"""
 @receiver(post_save, sender=Group, dispatch_uid='ipynbsrv.wui.signals.groups.post_save_handler')
 def post_save_handler(sender, instance, **kwargs):
     if kwargs['created']:

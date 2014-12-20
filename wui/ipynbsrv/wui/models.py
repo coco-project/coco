@@ -2,14 +2,10 @@ from django.contrib.auth.models import Group, User
 from django.db import models
 from django.utils.encoding import smart_unicode
 import ldapdb.models
-from ldapdb.models.fields import (CharField, DateField, ImageField, ListField,
-                                  IntegerField, FloatField)
+from ldapdb.models.fields import CharField, ListField, IntegerField
 
 
 class LdapGroup(ldapdb.models.Model):
-    """
-    Model for representing an LDAP group entry.
-    """
     # LDAP meta-data
     base_dn = "ou=groups,dc=ipynbsrv,dc=ldap"
     object_classes = ['posixGroup']
@@ -35,9 +31,6 @@ class LdapGroup(ldapdb.models.Model):
 
 
 class LdapUser(ldapdb.models.Model):
-    """
-    Model for representing an LDAP user entry.
-    """
     # LDAP meta-data
     base_dn = "ou=users,dc=ipynbsrv,dc=ldap"
     object_classes = ['inetOrgPerson', 'posixAccount']
@@ -73,8 +66,6 @@ class LdapUser(ldapdb.models.Model):
 
 
 class Tag(models.Model):
-    """
-    """
     label = models.CharField(primary_key=True, max_length=50)
 
     def __str__(self):
@@ -85,13 +76,11 @@ class Tag(models.Model):
 
 
 class Share(models.Model):
-    """
-    """
-    name        = models.CharField(null=False, max_length=75)
+    name = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
-    tags        = models.ManyToManyField(Tag)
-    owner       = models.ForeignKey(User)
-    group       = models.ForeignKey(Group)
+    tags = models.ManyToManyField(Tag)
+    owner = models.ForeignKey(User)
+    group = models.ForeignKey(Group)
 
     @staticmethod
     def for_user(user):
@@ -114,48 +103,40 @@ class Share(models.Model):
         return smart_unicode(self.name)
 
 
-""
 class Host(models.Model):
-    ip             = models.CharField(primary_key=True, null=False, max_length=15)
-    fqdn           = models.CharField(unique=True, null=True, blank=True, max_length=75)
-    username       = models.CharField(null=False, max_length=30)
-    ssh_port       = models.IntegerField(null=False, default=22)
+    ip = models.CharField(primary_key=True, null=False, max_length=15)
+    fqdn = models.CharField(unique=True, null=True, blank=True, max_length=75)
+    username = models.CharField(null=False, max_length=30)
+    ssh_port = models.IntegerField(null=False, default=22)
     docker_version = models.CharField(null=False, max_length=12)
-    docker_port    = models.IntegerField(null=False, max_length=6, default=9999)
+    docker_port = models.IntegerField(null=False, max_length=6, default=9999)
 
 
-"FIXME: PK should be img_id and host"
+# FIXME: PK should be img_id and host
 class Image(models.Model):
-    id          = models.AutoField(primary_key=True)
-    img_id      = models.CharField(null=False, max_length=64)
-    cmd         = models.CharField(null=True, blank=True, max_length=100)
-    ports       = models.CharField(null=True, blank=True, max_length=25)
-    name        = models.CharField(null=False, max_length=75)
+    id = models.AutoField(primary_key=True)
+    img_id = models.CharField(null=False, max_length=64)
+    cmd = models.CharField(null=True, blank=True, max_length=100)
+    ports = models.CharField(null=True, blank=True, max_length=25)
+    name = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
-#    host        = models.ForeignKey(Host)
-    owner       = models.ForeignKey(User)
-#    tags        = models.ManyToManyField(Tag)
-    is_public   = models.BooleanField(default=False)
-    is_clone    = models.BooleanField(default=False)
+    # host = models.ForeignKey(Host)
+    owner = models.ForeignKey(User)
+    # tags = models.ManyToManyField(Tag)
+    is_public = models.BooleanField(default=False)
+    is_clone = models.BooleanField(default=False)
 
-"FIXME: PK should be ct_id and host"
+
+# FIXME: PK should be ct_id and host
 class Container(models.Model):
-    id          = models.AutoField(primary_key=True)
-    ct_id       = models.CharField(null=False, max_length=64) # TODO: check default length
-    name        = models.CharField(null=False, max_length=75)
+    id = models.AutoField(primary_key=True)
+    ct_id = models.CharField(null=False, max_length=64)
+    name = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
-    status      = models.BooleanField(default=False)
-    #host        = models.ForeignKey(Host)
-    image       = models.ForeignKey(Image)
-    owner       = models.ForeignKey(User)
-    #tags        = models.ManyToManyField(Tag)
-    is_clone	= models.BooleanField(default=False)
-    ports	= models.CharField(null=True, blank=True, max_length=30)
-
-
-"FIXME: check either uid or gid, not both"
-class ImageShare(models.Model):
-    img_id = models.ForeignKey(Image)
-    uid    = models.ForeignKey(User,  null=True, blank=True)
-    gid    = models.ForeignKey(Group, null=True, blank=True)
-    status = models.IntegerField(default='0', null=False) # 0: pending, 1: accepted, 2: declined
+    status = models.BooleanField(default=False)
+    #host = models.ForeignKey(Host)
+    image = models.ForeignKey(Image)
+    owner = models.ForeignKey(User)
+    #tags = models.ManyToManyField(Tag)
+    is_clone = models.BooleanField(default=False)
+    ports = models.CharField(null=True, blank=True, max_length=30)

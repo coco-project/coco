@@ -40,9 +40,9 @@ urlpatterns = patterns('',
     url(r'^share/manage/(\d+)$', 'ipynbsrv.wui.views.shares.manage', name='share_manage'),
     url(r'^share/remove_user$', 'ipynbsrv.wui.views.shares.remove_user', name='share_remove_user'),
 
-    # /
-    url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),
-
     # internal
     url(r'^_workspace_auth_check$', 'ipynbsrv.wui.auth.checks.workspace_auth'),
+
+    # /
+    url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),
 )

@@ -4,6 +4,8 @@ from ipynbsrv.wui.auth.checks import login_allowed
 
 
 """
+Dashboard view
+URI: /
 """
 @user_passes_test(login_allowed)
 def dashboard(request):

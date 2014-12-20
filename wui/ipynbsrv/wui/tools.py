@@ -2,8 +2,6 @@ import os.path
 from docker import Client
 
 
-"""
-"""
 class Docker(object):
     def __init__(self):
         self.docker = Client(base_url='unix://var/run/docker.sock',version='1.12')
@@ -48,11 +46,9 @@ class Docker(object):
 
 
 """
+Utility helper class to work with the filesystem.
 """
 class Filesystem(object):
-    """
-    Helper class to work with the filesystem.
-    """
     @staticmethod
     def ensure_directory(directory, recursive=False):
         parent = os.path.abspath(os.path.join(directory, os.pardir))

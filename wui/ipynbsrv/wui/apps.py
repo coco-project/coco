@@ -2,9 +2,6 @@ from django import apps
 
 
 class AppConfig(apps.AppConfig):
-    """
-    IPython Notebook Server Web Interface app configuration class.
-    """
     name = 'ipynbsrv.wui'
     verbose_name = 'IPython Notebook Server Web Interface'
 

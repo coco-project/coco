@@ -4,13 +4,14 @@ from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import redirect, render
 from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Share, Tag
-from ipynbsrv.wui.signals.signals import (group_modified, share_user_added, share_user_leaved, share_user_removed)
+from ipynbsrv.wui.signals.signals import group_modified, share_user_added, share_user_leaved, share_user_removed
 
 
 """
-TODO:
-  - randomly fails with id = ''
-  - autocompletion in user form input
+POST only view to be used as POST action by forms trying to add
+new members to a share.
+
+URI: /share/add_user
 """
 @user_passes_test(login_allowed)
 def add_user(request):
@@ -23,7 +24,7 @@ def add_user(request):
         return redirect('shares')
 
     share_id = request.POST.get('id', -1)
-    usernames = request.POST.get('users')
+    usernames = request.POST.get('users', '')
     origin = request.POST.get('origin', None)
     share = Share.objects.filter(pk=share_id).first()
 
@@ -33,7 +34,7 @@ def add_user(request):
                 user = User.objects.filter(username=username).first()
                 if user and not share.is_member(user):
                     share.group.user_set.add(user)
-                    group_modified.send(None, group=share.group, fields=None) # should fire by Django
+                    group_modified.send(None, group=share.group, fields=None)  # should be fired by Django
                     share_user_added.send(None, share=share, user=user)
 
             messages.success(request, "Sucessfully added the new member(s).")
@@ -45,24 +46,29 @@ def add_user(request):
     if origin:
         request.method = "GET"
         return redirect('share_manage', share.id)
+
     return redirect('shares')
 
 
 """
-DONE
+Shares listing/index.
+
+URI: /shares/
 """
 @user_passes_test(login_allowed)
 def index(request):
     user = request.user
     return render(request, 'wui/shares/index.html', {
-        'title':  "Shares",
+        'title': "Shares",
         'shares': Share.for_user(user)
     })
 
 
 """
-TODO
-  - adding tags fails
+POST only view to be used as POST action by forms trying
+to create a new share.
+
+URI: /share/create
 """
 @user_passes_test(login_allowed)
 def create(request):
@@ -75,35 +81,37 @@ def create(request):
         return redirect('shares')
 
     name  = request.POST.get('name')
-    desc  = request.POST.get('description', "")
-    tags  = request.POST.get('tags', "")
+    desc  = request.POST.get('description', '')
+    tags  = request.POST.get('tags', '')
     owner = request.user
 
     if Share.objects.filter(name=name):
         messages.error(request, "A share with that name already exists.")
     else:
         # creating the share's dedicated group
-        group = Group(name="share_" + name)
+        group = Group(name='share_' + name)
         group.save()
         group.user_set.add(owner)
-        group_modified.send(None, group=group, fields=None) # should fire by Django
+        group_modified.send(None, group=group, fields=None)  # should be fired by Django
         # creating the share itself
         share = Share(name=name, description=desc, owner=owner, group=group)
         share.save()
         # adding tags to the share
-        for tag in tags.split(","):
+        for tag in tags.split(','):
             tag, created = Tag.objects.get_or_create(label=tag)
             if created:
                 tag.save()
             share.tags.add(tag)
-
         messages.success(request, "Share created sucessfully.")
 
     return redirect('shares')
 
 
 """
-DONE
+POST only view to be used as POST action by forms trying
+to delete a share.
+
+URI: /share/delete
 """
 @user_passes_test(login_allowed)
 def delete(request):
@@ -130,7 +138,10 @@ def delete(request):
 
 
 """
-DONE
+POST only view to be used by forms trying
+to remove a user from a share.
+
+URI: /share/leave
 """
 @user_passes_test(login_allowed)
 def leave(request):
@@ -146,10 +157,10 @@ def leave(request):
     share = Share.objects.filter(pk=share_id).first()
     if share:
         if share.owner == request.user:
-            messages.error(request, "Cannot leave a managed share.")
+            messages.error(request, "Cannot leave an owned share. Delete it instead.")
         else:
             share.group.user_set.remove(request.user)
-            group_modified.send(None, group=share.group, fields=None) # should fire by Django
+            group_modified.send(None, group=share.group, fields=None)  # should be fired by Django
             share_user_leaved.send(None, share=share, user=request.user)
 
             messages.success(request, "Successfully leaved the share.")
@@ -160,7 +171,9 @@ def leave(request):
 
 
 """
-DONE
+Share detail/manage page.
+
+URI: /share/manage/<id>
 """
 @user_passes_test(login_allowed)
 def manage(request, share_id):
@@ -172,8 +185,8 @@ def manage(request, share_id):
     if share:
         if share.owner == request.user:
             return render(request, 'wui/shares/manage.html', {
-                'title':   "Manage Share",
-                'share':   share,
+                'title': "Manage Share",
+                'share': share,
                 'members': share.get_members()
             })
         else:
@@ -185,8 +198,10 @@ def manage(request, share_id):
 
 
 """
-TODO:
-  - redirect to correct manage page
+POST only view to be used by forms trying
+to remove a user from a share.
+
+URI: /share/remove_user
 """
 @user_passes_test(login_allowed)
 def remove_user(request):
@@ -207,7 +222,7 @@ def remove_user(request):
         if share.owner == request.user:
             if user:
                 share.group.user_set.remove(user)
-                group_modified.send(None, group=share.group, fields=None) # should fire by Django
+                group_modified.send(None, group=share.group, fields=None)  # should be fired by Django
                 share_user_removed.send(None, share=share, user=user)
 
                 messages.success(request, "Removed used from share.")
