@@ -28,11 +28,11 @@ RUN sed -i 's/uri ldapi:\/\/\//uri ldap:\/\/ipynbsrv.ldap/' /etc/ldap.conf
 RUN sed -i 's/rootbinddn cn=manager,dc=example,dc=net/rootbinddn cn=admin,dc=ipynbsrv,dc=ldap/' /etc/ldap.conf
 RUN sed -i 's/compat/compat ldap/' /etc/nsswitch.conf
 
-# Allow password based SSH login
-RUN echo "# -- DO NOT REMOVE THE LINES BELOW --" >> /etc/ssh/sshd_config
+# Allow password based SSH login but only for container owner
 RUN echo "UsePAM yes" >> /etc/ssh/sshd_config
-RUN echo "#AllowUsers" >> /etc/ssh/sshd_config
 RUN echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
+# http://www.cyberciti.biz/tips/linux-pam-configuration-that-allows-or-deny-login-via-the-sshd-server.html
+RUN echo "auth required pam_listfile.so item=user sense=allow file=/etc/ssh/sshd.allow onerr=fail" >> /etc/pam.d/ssh
 
 # Disallow login for users where the home directory does not exist -> in our case, those are not the container owner
 RUN sed -i 's/DEFAULT_HOME/#DEFAULT_HOME/' /etc/login.defs

@@ -13,7 +13,7 @@ PORT=$1
 USER=`ls /home/`
 
 # set the user as an allowed SSH user
-sed -i "s/#\?AllowUsers.*/AllowUsers ${USER}/" /etc/ssh/sshd_config
+echo ${USER} > /etc/ssh/sshd.allow
 
 # chown all python modules to the current user
 # cloned containers may otherwise contain files by other users so we wouldn't have permissions
