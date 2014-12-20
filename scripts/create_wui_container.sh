@@ -24,7 +24,7 @@ sleep 2
 docker run \
     -t -i \
     --name="${CT_NAME}" \
-    --link ipynbsrv.ldap:ipynbsrv.ldap --link ipynbsrv.mysql:ipynbsrv.mysql \
+    --link ipynbsrv.ldap:ipynbsrv.ldap --link ipynbsrv.postgresql:ipynbsrv.postgresql \
     phusion/baseimage:0.9.15 /bin/bash
 
 echo "------------------------------------------------------------"
@@ -45,7 +45,7 @@ docker run \
     --detach=true --interactive=false \
     --name="${CT_NAME}" \
     -p 80:80 \
-    --link ipynbsrv.ldap:ipynbsrv.ldap --link ipynbsrv.mysql:ipynbsrv.mysql \
+    --link ipynbsrv.ldap:ipynbsrv.ldap --link ipynbsrv.postgresql:ipynbsrv.postgresql \
     -v /srv/ipynbsrv/homes:/srv/ipynbsrv/data/homes -v /srv/ipynbsrv/public:/srv/ipynbsrv/data/public \
     -v /srv/ipynbsrv/shares:/srv/ipynbsrv/data/shares -v /var/run/docker.sock:/var/run/docker.sock \
     ipynbsrv/wui:init $CMD
