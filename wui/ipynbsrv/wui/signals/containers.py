@@ -19,7 +19,7 @@ def commited(sender, image, ct_id, name, **kwargs):
 @receiver(container_created)
 def created(sender, container, image, **kwargs):
     print("Received container_created signal.")
-    cont = d.createContainer(image, container.name, 'True')
+    cont = d.createContainer(image, container.name, 'True', container.image.ports)
     id = cont['Id']
     id = str(id)
     container.ct_id = id
@@ -50,7 +50,7 @@ def started(sender, container, **kwargs):
 	if cont['Id'] == container.ct_id:
 	    tmp=True
     if tmp:
-    	d.startContainer(container.ct_id)
+    	d.startContainer(container.ct_id, container.image.ports)
     else:
 	raise Exception("Container doesnt exist")
 
@@ -61,7 +61,7 @@ def started(sender, container, **kwargs):
 	if cont['Id'] == container.ct_id:
 	    for port in cont['Ports']:
 		if 'PublicPort' in port:
-			container.ports += str(port['PublicPort'])
+			container.ports += str(port['PublicPort']) + "-"
 
 
 ""
