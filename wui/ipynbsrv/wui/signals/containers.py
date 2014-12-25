@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from ipynbsrv.wui.models import Container
 from ipynbsrv.wui.signals.signals import *
 from ipynbsrv.wui.tools import Docker
+import re
 
 d = Docker()
 
@@ -62,6 +63,8 @@ def started(sender, container, **kwargs):
 	    for port in cont['Ports']:
 		if 'PublicPort' in port:
 			container.ports += str(port['PublicPort']) + "-"
+			if port['PrivatePort'] == 22:
+				container.description += "\n SSH-Port = " + str(port['PublicPort'])
 
 
 ""
@@ -76,22 +79,25 @@ def stopped(sender, container, **kwargs):
     if tmp:
     	d.stopContainer(container.ct_id)
 	container.ports = ''
+	container.description = re.sub(r'SSH-Port = [0-9]*',"",container.description)
     else:
 	raise Exception("Container doesnt exist")
 
 ""
 @receiver(container_restarted)
 def restarted(sender, container, **kwargs):
-    print("Received container_stopped signal.")
-    containers = d.containersall()
-    tmp = False
-    for cont in containers:
-	if cont['Id'] == container.ct_id:
-	    tmp=True
-    if tmp:
-    	d.restartContainer(container.ct_id)
-    else:
-	raise Exception("Container doesnt exist")
+    print("Received container_restarted signal.")
+#    containers = d.containersall()
+#    tmp = False
+#    for cont in containers:
+#	if cont['Id'] == container.ct_id:
+#	    tmp=True
+#    if tmp:
+#    	d.restartContainer(container.ct_id)
+#    else:
+#	raise Exception("Container doesnt exist")
+    container_stopped.send(sender=sender, container=container)
+    container_started.send(sender=sender, container=container)
 
 
 #
