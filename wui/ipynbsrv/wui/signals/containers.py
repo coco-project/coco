@@ -77,7 +77,6 @@ def stopped(sender, container, **kwargs):
 	    tmp=True
     if tmp:
     	d.stopContainer(container.ct_id)
-	container.ports = ''
 	container.description = re.sub(r'SSH-Port = [0-9]*',"",container.description)
     else:
 	raise Exception("Container doesnt exist")
