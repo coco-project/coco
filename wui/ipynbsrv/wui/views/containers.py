@@ -77,9 +77,15 @@ def delCont(request):
 @user_passes_test(login_allowed)
 def create(request):
     i = Image.objects.filter(name=request.POST.get('image')).get()
+    container = Container.objects.order_by('exposeport')
+    if container.count() == 0:
+	portid = 49152
+    else:
+    	cont = container.last()
+    	portid = int(cont.exposeport)+1
     name = request.POST.get('name')
-    c = Container(name=name, description=request.POST.get('description'), owner=request.user, image=i, status=True)
-    container_created.send(sender='', container=c, image=i)
+    c = Container(name=name, description=request.POST.get('description'), owner=request.user, image=i, status=True, exposeport=portid)
+    container_created.send(sender='', container=c, image=i, exposeport=portid)
     c.save()
     messages.success(request, 'Container ' + c.name + ' successfully created')
     return redirect('containers')

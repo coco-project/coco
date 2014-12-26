@@ -15,7 +15,10 @@ class Docker(object):
 	portl = ports.split(',')
 	for port in portl:
 		port = port.strip()
-		portd[port] = 'None'
+		if port == 8888:
+		    portd[port] = exposeport
+		else:
+		    portd[port] = 'None'
         self.docker.start(container=id, port_bindings=portd, links=[('ipynbsrv.ldap','ipynbsrv.ldap')], binds={'/srv/ipynbsrv/homes/mk':{'bind':'/home/mk'},'/srv/ipynbsrv/public':{'bind':'/data/public'},'/srv/ipynbsrv/shares':{'bind':'/data/shares'}})
 
     def restartContainer(self, id):
@@ -27,6 +30,8 @@ class Docker(object):
     def createContainer(self, img, name, tty, ports):
 	port = ports.split(',')
 	ps = []
+	cmd = img.cmd
+	cmd.replace("{{port}}",img.cmd)
 	for p in port:
 		ps.append(p.strip())
         cont = self.docker.create_container(image=img.img_id, tty=tty, name=name, ports=ps, command=img.cmd, volumes=['/srv/ipynbsrv/homes','/srv/ipynbsrv/public','/srv/ipynbsrv/shares'])

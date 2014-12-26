@@ -96,7 +96,7 @@
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
 				{% if c.status == True %}
-				<form action="/workspace/{{ c.ports }}/" method="GET" target="_blank">
+				<form action="/workspace/{{ c.exposeport }}/" method="GET" target="_blank">
 					{% csrf_token %}
 					<input type="submit" value="connect"></input>
 				</form>

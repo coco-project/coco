@@ -62,7 +62,6 @@ def started(sender, container, **kwargs):
 	if cont['Id'] == container.ct_id:
 	    for port in cont['Ports']:
 		if 'PublicPort' in port:
-			container.ports += str(port['PublicPort']) + "-"
 			if port['PrivatePort'] == 22:
 				container.description += "\n SSH-Port = " + str(port['PublicPort'])
 
