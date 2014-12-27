@@ -10,13 +10,13 @@ class Docker(object):
     def stopContainer(self, id):
         self.docker.stop(container=id)
 
-    def startContainer(self, id, ports):
+    def startContainer(self, id, ports, exposeport):
 	portd = {}
 	portl = ports.split(',')
 	for port in portl:
 		port = port.strip()
-		if port == 8888:
-		    portd[port] = exposeport
+		if port == "8888":
+		    portd[8888] = exposeport
 		else:
 		    portd[port] = 'None'
         self.docker.start(container=id, port_bindings=portd, links=[('ipynbsrv.ldap','ipynbsrv.ldap')], binds={'/srv/ipynbsrv/homes/mk':{'bind':'/home/mk'},'/srv/ipynbsrv/public':{'bind':'/data/public'},'/srv/ipynbsrv/shares':{'bind':'/data/shares'}})
@@ -27,11 +27,11 @@ class Docker(object):
     def delContainer(self, id):
         self.docker.remove_container(container=id)
 
-    def createContainer(self, img, name, tty, ports):
+    def createContainer(self, img, name, tty, ports, exposeport):
 	port = ports.split(',')
 	ps = []
 	cmd = img.cmd
-	cmd.replace("{{port}}",img.cmd)
+	cmd.replace("{{port}}", str(exposeport))
 	for p in port:
 		ps.append(p.strip())
         cont = self.docker.create_container(image=img.img_id, tty=tty, name=name, ports=ps, command=img.cmd, volumes=['/srv/ipynbsrv/homes','/srv/ipynbsrv/public','/srv/ipynbsrv/shares'])

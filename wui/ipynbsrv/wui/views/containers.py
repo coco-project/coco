@@ -85,7 +85,7 @@ def create(request):
     	portid = int(cont.exposeport)+1
     name = request.POST.get('name')
     c = Container(name=name, description=request.POST.get('description'), owner=request.user, image=i, status=True, exposeport=portid)
-    container_created.send(sender='', container=c, image=i, exposeport=portid)
+    container_created.send(sender='', container=c, image=i)
     c.save()
     messages.success(request, 'Container ' + c.name + ' successfully created')
     return redirect('containers')
