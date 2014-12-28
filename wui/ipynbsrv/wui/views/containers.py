@@ -94,11 +94,12 @@ def create(request):
 @user_passes_test(login_allowed)
 def clone(request):
     ct_id = request.POST.get('id')
-    name = request.POST.get('name')+'_clone'
-    i = Image(cmd='/bin/bash', ports=[80], name=name, description='Clone', is_clone=True, owner=request.user)
-    container_commited.send(sender='', image=i, ct_id=ct_id, name=name)
+    name = request.POST.get('name')
+    cont = Container.objects.filter(owner=request.user).filter(ct_id=ct_id).first()
+    i = Image(cmd=cont.image.cmd, ports=cont.image.ports, name=name+"_clone", description='Clone', is_clone=True, owner=request.user)
+    container_commited.send(sender='', image=i, ct_id=ct_id, name=name+"_clone")
     i.save()
-    c = Container(name=name, description='Clone', is_clone=True, owner=request.user, status=True, image=i)
+    c = Container(name=name+"_clone", description='Clone', is_clone=True, owner=request.user, status=True, image=i)
     container_created.send(sender='',container=c, image=i)
     c.save()
     return redirect('containers')
