@@ -139,4 +139,4 @@ class Container(models.Model):
     owner = models.ForeignKey(User)
     #tags = models.ManyToManyField(Tag)
     is_clone = models.BooleanField(default=False)
-    ports = models.CharField(null=True, blank=True, max_length=30)
+    exposeport = models.CharField(null=True, blank=True, max_length=5)

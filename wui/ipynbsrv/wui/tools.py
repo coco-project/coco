@@ -10,8 +10,21 @@ class Docker(object):
     def stopContainer(self, id):
         self.docker.stop(container=id)
 
-    def startContainer(self, id):
-        self.docker.start(container=id, port_bindings={8888: None}, links=[('ipynbsrv.ldap','ipynbsrv.ldap')], binds={'/srv/ipynbsrv/homes/mk':{'bind':'/home/mk'},'/srv/ipynbsrv/public':{'bind':'/data/public'},'/srv/ipynbsrv/shares':{'bind':'/data/shares'}})
+    def startContainer(self, id, ports, exposeport, user):
+	portd = {}
+	portl = ports.split(',')
+	string1 = "/srv/ipynbsrv/homes/{{USER}}"
+	string2 = "/home/{{USER}}"
+	string1 = string1.replace("{{USER}}", user)
+	string2 = string2.replace("{{USER}}", user)
+        bs={string1:{'bind':string2},'/srv/ipynbsrv/public':{'bind':'/data/public'},'/srv/ipynbsrv/shares':{'bind':'/data/shares'}}
+	for port in portl:
+		port = port.strip()
+		if port == "8888":
+		    portd[8888] = exposeport
+		else:
+		    portd[port] = 'None'
+        self.docker.start(container=id, port_bindings=portd, links=[('ipynbsrv.ldap','ipynbsrv.ldap')], binds=bs)
 
     def restartContainer(self, id):
         self.docker.restart(container=id)
@@ -19,8 +32,13 @@ class Docker(object):
     def delContainer(self, id):
         self.docker.remove_container(container=id)
 
-    def createContainer(self, img, name, tty):
-        cont = self.docker.create_container(image=img.img_id, tty=tty, name=name, ports=[80], command=img.cmd, volumes=['/srv/ipynbsrv/homes','/srv/ipynbsrv/public','/srv/ipynbsrv/shares'])
+    def createContainer(self, img, name, tty, ports, exposeport):
+	port = ports.split(',')
+	ps = []
+	cmd = img.cmd.replace("{{port}}", str(exposeport))
+	for p in port:
+		ps.append(p.strip())
+        cont = self.docker.create_container(image=img.img_id, tty=tty, name=name, ports=ps, command=cmd, volumes=['/srv/ipynbsrv/homes','/srv/ipynbsrv/public','/srv/ipynbsrv/shares'])
         return cont
 
     def commitContainer(self, id,name,tag):

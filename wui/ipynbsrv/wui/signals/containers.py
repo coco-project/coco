@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from ipynbsrv.wui.models import Container
 from ipynbsrv.wui.signals.signals import *
 from ipynbsrv.wui.tools import Docker
+import re
 
 d = Docker()
 
@@ -19,7 +20,17 @@ def commited(sender, image, ct_id, name, **kwargs):
 @receiver(container_created)
 def created(sender, container, image, **kwargs):
     print("Received container_created signal.")
-    cont = d.createContainer(image, container.name, 'True')
+    check = False
+    containers = d.containers()
+    while (not check):
+	for c in containers:
+	    check = True
+	    for port in c['Ports']:
+		if 'PublicPort' in port:
+		    if port['PublicPort'] == container.exposeport:
+			container.exposeport = container.exposeport + 1
+			check = False
+    cont = d.createContainer(image, container.name, 'True', container.image.ports, container.exposeport)
     id = cont['Id']
     id = str(id)
     container.ct_id = id
@@ -50,7 +61,7 @@ def started(sender, container, **kwargs):
 	if cont['Id'] == container.ct_id:
 	    tmp=True
     if tmp:
-    	d.startContainer(container.ct_id)
+    	d.startContainer(container.ct_id, container.image.ports, container.exposeport, str(container.owner))
     else:
 	raise Exception("Container doesnt exist")
 
@@ -61,7 +72,8 @@ def started(sender, container, **kwargs):
 	if cont['Id'] == container.ct_id:
 	    for port in cont['Ports']:
 		if 'PublicPort' in port:
-			container.ports += str(port['PublicPort'])
+			if port['PrivatePort'] == 22:
+				container.description += "\n SSH-Port = " + str(port['PublicPort'])
 
 
 ""
@@ -75,23 +87,25 @@ def stopped(sender, container, **kwargs):
 	    tmp=True
     if tmp:
     	d.stopContainer(container.ct_id)
-	container.ports = ''
+	container.description = re.sub(r'SSH-Port = [0-9]*',"",container.description)
     else:
 	raise Exception("Container doesnt exist")
 
 ""
 @receiver(container_restarted)
 def restarted(sender, container, **kwargs):
-    print("Received container_stopped signal.")
-    containers = d.containersall()
-    tmp = False
-    for cont in containers:
-	if cont['Id'] == container.ct_id:
-	    tmp=True
-    if tmp:
-    	d.restartContainer(container.ct_id)
-    else:
-	raise Exception("Container doesnt exist")
+    print("Received container_restarted signal.")
+#    containers = d.containersall()
+#    tmp = False
+#    for cont in containers:
+#	if cont['Id'] == container.ct_id:
+#	    tmp=True
+#    if tmp:
+#    	d.restartContainer(container.ct_id)
+#    else:
+#	raise Exception("Container doesnt exist")
+    container_stopped.send(sender=sender, container=container)
+    container_started.send(sender=sender, container=container)
 
 
 #
