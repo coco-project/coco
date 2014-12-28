@@ -61,7 +61,7 @@ def started(sender, container, **kwargs):
 	if cont['Id'] == container.ct_id:
 	    tmp=True
     if tmp:
-    	d.startContainer(container.ct_id, container.image.ports, container.exposeport)
+    	d.startContainer(container.ct_id, container.image.ports, container.exposeport, str(container.owner))
     else:
 	raise Exception("Container doesnt exist")
 
