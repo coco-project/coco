@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.http.response import HttpResponse
-from ipynbsrv.wui.models import LdapUser
+from ipynbsrv.wui.models import Container, LdapUser
 
 
 """
@@ -34,9 +34,8 @@ def workspace_auth(request):
                     splits = uri.split('/')
                     if len(splits) >= 4:
                         port = splits[2]
-                        # container = Container.objects.filter(port=port).first()
-                        # if container:
-                        #     if container.owner == user
-                        return HttpResponse(status=200)
+                        container = Container.objects.filter(exposeport=port).first()
+                        if container and container.owner == user:
+                            return HttpResponse(status=200)
 
     return HttpResponse(status=403)
