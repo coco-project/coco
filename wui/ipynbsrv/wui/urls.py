@@ -42,6 +42,8 @@ urlpatterns = patterns('',
 
     # internal
     url(r'^_workspace_auth_check$', 'ipynbsrv.wui.auth.checks.workspace_auth'),
+    url(r'^error/404$', 'ipynbsrv.wui.views.system.error_404'),
+    url(r'^error/500$', 'ipynbsrv.wui.views.system.error_500'),
 
     # /
     url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),
