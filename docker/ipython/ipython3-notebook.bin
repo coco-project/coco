@@ -25,7 +25,6 @@ HOME_DIR="/data/home"
 if [ -h "${HOME_DIR}" ]; then
     unlink ${HOME_DIR}
 fi
-# TODO: causes recursion /data/home/$USER/$USER/...
 ln -s /home/${USER} ${HOME_DIR}
 
 # chown the /data directory so the user is able to store his personal per-container
@@ -41,7 +40,6 @@ if [ ! -d "${IPYTHON_DIR}" ]; then
 fi
 IPYTHON_NB_CONF="${IPYTHON_DIR}/profile_default/ipython_notebook_config.py"
 sed -i "s/[# ]*c.NotebookApp.base_url = '.*'/c.NotebookApp.base_url = '\/workspace\/${PORT}\/'/" ${IPYTHON_NB_CONF}
-sed -i "s/# ##c.NotebookApp.allow_origin = ''/c.NotebookApp.allow_origin = '*'/" ${IPYTHON_NB_CONF}
 
 # start the IPython notebook server
 /sbin/setuser ${USER} \
