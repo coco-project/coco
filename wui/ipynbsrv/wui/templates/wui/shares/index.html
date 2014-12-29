@@ -96,7 +96,7 @@
 <script src="//rawgit.com/matixmatix/jQuery-Tags-Input/master/jquery.tagsinput.js"></script>
 <!-- <script src="{% static "bower_components/jquery-tagsinput-jurgen/jquery.tagsinput.js" %}"></script> -->
 <script>
-$(function() {
+$(function () {
     $('[data-tooltip]').tooltip();
     $('[data-toggle="confirmation"]').confirmation({
         popout: true
@@ -124,7 +124,7 @@ $(function() {
     table.find('.label').click(function (e) {
         var label = $(e.target);
         search_input.val(label.text());
-	search_input.submit();
+	    search_input.submit();
     });
 
     $('[data-toggle="modal"]').click(function (e) {

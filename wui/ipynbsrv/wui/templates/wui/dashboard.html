@@ -12,11 +12,11 @@
         </div>
         <h2>Running containers</h2>
         <div class="row container-grid">
-	        {% for c in containers %}
+            {% for c in containers %}
             <div class="col-xs-12 col-sm-6 col-md-4">
                 <div class="panel panel-success panel-container">
-		    	<div class="panel-heading">{{ c.name }}</div>
-			        <div class="panel-body">
+                <div class="panel-heading">{{ c.name }}</div>
+                    <div class="panel-body">
                         <!--<dl class="dl-horizontal">
                             <dt>Status</dt>
                             <dd>Running</dd>
@@ -29,49 +29,98 @@
                             Actions
                                 <span class="caret"></span>
                             </button>
-                            <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
-            				<form action="/workspace/{{ c.ports }}/" method="GET" target="_blank">
-            					{% csrf_token %}
-            					<input type="submit" value="connect"></input>
-            				</form>
-            				<form action="{% url 'container_stop' %}" method="POST">
-            					{% csrf_token %}
-            					<input name="id" type="hidden" value="{{ c.ct_id }}"></input>
-            					<input type="submit" value="stop"></input>
-            				</form>
-            				<form action="{% url 'container_restart' %}" method="POST">
-            					{% csrf_token %}
-            					<input name="id" type="hidden" value="{{ c.ct_id }}"></input>
-            					<input type="submit" value="restart"></input>
-            				</form>
-            				<form action="{% url 'containers_delete' %}" method="POST">
-            					{% csrf_token %}
-            					<input name="id" type="hidden" value="{{ c.ct_id }}"></input>
-            					<input type="submit" value="delete"></input>
-            				</form>
-            				<form action="{% url 'containers_clone' %}" method="POST">
-            					{% csrf_token %}
-            					<input name="name" type="hidden" value="{{ c.name }}"></input>
-            					<input name="id" type="hidden" value="{{ c.ct_id }}"></input>
-            					<input type="submit" value="clone"></input>
-            				</form>
-            				<form action="{% url 'containers_share' %}" method="POST">
-            				    {%csrf_token %}
-                                                <input value="backup" type="submit" data-toggle="modal2" data-target="#modal-image-create" title="Add new members" data-tooltip></input>
-            				    <input type="hidden" id="modal-create-image_share" name="share" value="{{ c.name }}"></input>
-            				</form>
-            				<form action="{% url 'containers_share' %}" method="POST">
-            				    {%csrf_token %}
-                                                <input value="share" type="submit" data-toggle="modal3" data-target="#modal-image-create" title="Add new members" data-tooltip></input>
-            				    <input type="hidden" id="modal-create-image_share" name="share" value="{{ c.name }}"></input>
-            				</form>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container">
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('connect-{{ c.ct_id }}').submit();">Connect</a>
+                                    <form id="connect-{{ c.ct_id }}" action="/workspace/{{ c.ports }}/" method="GET" target="_blank" role="form">
+                                        {% csrf_token %}
+                                        <input type="submit">
+                                    </form>
+                                </li>
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('stop-{{ c.ct_id }}').submit();">Stop</a>
+                                    <form id="stop-{{ c.ct_id }}" action="{% url 'container_stop' %}" method="POST" role="form">
+                                        {% csrf_token %}
+                                        <input name="id" type="hidden" value="{{ c.ct_id }}">
+                                        <input type="submit">
+                                    </form>
+                                </li>
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('restart-{{ c.ct_id }}').submit();">Restart</a>
+                                    <form id="restart-{{ c.ct_id }}" action="{% url 'container_restart' %}" method="POST" role="form">
+                                        {% csrf_token %}
+                                        <input name="id" type="hidden" value="{{ c.ct_id }}">
+                                        <input type="submit">
+                                    </form>
+                                </li>
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('delete-{{ c.ct_id }}').submit();">Delete</a>
+                                    <form id="delete-{{ c.ct_id }}" action="{% url 'containers_delete' %}" method="POST" role="form">
+                                        {% csrf_token %}
+                                        <input name="id" type="hidden" value="{{ c.ct_id }}">
+                                        <input type="submit">
+                                    </form>
+                                </li>
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('clone-{{ c.ct_id }}').submit();">Clone</a>
+                                    <form id="clone-{{ c.ct_id }}" action="{% url 'containers_clone' %}" method="POST" role="form">
+                                        {% csrf_token %}
+                                        <input name="name" type="hidden" value="{{ c.name }}">
+                                        <input name="id" type="hidden" value="{{ c.ct_id }}">
+                                        <input type="submit">
+                                    </form>
+                                </li>
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('backup-{{ c.ct_id }}').submit();">Backup</a>
+                                    <form id="backup-{{ c.ct_id }}" action="{% url 'containers_share' %}" method="POST" role="form">
+                                        {% csrf_token %}
+                                        <input type="hidden" id="modal-create-image_share" name="share" value="{{ c.name }}">
+                                        <input value="backup" type="submit" data-toggle="modal2" data-target="#modal-image-create">
+                                    </form>
+                                </li>
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('share-{{ c.ct_id }}').submit();">Share</a>
+                                    <form id="share-{{ c.ct_id }}" action="{% url 'containers_share' %}" method="POST" role="form">
+                                        {% csrf_token %}
+                                        <input type="hidden" id="modal-create-image_share" name="share" value="{{ c.name }}">
+                                        <input value="share" type="submit" data-toggle="modal3" data-target="#modal-image-create">
+                                    </form>
+                                </li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
-	    {% endfor %}
+        {% endfor %}
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block js %}
+<script>
+function createCookie (name, value, days) {
+    var expires;
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "" + date.toGMTString();
+    } else {
+        expires = "";
+    }
+    document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+$(function () {
+    $('[data-toggle="modal2"]').parent('form').submit(function (e) {
+        var val = $('#modal-create-image_share').val();
+        createCookie('share', val , 1);
+    });
+    $('[data-toggle="modal3"]').parent('form').submit(function (e) {
+        var val = $('#modal-create-image_share').val();
+        createCookie('share', val , 1);
+        createCookie('public', '1' , 1);
+    });
+});
+</script>
 {% endblock %}
