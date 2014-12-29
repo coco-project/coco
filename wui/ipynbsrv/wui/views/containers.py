@@ -99,7 +99,13 @@ def clone(request):
     i = Image(cmd=cont.image.cmd, ports=cont.image.ports, name=name+"_clone", description='Clone', is_clone=True, owner=request.user)
     container_commited.send(sender='', image=i, ct_id=ct_id, name=str(request.user)+"_"+name+"_clone")
     i.save()
-    c = Container(name=name+"_clone", description='Clone', is_clone=True, owner=request.user, status=True, image=i)
+    container = Container.objects.order_by('exposeport')
+    if container.count() == 0:
+	portid = 49152
+    else:
+    	conta = container.last()
+    	portid = int(conta.exposeport)+1
+    c = Container(name=name+"_clone", description='Clone', is_clone=True, owner=request.user, status=True, image=i, exposeport=portid)
     container_created.send(sender='',container=c, image=i)
     c.save()
     return redirect('containers')
