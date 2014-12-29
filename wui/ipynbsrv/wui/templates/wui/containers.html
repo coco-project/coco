@@ -154,7 +154,7 @@
                                     </form>
                                 </li>
                                 <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('share-{{ c.ct_id }}').submit();">Backup</a>
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('share-{{ c.ct_id }}').submit();">Share</a>
                                     <form id="share-{{ c.ct_id }}" action="{% url 'containers_share' %}" method="POST" role="form">
                                         {% csrf_token %}
                                         <input type="hidden" id="modal-create-image_share" name="share" value="{{ c.name }}">
