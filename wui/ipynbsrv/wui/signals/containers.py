@@ -30,7 +30,7 @@ def created(sender, container, image, **kwargs):
 		    if port['PublicPort'] == container.exposeport:
 			container.exposeport = container.exposeport + 1
 			check = False
-    cont = d.createContainer(image, container.name, 'True', container.image.ports, container.exposeport)
+    cont = d.createContainer(image, str(container.owner)+"_"+str(container.name), 'True', container.image.ports, container.exposeport)
     id = cont['Id']
     id = str(id)
     container.ct_id = id
