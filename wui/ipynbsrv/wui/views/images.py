@@ -13,11 +13,11 @@ def index(request):
     i = Image.objects.filter((Q(owner=request.user)|Q(is_public=True))&Q(is_clone=False))
     context = {
         'title': 'Images',
-	'imgs': i,
+	'images': i,
 	'conts' : c,
 	'owner' : request.user
     }
-    return render(request, 'wui/images.html', context)
+    return render(request, 'wui/images/index.html', context)
 
 
 @user_passes_test(login_allowed)
@@ -38,7 +38,7 @@ def commit(request):
 	is_public=True
     else:
 	is_public=False
-	
+
     c = Container.objects.filter(owner=request.user).filter(name=ct_name).get()
     i = Image(cmd='/bin/bash', ports=[80], name=name, description=description, owner=request.user, is_public=is_public)
     container_commited.send(sender='', image=i, ct_id=c.ct_id, name=name)

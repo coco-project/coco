@@ -1,0 +1,47 @@
+<div class="modal fade" id="modal-create-image" tabindex="-1" role="dialog" aria-labelledby="modal-create-image" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title">New image</h4>
+            </div>
+            <form role="form" action="{% url 'image_commit' %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="modal-base">Base container</label>
+                        <select id="modal-create-image_ct-name" name="ct_name" class="form-control" id="modal-base" required>
+                            <option></option>
+                            {% for c in conts %}
+                                <option>{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-name">Name</label>
+                        <input name="name"  type="text" class="form-control" id="modal-name" placeholder="e.g fhnw-maths " required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-description">Description</label>
+                        <textarea id="modal-create-image_desc" name="description" class="form-control" rows="3" placeholder="..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <label for="modal-public">
+                                <input id="modal-create-image_public" type="checkbox" name="public" id="modal-public" value="True" aria-describedby="modal-public_help">
+                                Make the image available to the public
+                            </label>
+                            <span id="modal-public_help" class="help-block">If chosen, other registered users are able to create containers based on this image.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

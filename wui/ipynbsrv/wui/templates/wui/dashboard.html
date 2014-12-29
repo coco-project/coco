@@ -7,9 +7,9 @@
     <div class="col-xs-12">
         <h1>Dashboard</h1>
         <div class="dashboard-box">
-            <p><strong>Welcome back {{ user.username }}</strong></p>
-            <p>You have no pending invitations. Good :)</p>
+            <p><strong>Welcome back {{ user.username }}</strong>!</p>
         </div>
+
         <h2>Running containers</h2>
         {% if containers %}
         <div class="row container-grid">
@@ -91,7 +91,7 @@
         {% endfor %}
         </div>
         {% else %}
-        <div class="alert alert-info">You have no running containers.</div>
+            <div class="alert alert-info">You have no running containers.</div>
         {% endif %}
     </div>
 </div>

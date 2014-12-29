@@ -1,0 +1,129 @@
+{% extends "wui/base.html" %}
+
+{% load staticfiles %}
+
+{% block title %} - Images{% endblock %}
+
+{% block external_css %}
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.4/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.css">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        <h1>Images</h1>
+        <form role="form">
+            <button id="modal-create-image_button" type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-image">Create new</button>
+        </form>
+
+        {% if images %}
+        <div class="row shares-table">
+            <div class="col-xs-12">
+                <table class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th width="25%">Name</th>
+                            <th width="55%">Description</th>
+                            <th width="10%" style="text-align: center">Public</th>
+                            <th width="10%" style="text-align: right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in images %}
+                        <tr>
+                            <td>{{ i.name }}</td>
+                            <td>{{ i.description }}</td>
+                            <td style="text-align: center"><input type="checkbox" data-sort="1" {% if i.is_public == True %}checked{% endif %}></td>
+                            <td>
+                                {% if i.owner == owner %}
+                                <form action="{% url 'image_delete' %}" method="POST" class="pull-right" role="form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="id" value="{{ i.img_id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete this image?" data-toggle="confirmation" data-placement="left">
+                                        <i class="glyphicon glyphicon-remove"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+            <div class="alert alert-info">You do not have access to any images yet.</div>
+        {% endif %}
+
+        {% include "wui/images/modal_create.html" %}
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="//cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js"></script>
+<script src="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+<script src="//rawgit.com/mistic100/Bootstrap-Confirmation/master/bootstrap-confirmation.min.js"></script>
+<script>
+function createCookie (name, value, days) {
+    var expires;
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires="+date.toGMTString();
+    } else{
+        expires = "";
+    }
+    document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+function eraseCookie (name) {
+    createCookie(name, "", -1);
+}
+
+function readCookie (name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; ++i) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1, c.length);
+        }
+        if (c.indexOf(nameEQ) === 0) {
+            return c.substring(nameEQ.length,c.length);
+        }
+    }
+
+    return null;
+}
+
+$(function () {
+    $('[data-toggle="confirmation"]').confirmation({
+        popout: true
+    });
+
+    $('.js-table-smart').dataTable({
+        columnDefs: [{
+            aTargets: [ 3 ],
+            bSearchable: false,
+            bSortable: false
+        }]
+    });
+
+    var x = readCookie('share');
+    var y = readCookie('public');
+    if (x) {
+        if(y) {
+            $('#modal-create-image_public').attr('checked', true);
+        } else {
+            $('#modal-create-image_public').attr('checked', false);
+        }
+        $('#modal-create-image_ct-name').val(x);
+        $("#modal-create-image_button").click();
+        eraseCookie('share');
+        eraseCookie('public');
+    }
+});
+</script>
+{% endblock %}

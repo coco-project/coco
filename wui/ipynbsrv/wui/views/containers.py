@@ -19,7 +19,7 @@ def index(request):
 	'images' : i
     }
 
-    return render(request, 'wui/containers.html', context)
+    return render(request, 'wui/containers/index.html', context)
 
 
 @user_passes_test(login_allowed)
