@@ -66,6 +66,7 @@ class Docker(object):
 """
 Utility helper class to work with the filesystem.
 """
+
 class Filesystem(object):
     @staticmethod
     def ensure_directory(directory, recursive=False):
