@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.signals.images import *
 from ipynbsrv.wui.models import Image, Container
+from django.contrib import messages
 from django.db.models import Q
 
 
@@ -23,8 +24,9 @@ def index(request):
 @user_passes_test(login_allowed)
 def delete(request):
     id = request.POST.get('id')
-    i = Image.objects.filter(owner=request.user).filter(img_id=id)
+    i = Image.objects.filter(owner=request.user).filter(img_id=id).first()
     i.delete()
+    messages.success(request, 'Image ' + i.name + ' successfully deleted')
     return redirect('images')
 
 
@@ -40,8 +42,9 @@ def commit(request):
 	is_public=False
 	
     c = Container.objects.filter(owner=request.user).filter(name=ct_name).get()
-    i = Image(cmd='/bin/bash', ports=[80], name=name, description=description, owner=request.user, is_public=is_public)
-    container_commited.send(sender='', image=i, ct_id=c.ct_id, name=name)
+    i = Image(cmd=c.image.cmd, ports=c.image.cmd, name=name, description=description, owner=request.user, is_public=is_public)
+    imgname = str(c.owner) + "_" + name
+    container_commited.send(sender='', image=i, ct_id=c.ct_id, name=imgname)
     i.save()
     return redirect('images')
 
