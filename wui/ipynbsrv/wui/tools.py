@@ -22,7 +22,7 @@ class Docker(object):
 	for port in portl:
 		port = port.strip()
 		if port == "8888":
-		    portd[8888] = str(settings.DOCKER_IFACE_IP) + ":" + str(exposeport)
+		    portd[8888] = (settings.DOCKER_IFACE_IP, exposeport)
 		else:
 		    portd[port] = 'None'
         self.docker.start(container=id, port_bindings=portd, links=[('ipynbsrv.ldap','ipynbsrv.ldap')], binds=bs)
