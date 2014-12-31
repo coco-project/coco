@@ -28,6 +28,9 @@ RUN sed -i 's/uri ldapi:\/\/\//uri ldap:\/\/ipynbsrv.ldap/' /etc/ldap.conf
 RUN sed -i 's/rootbinddn cn=manager,dc=example,dc=net/rootbinddn cn=admin,dc=ipynbsrv,dc=ldap/' /etc/ldap.conf
 RUN sed -i 's/compat/compat ldap/' /etc/nsswitch.conf
 
+# Override the default shell defined in LDAP (none in our case)
+RUN echo "nss_override_attribute_value loginShell /bin/bash" >> /etc/ldap.conf
+
 # Allow password based SSH login but only for container owner
 RUN echo "UsePAM yes" >> /etc/ssh/sshd_config
 RUN echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
