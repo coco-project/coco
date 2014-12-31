@@ -1,3 +1,4 @@
+from django.conf import settings
 import os.path
 from docker import Client
 
