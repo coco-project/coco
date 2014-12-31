@@ -104,7 +104,7 @@ def clone(request):
 	portid = 49152
     else:
     	conta = container.last()
-    	portid = int(conta.exposeport)+len(cont.image.ports.split(','))
+    	portid = int(conta.exposeport)+len(cont.image.ports.split(','))+1
     c = Container(name=name+"_clone", description='Clone', is_clone=True, owner=request.user, status=True, image=i, exposeport=portid)
     container_created.send(sender='',container=c, image=i)
     c.save()
