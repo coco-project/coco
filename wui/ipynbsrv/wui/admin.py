@@ -3,9 +3,9 @@ from ipynbsrv.wui.models import Container, Host, Image, Share, Tag
 
 
 class ContainerAdmin(admin.ModelAdmin):
-    list_display  = ['name']
-    list_filter   = ['status']
-    search_fields = ['id', 'ct_id', 'name', 'description', 'status']
+    list_display  = ['name', 'description', 'image', 'owner', 'status']
+    list_filter   = ['name', 'image', 'owner', 'status']
+    search_fields = ['id', 'ct_id', 'name', 'description', 'status', 'exposeport']
 
 
 class HostAdmin(admin.ModelAdmin):
@@ -15,8 +15,8 @@ class HostAdmin(admin.ModelAdmin):
 
 
 class ImageAdmin(admin.ModelAdmin):
-    list_display  = ['name']
-    list_filter   = ['img_id']
+    list_display  = ['name', 'description', 'owner', 'is_public']
+    list_filter   = ['owner', 'is_public', 'is_clone']
     search_fields = ['id', 'img_id', 'name', 'description']
 
 

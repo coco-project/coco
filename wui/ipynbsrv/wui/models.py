@@ -69,7 +69,7 @@ class Tag(models.Model):
     label = models.CharField(primary_key=True, max_length=50)
 
     def __str__(self):
-        return self.__unicode__()
+        return smart_unicode(self.label)
 
     def __unicode__(self):
         return smart_unicode(self.label)
@@ -97,7 +97,7 @@ class Share(models.Model):
         return user in self.get_members()
 
     def __str__(self):
-        return self.__unicode__()
+        return smart_unicode(self.name)
 
     def __unicode__(self):
         return smart_unicode(self.name)
@@ -126,6 +126,12 @@ class Image(models.Model):
     is_public = models.BooleanField(default=False)
     is_clone = models.BooleanField(default=False)
 
+    def __str__(self):
+        return smart_unicode(self.name)
+
+    def __unicode__(self):
+        return smart_unicode(self.name)
+
 
 # FIXME: PK should be ct_id and host
 class Container(models.Model):
@@ -140,3 +146,9 @@ class Container(models.Model):
     #tags = models.ManyToManyField(Tag)
     is_clone = models.BooleanField(default=False)
     exposeport = models.CharField(null=True, blank=True, max_length=5)
+
+    def __str__(self):
+        return smart_unicode(self.name)
+
+    def __unicode__(self):
+        return smart_unicode(self.name)
