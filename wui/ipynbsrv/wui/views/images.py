@@ -42,7 +42,7 @@ def commit(request):
 	is_public=False
 
     c = Container.objects.filter(owner=request.user).filter(name=ct_name).get()
-    i = Image(cmd=c.image.cmd, ports=c.image.cmd, name=name, description=description, owner=request.user, is_public=is_public)
+    i = Image(cmd=c.image.cmd, ports=c.image.ports, name=name, description=description, owner=request.user, is_public=is_public)
     imgname = str(c.owner) + "_" + name
     container_commited.send(sender='', image=i, ct_id=c.ct_id, name=imgname)
     i.save()
