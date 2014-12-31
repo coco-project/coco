@@ -37,13 +37,13 @@ def commit(request):
     description = request.POST.get('description')
     public = request.POST.get('public')
     if public=="True":
-	is_public=True
+	   is_public=True
     else:
-	is_public=False
+	   is_public=False
 
     c = Container.objects.filter(owner=request.user).filter(name=ct_name).get()
     i = Image(cmd=c.image.cmd, ports=c.image.ports, name=name, description=description, owner=request.user, is_public=is_public)
-    imgname = str(c.owner) + "_" + name
+    imgname = c.owner.username + "/" + name
     container_commited.send(sender='', image=i, ct_id=c.ct_id, name=imgname)
     i.save()
     return redirect('images')
