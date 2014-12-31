@@ -22,7 +22,7 @@ class ImageAdmin(admin.ModelAdmin):
 
 class ShareAdmin(admin.ModelAdmin):
     list_display  = ['name', 'description', 'owner']
-    list_filter   = ['owner']
+    list_filter   = ['owner', 'tags']
     search_fields = ['name', 'description', 'owner', 'group']
 
 
