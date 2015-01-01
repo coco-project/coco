@@ -59,9 +59,9 @@ docker pull phusion/baseimage:0.9.15
 
 DATA="/srv/ipynbsrv"
 mkdir -p $DATA
-# create the LDAP/MySQL container data directories
+# create the LDAP/PostgreSQL container data directories
 mkdir -p $DATA/ldap
-mkdir -p $DATA/mysql
+mkdir -p $DATA/postgresql
 # create the directories for the users and shares
 mkdir -p $DATA/homes
 mkdir -p $DATA/public

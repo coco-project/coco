@@ -2,7 +2,7 @@
 
 #
 # This script will create the Docker container that will be used
-# by ipynbsrv as the MySQL server.
+# by ipynbsrv as the PostgreSQL server.
 #
 # last updated: 19.12.2014
 #
@@ -12,22 +12,21 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-CT_NAME="ipynbsrv.mysql"
+CT_NAME="ipynbsrv.postgresql"
 
 echo "------------------------------------------------------------"
-echo "Pulling the MySQL server image..."
-echo "------------------------------------------------------------"
-sleep 2
-
-docker pull mysql
-
-echo "------------------------------------------------------------"
-echo "Please define the MySQL server passwords now..."
+echo "Pulling the PostgreSQL server image..."
 echo "------------------------------------------------------------"
 sleep 2
 
-read -p "New root password: " ROOT_PASSWORD
-read -p "New ipynbsrv password: " PASSWORD
+docker pull postgres
+
+echo "------------------------------------------------------------"
+echo "Please define the PostgreSQL server password now..."
+echo "------------------------------------------------------------"
+sleep 2
+
+read -p "New password: " PASSWORD
 
 echo "------------------------------------------------------------"
 echo "Creating the container..."
@@ -36,12 +35,10 @@ sleep 2
 
 docker run \
     --name "${CT_NAME}" \
-    -v /srv/ipynbsrv/mysql:/var/lib/mysql \
-    -e MYSQL_ROOT_PASSWORD="${ROOT_PASSWORD}" \
-    -e MYSQL_USER="ipynbsrv" \
-    -e MYSQL_PASSWORD="${PASSWORD}" \
-    -e MYSQL_DATABASE="ipynbsrv_wui" \
-    -d mysql:5.5
+    -v /srv/ipynbsrv/postgresql:/var/lib/postgresql/data \
+    -e POSTGRES_USER="ipynbsrv" \
+    -e POSTGRES_PASSWORD="${PASSWORD}" \
+    -d postgres:9.4.0
 
 echo "------------------------------------------------------------"
 echo "All done!"
