@@ -22,6 +22,13 @@ sleep 2
 docker pull nickstenning/slapd
 
 echo "------------------------------------------------------------"
+echo "Please define the LDAP server password now..."
+echo "------------------------------------------------------------"
+sleep 2
+
+read -p "New password: " PASSWORD
+
+echo "------------------------------------------------------------"
 echo "Creating the container..."
 echo "------------------------------------------------------------"
 sleep 2
@@ -33,19 +40,17 @@ docker run \
     -p 389:389 \
     -e LDAP_DOMAIN="ipynbsrv.ldap" \
     -e LDAP_ORGANISATION="ipynbsrv" \
-    -e LDAP_ROOTPASS="123456" \
+    -e LDAP_ROOTPASS="${PASSWORD}" \
     -d nickstenning/slapd:latest
 
 echo "------------------------------------------------------------"
 echo "Entering the container. Finish by issueing these commands inside:"
 echo "------------------------------------------------------------"
 
-echo "$ dpkg-reconfigure slapd"
-echo "  -> Make sure domain is: ipynbsrv.ldap"
 echo "$ apt-get update && apt-get -y install ldap-utils wget"
 echo "$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/confs/slapd/init.ldif"
 echo "$ ldapadd -h localhost -p 389 -c -x -D cn=admin,dc=ipynbsrv,dc=ldap -W -f init.ldif"
-echo "$ rm init.ldif && service slapd restart && exit"
+echo "$ rm init.ldif && exit"
 sleep 5
 
 docker-bash ipynbsrv.ldap

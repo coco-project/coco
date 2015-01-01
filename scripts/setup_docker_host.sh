@@ -8,9 +8,10 @@
 # LDAP client.
 #
 # TODO:
+#   - fix CentOS 7
 #   - detect CentOS/EL version: CentOS 6 has Docker packages in EPEL repo
 #
-# last updated: 19.12.2014
+# last updated: 01.01.2015
 #
 
 if [ "$EUID" -ne 0 ]; then
@@ -41,8 +42,12 @@ $INSTALL curl sed sudo tar
 # install docker.io
 if [ $PS == "deb" ]; then
     $INSTALL docker.io
+    service docker.io start
 else
     $INSTALL docker
+    systemctl start docker.service
+    # autostart docker on boot
+    systemctl enable docker.service
 fi
 # install docker-bash/-ssh
 curl --fail -L -O https://github.com/phusion/baseimage-docker/archive/master.tar.gz
@@ -50,7 +55,7 @@ tar xzf master.tar.gz
 ./baseimage-docker-master/install-tools.sh
 rm -rf master.tar.gz baseimage-docker-master
 # pull the base image for our templates
-docker pull phusion/baseimage
+docker pull phusion/baseimage:0.9.15
 
 DATA="/srv/ipynbsrv"
 mkdir -p $DATA
@@ -63,18 +68,26 @@ mkdir -p $DATA/public
 mkdir -p $DATA/shares
 # ensure secure permissions. just in cast a custom umask is set
 chown -R root:root $DATA
-chmod -R 755 $DATA
+chmod -R 0755 $DATA
 
 # install the LDAP client tools
 # we need to know all LDAP users because the home/share directories will belong to them
 echo "------------------------------------------------------------"
-echo "Going to install the libpam-ldap package..."
+echo "Going to install the PAM LDAP package..."
 echo "When asked for the nsswitch services to configure, choose 'group', 'passwd' and 'shadow'."
 echo "------------------------------------------------------------"
 sleep 2
-$INSTALL libpam-ldap
+if [ $PS == "deb" ]; then
+    $INSTALL libpam-ldap
+else
+    $INSTALL nss-pam-ldapd
+    authconfig-tui
+    # disable caching server, made problems
+    systemctl stop nslcd.service
+    systemctl disable nslcd.service
+fi
 # configure that we want to use LDAP for passwd etc.
-#sed -i 's/compat/compat ldap/' /etc/nsswitch.conf
+sed -i 's/compat/compat ldap/' /etc/nsswitch.conf
 
 echo "------------------------------------------------------------"
 echo "All done!"

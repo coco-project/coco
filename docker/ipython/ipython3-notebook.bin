@@ -63,7 +63,7 @@ IPYTHON_SECURITY_DIR="/data/.ipython/profile_default/security"
 rm -rf ${IPYTHON_SECURITY_DIR}
 mkdir {IPYTHON_SECURITY_DIR}
 chown ${USER}:${USER} ${IPYTHON_SECURITY_DIR}
-chmod 700 ${IPYTHON_SECURITY_DIR}
+chmod 0700 ${IPYTHON_SECURITY_DIR}
 
 # start the IPython notebook server
 echo "Starting the IPython notebook under user '${USER}' on port ${PORT}..."
