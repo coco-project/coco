@@ -65,7 +65,7 @@ If everything went well, you should end up with an  **All done!** message.
 
 As said, we will use the newly created container for user management. So why not create one right away?
 
-> To be honest, we are not LDAP experts at all. We therefor use a graphical application called `Apache Directory Studio` to manage our users/groups. Head over and install a local copy for the next steps: https://directory.apache.org/studio/downloads.html
+> To be honest, we are not LDAP experts at all. We therefor use a graphical application called `Apache Directory Studio` to manage our users/groups. Head over and install a local copy for the next steps: [https://directory.apache.org/studio/downloads.html](https://directory.apache.org/studio/downloads.html)
 
 > Note: At this stage it is assumed that you have created the LDAP container, installed the `Apache Directory Studio` and know the IP address of your dedicated box (Docker host).
 
@@ -200,7 +200,6 @@ Sadly we cannot install the package via `apt/aptitude`, but need to compile it f
 
 ```bash
 $ OPENRESTY_VERSION=1.7.7.1
-$ apt-get update
 $ apt-get -y install libreadline-dev libncurses5-dev libpcre3-dev libssl-dev perl make wget
 
 $ cd /usr/local/src
@@ -214,9 +213,7 @@ $ ./configure \
     \
     --with-ipv6 \
     --with-pcre --with-pcre-jit \
-    --with-http_realip_module \
     --with-http_auth_request_module \
-    --with-http_secure_link_module \
     \
     --without-http_echo_module \
     --without-http_xss_module \
@@ -276,7 +273,7 @@ and ensure it is executable:
 chmod +x /etc/my_init.d/openresty.sh
 ```
 
-#### Python/uwsgi
+#### Python/uwsgi/npm
 
 Not much to say here, those are just some of the packages (mainly Python stuff) we need.
 
@@ -284,6 +281,8 @@ Not much to say here, those are just some of the packages (mainly Python stuff) 
 $ apt-get -y install python-pip uwsgi-plugin-python
 $ apt-get -y install python-dev libldap2-dev libsasl2-dev libssl-dev  # for django-auth-ldap
 $ apt-get -y install python-psycopg2  # for Django PostgreSQL
+$ apt-get -y install nodejs-legacy npm
+$ npm -g install bower less
 ```
 
 #### Django/Application
@@ -378,32 +377,46 @@ with:
 
 ###### manage.py
 
-TODO: prepare DB
+`manage.py` is Django's utility script to perform setup and maintenance tasks.
+
+Use it to create migrations (if any) and populate/alter the database:
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate 
 ```
 
-TODO: prepare assets
+Because we are using `LESS` to produce `CSS` and `bower` to manage external dependencies, you need to compile the styles and install the deps (like `jQuery` etc.):
 
 ```bash
 cd ipynbsrv/wui/static/
-bower install // installs external dependencies
+bower install  # installs external dependencies
 mkdir css
-lessc --compress less/main.less css/main.css
+lessc --compress less/main.less css/main.css  # compile LESS to CSS
 cd ~/www
 ```
 
-TODO: collect static and create superuser
+Last but not least, finalize the whole setup by issueing:
 
 ```bash
 python manage.py collectstatic
 python manage.py createsuperuser
 ```
 
+which will create a local superuser account (the admin account).
+
+Leave the container with:
+
+```bash
+exit
+exit
+```
+
+so the script continues. It will create a local image from the container and bootstrap a new instance using that one. As soon as it has completed, you're all done.
+
+Congratulations!
+
 ## What's Next?
 
-- Build the Docker base image for user container images (`base-ldap`)
-- Build the IPython Notebook Docker image
-- Capture the image in the Django admin interface
+- [Build the Docker base image for user container images (`base-ldap`)](building-images.md#base-ldap)
+- [Build the IPython Notebook Docker image](building-images.md#ipython3-notebook)
