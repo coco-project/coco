@@ -150,8 +150,6 @@ Start over by issueing:
 $ curl https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/scripts/create_postgresql_container.sh | bash
 ```
 
-> This feature is not merged yet. Use https://git.rackster.ch/fhnw/ipynbsrv/raw/c84bc49fb8fd3c05179e64bcf57ba067e27062f9/scripts/create_postgresql_container.sh in the meanwhile.
-
 and follow the introductions printed on screen.
 
 If everything went well, you should end up with an  **All done!** message.
