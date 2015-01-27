@@ -61,7 +61,7 @@ sed -i "s/[# ]*c.NotebookApp.base_url = '.*'/c.NotebookApp.base_url = '\/workspa
 # nobody knows why...
 IPYTHON_SECURITY_DIR="/data/.ipython/profile_default/security"
 rm -rf ${IPYTHON_SECURITY_DIR}
-mkdir {IPYTHON_SECURITY_DIR}
+mkdir ${IPYTHON_SECURITY_DIR}
 chown ${USER}:${USER} ${IPYTHON_SECURITY_DIR}
 chmod 0700 ${IPYTHON_SECURITY_DIR}
 
