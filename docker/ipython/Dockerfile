@@ -8,6 +8,8 @@ CMD ["/sbin/my_init", "--", "/usr/local/bin/init_cmd"]
 RUN apt-get update && apt-get -y install python3-pip
 # Install IPython + Notebook
 RUN pip3 install "ipython[notebook]"
+# Python module needed for .html export
+RUN pip3 install pygments
 
 # Copy my_init services into the container and make sure only root user can change it
 ADD ipython3-notebook.bin /usr/local/bin/init_cmd
