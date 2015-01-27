@@ -105,6 +105,7 @@ MESSAGE_TAGS = {
 LOGIN_REDIRECT_URL = '/accounts/flag'
 PUBLIC_URL = '/public/'
 STATIC_URL = '/static/'
+DOCS_URL = '/docs/'
 
 STATIC_ROOT = '/srv/ipynbsrv/www/static/'
 DATA_ROOT = '/srv/ipynbsrv/data/'
