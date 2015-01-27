@@ -8,7 +8,9 @@ CMD ["/sbin/my_init", "--", "/usr/local/bin/init_cmd"]
 RUN apt-get update && apt-get -y install python3-pip
 # Install IPython + Notebook
 RUN pip3 install "ipython[notebook]"
-# Python module needed for .html export
+
+# Packages and modules needed by nbconvert or .html export
+RUN apt-get -y install pandoc
 RUN pip3 install pygments
 
 # Copy my_init services into the container and make sure only root user can change it
