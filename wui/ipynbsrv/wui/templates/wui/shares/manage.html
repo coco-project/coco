@@ -68,7 +68,7 @@
                                 <input type="hidden" name="share_id" value="{{ share.id }}">
                                 <input type="hidden" name="user_id" value="{{ member.id }}">
                                 <button class="btn btn-sm btn-danger" title="Remove from share?" data-toggle="confirmation" data-placement="left">
-                                    <i class="glyphicon glyphicon-remove"></i>
+                                    <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
                                 </button>
                             </form>
                         {% endif %}
@@ -92,7 +92,6 @@
 <!-- <script src="{% static "bower_components/jquery-tagsinput-jurgen/jquery.tagsinput.js" %}"></script> -->
 <script>
 $(function () {
-    $('[data-tooltip]').tooltip();
     $('[data-toggle="confirmation"]').confirmation({
         popout: true
     });
