@@ -25,10 +25,11 @@ To build the image, execute the following commands on the Docker host:
 
 ```bash
 $ IMG_NAME=base-ldap
-$ mkdir ${IMG_NAME}
-$ cd ${IMG_NAME}
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/docker/ldap/Dockerfile
-$ docker build -t ipynbsrv/${IMG_NAME} .
+$ EXPORT BRANCH=develop  # use master for stable
+$ mkdir $IMG_NAME
+$ cd $IMG_NAME
+$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/ldap/Dockerfile
+$ docker build -t ipynbsrv/$IMG_NAME .
 ```
 
 ### IPython3 Notebook
@@ -48,11 +49,12 @@ To build the image, issue the commands below:
 
 ```bash
 $ IMG_NAME=ipython3-notebook
-$ mkdir ${IMG_NAME}
-$ cd ${IMG_NAME}
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/docker/ipython/Dockerfile
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/docker/ipython/${IMG_NAME}.bin
-$ docker build -t ipynbsrv/${IMG_NAME} .
+$ EXPORT BRANCH=develop  # use master for stable
+$ mkdir $IMG_NAME
+$ cd $IMG_NAME
+$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/ipython/Dockerfile
+$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/ipython/${IMG_NAME}.bin
+$ docker build -t ipynbsrv/$IMG_NAME .
 ```
 
 During the build process, some errors might show up. That is because some commands try to open an interactive dialog - and that is not possible. Just ignore them for now.

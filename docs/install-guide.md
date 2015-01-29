@@ -28,8 +28,10 @@ Everything starts at the dedicated node, which will be configured to host Docker
 To make the setup as easy as possible, we wrote a tiny shell script that will perform all needed operations for you. Just fetch and execute it as follow:
 
 ```bash
-$ apt-get -y install curl // or yum for EL
-$ curl https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/scripts/setup_docker_host.sh | bash
+$ apt-get -y install wget  # or yum for EL
+$ BRANCH=develop  # use master for stable release
+$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/scripts/setup_docker_host.sh
+$ chmod +x setup_docker_host.sh && ./setup_docker_host.sh
 ```
 
 > Note: Commands prefixed with `$` are meant to be run under `root` account.
@@ -54,7 +56,8 @@ Again, there is a shell script available that will perform most operations for y
 Start over by issueing:
 
 ```bash
-$ curl https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/scripts/create_ldap_container.sh | bash
+$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/scripts/create_ldap_container.sh
+$ chmod +x create_ldap_container.sh && ./create_ldap_container.sh
 ```
 
 and follow the introductions printed on screen.
@@ -147,7 +150,8 @@ Again, there is a shell script available that will perform most operations for y
 Start over by issueing:
 
 ```bash
-$ curl https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/scripts/create_postgresql_container.sh | bash
+$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/scripts/create_postgresql_container.sh
+$ chmod +x create_postgresql_container.sh && ./create_postgresql_container.sh
 ```
 
 and follow the introductions printed on screen.
@@ -163,7 +167,8 @@ The WUI container is the trickiest one to setup, yet everyone should be able to 
 Yes, you have guessed correctly. There is yet another script to bootstrap the container for you:
 
 ```bash
-$ curl https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/scripts/create_wui_container.sh | bash
+$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/scripts/create_wui_container.sh
+$ chmod +x create_wui_container.sh && ./create_wui_container.sh
 ```
 
 It will bring you right into the container, where you need to issue all the commands found below.
@@ -201,9 +206,9 @@ $ OPENRESTY_VERSION=1.7.7.1
 $ apt-get -y install libreadline-dev libncurses5-dev libpcre3-dev libssl-dev perl make wget
 
 $ cd /usr/local/src
-$ wget http://openresty.org/download/ngx_openresty-${OPENRESTY_VERSION}.tar.gz
-$ tar xzvf ngx_openresty-${OPENRESTY_VERSION}.tar.gz
-$ cd ngx_openresty-${OPENRESTY_VERSION}
+$ wget http://openresty.org/download/ngx_openresty-$OPENRESTY_VERSION.tar.gz
+$ tar xzvf ngx_openresty-$OPENRESTY_VERSION.tar.gz
+$ cd ngx_openresty-$OPENRESTY_VERSION
 
 $ ./configure \
     --user=www-data \
@@ -258,7 +263,7 @@ $ make
 $ make install
 ```
 
-To make it auto-start on boot, create the file `/etc/my_init.d/openresty.sh` with those lines inside:
+To make it auto-start on boot, create the file `/etc/my_init.d/nginx.sh` with those lines inside:
 
 ```bash
 #!/bin/sh
@@ -268,7 +273,7 @@ exec /usr/local/openresty/nginx/sbin/nginx
 and ensure it is executable:
 
 ```bash
-chmod +x /etc/my_init.d/openresty.sh
+chmod +x /etc/my_init.d/nginx.sh
 ```
 
 #### Python/uwsgi/npm
@@ -280,14 +285,14 @@ $ apt-get -y install python-pip uwsgi-plugin-python
 $ apt-get -y install python-dev libldap2-dev libsasl2-dev libssl-dev  # for django-auth-ldap
 $ apt-get -y install python-psycopg2  # for Django PostgreSQL
 $ apt-get -y install nodejs-legacy npm
-$ npm -g install bower less
+$ npm -g install bower less  # for frontend assets
 ```
 
 #### Django/Application
 
 Finally here, you are going to clone the source code repository, create a dedicated user (things should not be run under `root`, should they?) and populate the database.
 
-First, install the `git` version control system binaries:
+First, install the `git` version control system:
 
 ```bash
 $ apt-get -y install git
@@ -303,8 +308,8 @@ $ su ipynbsrv
 ```bash
 cd ~
 mkdir -p data/homes data/public data/shares
-
-git clone -b develop https://git.rackster.ch/fhnw/ipynbsrv.git _repo
+BRANCH=develop  # use master for stable
+git clone -b $BRANCH https://git.rackster.ch/fhnw/ipynbsrv.git _repo
 ln -s /srv/ipynbsrv/_repo/wui/ /srv/ipynbsrv/www
 ```
 
@@ -365,7 +370,7 @@ Some of them need adjustment, so open it with `nano ipynbsrv/settings.py` and de
 
 All other values should be fine.
 
-Now that you have the `DOCKER_IFACE_IP`, open `/srv/ipynbsrv/_repo/conf/nginx/ipynbsrv.conf` and replace:
+Now that you have the `DOCKER_IFACE_IP`, open `/srv/ipynbsrv/_repo/confs/nginx/ipynbsrv.conf` and replace:
 
     proxy_pass  http://$host:$1;
 
@@ -381,7 +386,7 @@ Use it to create migrations (if any) and populate/alter the database:
 
 ```bash
 python manage.py makemigrations
-python manage.py migrate 
+python manage.py migrate
 ```
 
 Because we are using `LESS` to produce `CSS` and `bower` to manage external dependencies, you need to compile the styles and install the deps (like `jQuery` etc.):
