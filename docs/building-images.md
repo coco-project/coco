@@ -25,7 +25,7 @@ To build the image, execute the following commands on the Docker host:
 
 ```bash
 $ IMG_NAME=base-ldap
-$ EXPORT BRANCH=develop  # use master for stable
+$ BRANCH=develop  # use master for stable
 $ mkdir $IMG_NAME
 $ cd $IMG_NAME
 $ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/ldap/Dockerfile
@@ -49,7 +49,7 @@ To build the image, issue the commands below:
 
 ```bash
 $ IMG_NAME=ipython3-notebook
-$ EXPORT BRANCH=develop  # use master for stable
+$ BRANCH=develop  # use master for stable
 $ mkdir $IMG_NAME
 $ cd $IMG_NAME
 $ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/ipython/Dockerfile
