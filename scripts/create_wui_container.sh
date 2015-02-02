@@ -25,7 +25,7 @@ docker run \
     -t -i \
     --name="${CT_NAME}" \
     --link ipynbsrv.ldap:ipynbsrv.ldap --link ipynbsrv.postgresql:ipynbsrv.postgresql \
-    phusion/baseimage:0.9.15 /bin/bash
+    phusion/baseimage:0.9.16 /bin/bash
 
 echo "------------------------------------------------------------"
 echo "Committing the WUI container so we can create a new one from it..."

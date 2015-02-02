@@ -5,7 +5,7 @@ from docker import Client
 
 class Docker(object):
     def __init__(self):
-        self.docker = Client(base_url='unix://var/run/docker.sock',version='1.12')
+        self.docker = Client(base_url='unix://var/run/docker.sock', version='1.16')
 
     ## Container Commands ##
     def stopContainer(self, id):
