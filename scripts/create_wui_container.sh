@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#
+#######################################################################################
 # This script will create the Docker container that will be
-# serving the ipynbsrv django web interface.
+# serving the ipynbsrv django web application.
 #
-# last updated: 19.12.2014
-#
+# last updated: 02.02.2015
+#######################################################################################
 
 if [ "$EUID" -ne 0 ]; then
   echo "This script must be executed as root user."

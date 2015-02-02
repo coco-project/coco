@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#
+#######################################################################################
 # This script will create the Docker container that will be used
-# by ipynbsrv as the centralized users and groups database.
+# by ipynbsrv as the centralized users and groups database/directory services.
 #
-# last updated: 19.12.2014
-#
+# last updated: 02.02.2015
+#######################################################################################
 
 if [ "$EUID" -ne 0 ]; then
   echo "This script must be executed as root user."
@@ -33,7 +33,6 @@ echo "Creating the container..."
 echo "------------------------------------------------------------"
 sleep 2
 
-# TODO: setting password via ENV doesn't work
 docker run \
     --name "${CT_NAME}" \
     -v /srv/ipynbsrv/ldap:/var/lib/ldap \
