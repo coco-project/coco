@@ -3,7 +3,7 @@ import shutil
 import stat
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.exceptions import DoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import LdapUser
@@ -34,7 +34,7 @@ def created_handler(sender, user, **kwargs):
         # set owner and permissions
         os.chown(path, ldap_user.id, ldap_user.group_id)
         os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
-    except DoesNotExist:
+    except ObjectDoesNotExist:
         pass
 
 
@@ -55,7 +55,7 @@ def deleted_handler(sender, user, **kwargs):
         # delete the user's public directory
         path = os.path.join(settings.PUBLIC_ROOT, ldap_user.username)
         shutil.rmtree(path)
-    except DoesNotExist:
+    except ObjectDoesNotExist:
         pass
 
 

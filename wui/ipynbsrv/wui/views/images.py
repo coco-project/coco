@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import user_passes_test
-from django.core.exceptions import DoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect
 from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Image, Container
@@ -34,7 +34,7 @@ def delete(request):
             messages.success(request, "Image deleted successfully.")
         else:
             messages.error(request, "You don't have permissions to delete that image.")
-    except DoesNotExist:
+    except ObjectDoesNotExist:
         messages.error(request, "Image does not exist.")
 
     return redirect('images')

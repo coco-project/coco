@@ -137,7 +137,7 @@ class Container(models.Model):
         return self.__str__()
 
 
-def PortMapping(models.Model):
+class PortMapping(models.Model):
     container = models.ForeignKey(Container)
     internal = models.PositiveIntegerField(null=False, max_length=6)
     external = models.PositiveIntegerField(unique=True, max_length=6)

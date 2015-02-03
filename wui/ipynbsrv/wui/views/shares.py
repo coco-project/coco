@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.decorators import user_passes_test
-from django.core.exceptions import DoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect, render
 from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Share, Tag
@@ -37,12 +37,12 @@ def add_user(request):
                     user = User.objects.get(username=username)
                     if not share.is_member(user):
                         share.group.user_set.add(user)
-                except DoesNotExist:
+                except ObjectDoesNotExist:
                     pass
             messages.success(request, "Sucessfully added the new member(s).")
         else:
             messages.error(request, "Not enough permissions to add a new user to that share.")
-    except DoesNotExist:
+    except ObjectDoesNotExist:
         messages.error(request, "Share does not exist.")
 
     if origin:
@@ -160,7 +160,7 @@ def leave(request):
         else:
             share.group.user_set.remove(request.user)
             messages.success(request, "Successfully leaved the share.")
-    except DoesNotExist:
+    except ObjectDoesNotExist:
         messages.error(request, "Share does not exist.")
 
     return redirect('shares')
@@ -187,7 +187,7 @@ def manage(request, share_id):
             })
         else:
             messages.error(request, "Not enough permissions to manage this share.")
-    except DoesNotExist:
+    except ObjectDoesNotExist:
         messages.error(request, "Share does not exist.")
 
     return redirect('shares')
@@ -220,11 +220,11 @@ def remove_user(request):
                 messages.success(request, "Removed used from share.")
                 request.method = "GET"
                 return redirect('share_manage', share.id)
-            except DoesNotExist:
+            except ObjectDoesNotExist:
                 messages.error(request, "User does not exist.")
         else:
             messages.error(request, "Not enough permissions for that.")
-    except DoesNotExist:
+    except ObjectDoesNotExist:
         messages.error(request, "Share does not exist.")
 
     return redirect('shares')

@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import Group, User
-from django.core.exceptions import DoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import LdapGroup, LdapUser, Share
@@ -40,7 +40,7 @@ def deleted_handler(sender, group, **kwargs):
         share = Share.objects.get(group=group)
         share.delete()
         share_deleted.send(None, share=share)  # Django should do that for us
-    except DoesNotExist:
+    except ObjectDoesNotExist:
         pass
 
 
@@ -59,7 +59,7 @@ def member_added_handler(sender, group, member, **kwargs):
         ldap_user = LdapUser.objects.get(pk=member.username)
         ldap_group.members.add(member.username)
         ldap_group.save()
-    except DoesNotExist:
+    except ObjectDoesNotExist:
         pass
 
 
@@ -75,7 +75,7 @@ def member_removed_handler(sender, group, member, **kwargs):
         ldap_user = LdapUser.objects.get(pk=member.username)
         ldap_group.members.remove(member.username)
         ldap_group.save()
-    except DoesNotExist:
+    except ObjectDoesNotExist:
         pass
 
 
