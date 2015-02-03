@@ -10,7 +10,7 @@ COOKIE_NAME = 'username'
 """
 The flag view is called after a successful user login.
 
-Since we use Nginx, which does a subrequest, to check authorization of workspace access,
+Since we use Nginx, which does a subrequest to check authorization of workspace access,
 we need a way to identify the user there. So we bypass here to create a signed cookie
 for that purpose.
 """

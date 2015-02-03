@@ -1,17 +1,17 @@
 from django.contrib import admin
-from ipynbsrv.wui.models import Container, Host, Image, Share, Tag
+from ipynbsrv.wui.models import Container, Image, Share, Tag
 
 
 class ContainerAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description', 'image', 'owner', 'status']
-    list_filter = ['name', 'image', 'owner', 'status']
-    search_fields = ['id', 'ct_id', 'name', 'description', 'status', 'exposeport']
+    list_display = ['name', 'description', 'image', 'owner', 'running']
+    list_filter = ['name', 'image', 'owner', 'running']
+    search_fields = ['id', 'name', 'description', 'running']
 
 
 class ImageAdmin(admin.ModelAdmin):
     list_display = ['name', 'description', 'owner', 'is_public']
     list_filter = ['owner', 'is_public', 'is_clone']
-    search_fields = ['id', 'docker_id', 'name', 'description']
+    search_fields = ['id', 'name', 'description', 'cmd']
 
 
 class ShareAdmin(admin.ModelAdmin):

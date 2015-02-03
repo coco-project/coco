@@ -6,7 +6,7 @@ urlpatterns = patterns('',
     url(r'^accounts/login/$', 'django.contrib.auth.views.login', {
         'template_name': 'wui/user/login.html',
         'extra_context': {
-            'title': 'Login'
+            'title': "Login"
         }
     }),
     url(r'^accounts/flag/$', 'ipynbsrv.wui.views.accounts.flag', name='accounts_flag'),
@@ -14,19 +14,19 @@ urlpatterns = patterns('',
     url(r'^accounts/unflag/$', 'ipynbsrv.wui.views.accounts.unflag', name='accounts_unflag'),
 
     # /container(s)/...
-    url(r'^containers/$', 'ipynbsrv.wui.views.containers.index', name='containers'),
-    url(r'^containers/clone$', 'ipynbsrv.wui.views.containers.clone', name='containers_clone'),
-    url(r'^containers/create$', 'ipynbsrv.wui.views.containers.create', name='container_create'),
-    url(r'^containers/delete$', 'ipynbsrv.wui.views.containers.delCont', name='containers_delete'),
-    url(r'^containers/stop$', 'ipynbsrv.wui.views.containers.stop', name='container_stop'),
-    url(r'^containers/start$', 'ipynbsrv.wui.views.containers.start', name='container_start'),
-    url(r'^containers/restart$', 'ipynbsrv.wui.views.containers.restart', name='container_restart'),
-    url(r'^containers/share$', 'ipynbsrv.wui.views.containers.share', name='containers_share'),
+    # url(r'^containers/$', 'ipynbsrv.wui.views.containers.index', name='containers'),
+    # url(r'^containers/clone$', 'ipynbsrv.wui.views.containers.clone', name='containers_clone'),
+    # url(r'^containers/create$', 'ipynbsrv.wui.views.containers.create', name='container_create'),
+    # url(r'^containers/delete$', 'ipynbsrv.wui.views.containers.delCont', name='containers_delete'),
+    # url(r'^containers/stop$', 'ipynbsrv.wui.views.containers.stop', name='container_stop'),
+    # url(r'^containers/start$', 'ipynbsrv.wui.views.containers.start', name='container_start'),
+    # url(r'^containers/restart$', 'ipynbsrv.wui.views.containers.restart', name='container_restart'),
+    # url(r'^containers/share$', 'ipynbsrv.wui.views.containers.share', name='containers_share'),
 
     # # /images(s)/...
     url(r'^images/$', 'ipynbsrv.wui.views.images.index', name='images'),
-    url(r'^images/commit$', 'ipynbsrv.wui.views.images.commit', name='image_commit'),
-    url(r'^images/delete$', 'ipynbsrv.wui.views.images.delete', name='image_delete'),
+    # url(r'^images/commit$', 'ipynbsrv.wui.views.images.commit', name='image_commit'),
+    url(r'^image/delete$', 'ipynbsrv.wui.views.images.delete', name='image_delete'),
     # url(r'^image/edit$', 'ipynbsrv.wui.views.images.edit', name='image::edit'),
     # url(r'^image/share$', 'ipynbsrv.wui.views.images.share', name='image::share'),
 

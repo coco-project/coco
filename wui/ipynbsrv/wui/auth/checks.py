@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import DoesNotExist
 from django.http.response import HttpResponse
-from ipynbsrv.wui.models import Container, LdapUser
+from ipynbsrv.wui.models import Container, LdapUser, PortMapping
 
 
 COOKIE_NAME = 'username'
@@ -31,15 +32,17 @@ def workspace_auth(request):
     if request.method == "GET":
         username = request.get_signed_cookie(COOKIE_NAME, default=None)
         if username:  # ensure the signed cookie set at login is there
-            user = User.objects.filter(username=username).first()
-            if user:  # ensure the user really exists
+            try:
+                user = User.objects.get(username=username)
                 uri = request.META.get(URI_HEADER)
                 if uri:  # ensure the X- header is present. its set by Nginx
                     splits = uri.split('/')
                     if len(splits) >= 4:
                         port = splits[2]
-                        container = Container.objects.filter(exposeport=port).first()
+                        container = PortMapping.objects.filter(external=port).first()
                         if container and container.owner == user:
                             return HttpResponse(status=200)
+            except DoesNotExist:
+                pass
 
     return HttpResponse(status=403)

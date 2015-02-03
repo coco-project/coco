@@ -23,12 +23,9 @@ def created_handler(sender, share, **kwargs):
     path = os.path.join(settings.SHARE_ROOT, share.name)
     Filesystem.ensure_directory(path)
     # set owner and permissions
-    ldap_group = LdapGroup.objects.filter(name=GROUP_PREFIX + share.name).first()
-    if ldap_group:
-        os.chown(path, -1, ldap_group.gid)
-        os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_ISGID)
-    else:
-        raise "required LDAP group '%s' does not exist." % share.name
+    ldap_group = LdapGroup.objects.get(name=GROUP_PREFIX + share.name)
+    os.chown(path, -1, ldap_group.id)
+    os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_ISGID)
 
 
 """
@@ -41,7 +38,7 @@ def deleted_handler(sender, share, **kwargs):
     # make sure the group is removed too
     share.group.delete()
     # remove the directory
-    shutil.rmtree(path = os.path.join(settings.SHARE_ROOT, share.name), ignore_errors=not settings.DEBUG)
+    shutil.rmtree(path=os.path.join(settings.SHARE_ROOT, share.name), ignore_errors=not settings.DEBUG)
 
 
 """
@@ -62,6 +59,6 @@ def post_delete_handler(sender, instance, **kwargs):
 @receiver(post_save, sender=Share)
 def post_save_handler(sender, instance, **kwargs):
     if kwargs['created']:
-        share_created.send(sender, share=instance)
+        share_created.send(sender, share=instance, kwargs=kwargs)
     else:
-        share_modified.send(sender, share=instance, fields=kwargs['update_fields']. kwargs=kwargs)
+        share_modified.send(sender, share=instance, fields=kwargs['update_fields'], kwargs=kwargs)

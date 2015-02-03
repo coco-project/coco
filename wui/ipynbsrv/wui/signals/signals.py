@@ -45,13 +45,10 @@ container_stopped = Signal(providing_args=['container'])
 
 """
 Set of signals to be triggered when working with Docker images.
-
-We use these signals to decouple internal Django users from our Docker installation.
 """
 image_created = Signal(providing_args=['image'])
 image_deleted = Signal(providing_args=['image'])
 image_modified = Signal(providing_args=['image', 'fields'])
-#image_shared = Signal(providing_args=['image', 'with_users'])
 
 
 """

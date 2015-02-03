@@ -1,4 +1,5 @@
 import os.path
+from django.conf import settings
 from docker import Client
 
 
@@ -6,7 +7,7 @@ from docker import Client
 docker-py wrapper class.
 """
 class Docker(object):
-    def __init__:
+    def __init__(self):
         self.client = Client(base_url='unix://var/run/docker.sock', version=settings.DOCKER_API_VERSION)
 
     """

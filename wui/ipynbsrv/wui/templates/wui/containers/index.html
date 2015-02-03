@@ -16,7 +16,7 @@
         <div class="row container-grid">
            {% for ct in containers %}
             <div class="col-xs-12 col-sm-6 col-md-4">
-                {% if ct.status %}
+                {% if ct.running %}
                     <div class="panel panel-success panel-container">
                 {% else %}
                     <div class="panel panel-danger panel-container">
@@ -32,7 +32,7 @@
                                 <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
-                                {% if ct.status %}
+                                {% if ct.running %}
                                     <li role="presentation">
                                         <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('connect-{{ ct.docker_id }}').getElementsByTagName('button')[0].click();">Connect</a>
                                         <form id="connect-{{ ct.docker_id }}" action="/workspace/{{ ct.proxied_port }}/" method="GET" target="_blank" role="form">

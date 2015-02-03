@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import user_passes_test
+from django.core.exceptions import DoesNotExist
 from django.shortcuts import render, redirect
 from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Image, Container
@@ -20,21 +21,20 @@ def delete(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('images')
-
     if 'id' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 
     img_id = int(request.POST.get('id'))
-    img = Image.objects.filter(pk=img_id).first()
 
-    if img:
+    try:
+        img = Image.objects.get(pk=img_id)
         if img.owner == request.user:
             img.delete()
             messages.success(request, "Image deleted successfully.")
         else:
             messages.error(request, "You don't have permissions to delete that image.")
-    else:
+    except DoesNotExist:
         messages.error(request, "Image does not exist.")
 
     return redirect('images')

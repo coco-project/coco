@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import Group, User
+from django.core.exceptions import DoesNotExist
 from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import LdapGroup, LdapUser, Share
@@ -17,10 +18,10 @@ This is important for us so share groups are created.
 def created_handler(sender, group, **kwargs):
     if settings.DEBUG:
         print "group_created handler fired"
-    next_gid = LdapGroup.objects.all().latest('gid').gid + 1
-    if next_gid < settings.SHARE_GROUPS_OFFSET:
-        next_gid = settings.SHARE_GROUPS_OFFSET + 1
-    ldap_group = LdapGroup(gid=next_gid, name=group.name, members="")
+    next_id = LdapGroup.objects.all().latest('id').id + 1
+    if next_id < settings.SHARE_GROUPS_OFFSET:
+        next_id = settings.SHARE_GROUPS_OFFSET + 1
+    ldap_group = LdapGroup(id=next_id, name=group.name, members="")
     ldap_group.save()
 
 
@@ -32,14 +33,15 @@ they are deleted from Django.
 def deleted_handler(sender, group, **kwargs):
     if settings.DEBUG:
         print "group_deleted handler fired"
-    ldap_group = LdapGroup.objects.filter(pk=group.name).first()
-    if ldap_group:
+    try:
+        ldap_group = LdapGroup.objects.get(pk=group.name)
         ldap_group.delete()
         # make sure to also delete the share for this group
-        share = Share.objects.filter(group=group).first()
-        if share:
-            share.delete()
-            share_deleted.send(None, share=share)  # Django should do that for us
+        share = Share.objects.get(group=group)
+        share.delete()
+        share_deleted.send(None, share=share)  # Django should do that for us
+    except DoesNotExist:
+        pass
 
 
 """
@@ -52,11 +54,13 @@ if both exist.
 def member_added_handler(sender, group, member, **kwargs):
     if settings.DEBUG:
         print "group_member_added handler fired"
-    ldap_group = LdapGroup.objects.filter(pk=group.name).first()
-    ldap_user = LdapUser.objects.filter(pk=member.username).first()
-    if ldap_group and ldap_user:
+    try:
+        ldap_group = LdapGroup.objects.get(pk=group.name)
+        ldap_user = LdapUser.objects.get(pk=member.username)
         ldap_group.members.add(member.username)
         ldap_group.save()
+    except DoesNotExist:
+        pass
 
 
 """
@@ -66,11 +70,13 @@ Method triggered by group_member_removed signals.
 def member_removed_handler(sender, group, member, **kwargs):
     if settings.DEBUG:
         print "group_member_removed handler fired"
-    ldap_group = LdapGroup.objects.filter(pk=group.name).first()
-    ldap_user = LdapUser.objects.filter(pk=member.username).first()
-    if ldap_group and ldap_user:
+    try:
+        ldap_group = LdapGroup.objects.get(pk=group.name)
+        ldap_user = LdapUser.objects.get(pk=member.username)
         ldap_group.members.remove(member.username)
         ldap_group.save()
+    except DoesNotExist:
+        pass
 
 
 """

@@ -12,5 +12,5 @@ URI: /
 def dashboard(request):
     return render(request, 'wui/dashboard.html', {
         'title':  "Dashboard",
-        'containers': Container.objects.filter(owner=request.user).filter(status=True)
+        'containers': Container.objects.filter(owner=request.user).filter(running=True)
     })

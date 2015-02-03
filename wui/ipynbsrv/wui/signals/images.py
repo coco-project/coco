@@ -13,7 +13,7 @@ docker = Docker()
 Handler triggered by image_created signals.
 """
 @receiver(image_created)
-def created_handler(sender, image, kwargs):
+def created_handler(sender, image, **kwargs):
     if settings.DEBUG:
         print "image_created handler fired"
 
@@ -34,7 +34,7 @@ def deleted_handler(sender, image, **kwargs):
 Handler triggered by image_modified signals.
 """
 @receiver(image_modified)
-def modified_handler(sender, image, fields, kwargs):
+def modified_handler(sender, image, fields, **kwargs):
     if settings.DEBUG:
         print "image_modified handler fired"
 
