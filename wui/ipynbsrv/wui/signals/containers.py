@@ -1,138 +1,78 @@
-from django.db.models.signals import pre_delete, pre_save
+import re
+from django.conf import settings
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import Container
-from ipynbsrv.wui.signals.signals import *
+from ipynbsrv.wui.signals.signals import container_commited, container_created, container_deleted, container_modified, \
+    container_restarted, container_started, container_stopped
 from ipynbsrv.wui.tools import Docker
-import re
 
-d = Docker()
 
-""
+docker = Docker()
+
+
 @receiver(container_commited)
-def commited(sender, image, ct_id, name, **kwargs):
-    print("Received container_commited signal.")
-    d.commitContainer(ct_id, name, 'latest')
-    c_name = name + ":latest"
-    cont = d.images_name(name)
-    image.img_id = cont[0]['Id']
+def commited_handler(sender, container, **kwargs):
+    if settings.DEBUG:
+        print "Committing container via signal..."
+    # TODO
 
-""
+
 @receiver(container_created)
-def created(sender, container, image, **kwargs):
-    print("Received container_created signal.")
-    check = False
-    containers = d.containers()
-    while (not check):
-	for c in containers:
-	    check = True
-	    for port in c['Ports']:
-		if 'PublicPort' in port:
-		    if port['PublicPort'] == container.exposeport:
-			container.exposeport = container.exposeport + 1
-			check = False
-    cont = d.createContainer(image, str(container.owner)+"_"+str(container.name), 'True', container.image.ports, container.exposeport)
-    id = cont['Id']
-    id = str(id)
-    container.ct_id = id
+def created_handler(sender, container, **kwargs):
+    if settings.DEBUG:
+        print "Creating container via signal..."
+    # TODO
 
 
-""
 @receiver(container_deleted)
-def delete(sender, container, **kwargs):
-    print("Received container_deleted signal.")
-    containers = d.containersall()
-    tmp = False
-    for cont in containers:
-	if cont['Id'] == container.ct_id:
-	    tmp=True
-    if tmp:
-	d.delContainer(container.ct_id)
-    else:
-	print("Container allready deleted")	
+def deleted_handler(sender, container, **kwargs):
+    if settings.DEBUG:
+        print "Deleting container via signal..."
+    if container.docker_id in docker.containers():
+        docker.remove_container(container.docker_id)
 
 
-""
-@receiver(container_started)
-def started(sender, container, **kwargs):
-    print("Received container_started signal.")
-    containers = d.containersall()
-    tmp = False
-    for cont in containers:
-	if cont['Id'] == container.ct_id:
-	    tmp=True
-    if tmp:
-    	d.startContainer(container.ct_id, container.image.ports, container.exposeport, str(container.owner))
-    else:
-	raise Exception("Container doesnt exist")
-
-    tmp = False
-    container.ports = ""
-    containers = d.containers()
-    for cont in containers:
-	if cont['Id'] == container.ct_id:
-	    for port in cont['Ports']:
-		if 'PublicPort' in port:
-			if port['PrivatePort'] == 22:
-				container.description += "\n SSH-Port = " + str(port['PublicPort'])
+@receiver(container_modified)
+def modified_handler(sender, container, fields, **kwargs):
+    if settings.DEBUG:
+        print "Modifying container via signal..."
+    # TODO
 
 
-""
-@receiver(container_stopped)
-def stopped(sender, container, **kwargs):
-    print("Received container_stopped signal.")
-    containers = d.containersall()
-    tmp = False
-    for cont in containers:
-	if cont['Id'] == container.ct_id:
-	    tmp=True
-    if tmp:
-    	d.stopContainer(container.ct_id)
-	container.description = re.sub(r'SSH-Port = [0-9]*',"",container.description)
-    else:
-	raise Exception("Container doesnt exist")
-
-""
 @receiver(container_restarted)
-def restarted(sender, container, **kwargs):
-    print("Received container_restarted signal.")
-#    containers = d.containersall()
-#    tmp = False
-#    for cont in containers:
-#	if cont['Id'] == container.ct_id:
-#	    tmp=True
-#    if tmp:
-#    	d.restartContainer(container.ct_id)
-#    else:
-#	raise Exception("Container doesnt exist")
-    container_stopped.send(sender=sender, container=container)
-    container_started.send(sender=sender, container=container)
+def restarted_handler(sender, container, **kwargs):
+    if settings.DEBUG:
+        print "Restarting container via signal..."
+    if container.docker_id in docker.containers():
+        docker.restart(container=container.docker_id)
 
 
-#
-# Bridges
-#
-""
-@receiver(pre_delete, sender=Container)
-def pre_delete(sender, instance, **kwargs):
-    print("Received container_pre_delete signal from container.")
-    containers = d.containers()
-    tmp = False
-    for cont in containers:
-	if cont['Id'] == instance.ct_id:
-	    tmp=True
-    if tmp:
-	container_stopped.send(sender='', container=instance)
-    container_deleted.send(sender='', container=instance)
-    if instance.is_clone:
-	image_deleted.send(sender='', id=instance.image.img_id)
+@receiver(container_started)
+def started_handler(sender, container, **kwargs):
+    if settings.DEBUG:
+        print "Starting container via signal..."
+    # TOOD
 
-""
-@receiver(pre_save, sender=Container)
-def pre_save(sender, instance, **kwargs):
-    print("Received pre_save signal from container.")
-    if instance.status == True:
-	container_started.send(sender='',container=instance)
+
+@receiver(container_stopped)
+def stopped_handler(sender, container, **kwargs):
+    if settings.DEBUG:
+        print "Stopping container via signal..."
+    if container.docker_id in docker.containers(all=False):
+        docker.stop(container=container.docker_id)
+
+
+"""
+Internal receivers to map the Django built-in signals into custom ones.
+"""
+@receiver(post_delete, sender=Container, dispatch_uid='ipynbsrv.wui.signals.containers.post_delete_handler')
+def post_delete_handler(sender, instance, **kwargs):
+    container_deleted.send(sender, container=instance)
+
+@receiver(post_save, sender=Container, dispatch_uid='ipynbsrv.wui.signals.containers.post_save_handler')
+def post_save_handler(sender, instance, **kwargs):
+    if kwargs['created']:
+        container_created.send(sender, container=instance)
     else:
-	container_stopped.send(sender='',container=instance)
-    # TODO: raise signals
-
+        container_modified.send(sender, container=instance, fields=kwargs['update_fields'])

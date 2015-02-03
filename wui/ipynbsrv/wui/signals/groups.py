@@ -1,9 +1,10 @@
 from django.conf import settings
-from django.contrib.auth.models import Group
-from django.db.models.signals import post_delete, post_save
+from django.contrib.auth.models import Group, User
+from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import LdapGroup, LdapUser, Share
-from ipynbsrv.wui.signals.signals import group_created, group_deleted, group_modified, share_deleted
+from ipynbsrv.wui.signals.signals import group_created, group_deleted, group_member_added, \
+    group_member_removed, group_modified, share_deleted
 
 
 """
@@ -15,7 +16,7 @@ This is important for us so share groups are created.
 @receiver(group_created)
 def created_handler(sender, group, **kwargs):
     if settings.DEBUG:
-        print "Creating LDAP group via signal..."
+        print "group_created handler fired"
     next_gid = LdapGroup.objects.all().latest('gid').gid + 1
     if next_gid < settings.SHARE_GROUPS_OFFSET:
         next_gid = settings.SHARE_GROUPS_OFFSET + 1
@@ -29,10 +30,10 @@ they are deleted from Django.
 """
 @receiver(group_deleted)
 def deleted_handler(sender, group, **kwargs):
+    if settings.DEBUG:
+        print "group_deleted handler fired"
     ldap_group = LdapGroup.objects.filter(pk=group.name).first()
     if ldap_group:
-        if settings.DEBUG:
-            print "Deleting LDAP group via signal..."
         ldap_group.delete()
         # make sure to also delete the share for this group
         share = Share.objects.filter(group=group).first()
@@ -42,35 +43,64 @@ def deleted_handler(sender, group, **kwargs):
 
 
 """
-Method triggered by group_modified signals.
+Method triggered by group_member_added signals.
 
-Currently it updates the members of the passed in group
-and is only used when adding/removing users from a share.
+We use that chance to add LDAP users to the LDAP group
+if both exist.
 """
-@receiver(group_modified)
-def modified_handler(sender, group, fields, **kwargs):
+@receiver(group_member_added)
+def member_added_handler(sender, group, member, **kwargs):
     if settings.DEBUG:
-        print "Modifiying LDAP group via signal..."
-    ldap_group = LdapGroup.objects.get(pk=group.name)
-    # update the group memberships
-    members = []
-    for member in group.user_set.all():
-        members.append(member.username)
-    if members:
-        ldap_group.members = members
+        print "group_member_added handler fired"
+    ldap_group = LdapGroup.objects.filter(pk=group.name).first()
+    ldap_user = LdapUser.objects.filter(pk=member.username).first()
+    if ldap_group and ldap_user:
+        ldap_group.members.add(member.username)
         ldap_group.save()
 
 
 """
-Internal receivers to map the Django built-in signals into custom ones.
+Method triggered by group_member_removed signals.
 """
-@receiver(post_delete, sender=Group, dispatch_uid='ipynbsrv.wui.signals.groups.post_delete_handler')
-def post_delete_handler(sender, instance, **kwargs):
-    group_deleted.send(sender=sender, group=instance)
+@receiver(group_member_removed)
+def member_removed_handler(sender, group, member, **kwargs):
+    if settings.DEBUG:
+        print "group_member_removed handler fired"
+    ldap_group = LdapGroup.objects.filter(pk=group.name).first()
+    ldap_user = LdapUser.objects.filter(pk=member.username).first()
+    if ldap_group and ldap_user:
+        ldap_group.members.remove(member.username)
+        ldap_group.save()
 
-@receiver(post_save, sender=Group, dispatch_uid='ipynbsrv.wui.signals.groups.post_save_handler')
+
+"""
+Method triggered by group_modified signals.
+"""
+@receiver(group_modified)
+def modified_handler(sender, group, fields, **kwargs):
+    if settings.DEBUG:
+        print "group_modified handler fired"
+
+
+"""
+Internal receivers to map the Django built-in signals to custom ones.
+"""
+@receiver(m2m_changed, sender=User.groups.through)
+def m2m_changed_handler(sender, instance, **kwargs):
+    user = User.objects.get(pk=pk_set.pop())
+    action = kwargs['action']
+    if action == 'post_save':
+        group_member_added.send(sender=sender, group=instance, member=user, kwargs=kwargs)
+    elif action == 'post_delete':
+        group_member_removed.send(sender=sender, group=instance, member=user, kwargs=kwargs)
+
+@receiver(post_delete, sender=Group)
+def post_delete_handler(sender, instance, **kwargs):
+    group_deleted.send(sender=sender, group=instance, kwargs=kwargs)
+
+@receiver(post_save, sender=Group)
 def post_save_handler(sender, instance, **kwargs):
     if kwargs['created']:
-        group_created.send(sender, group=instance)
+        group_created.send(sender=sender, group=instance, kwargs=kwargs)
     else:
-        group_modified.send(sender, group=instance, fields=kwargs['update_fields'])
+        group_modified.send(sender=sender, group=instance, fields=kwargs['update_fields'], kwargs=kwargs)

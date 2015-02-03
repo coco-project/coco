@@ -14,8 +14,8 @@
                         <label for="modal-base">Base container</label>
                         <select id="modal-create-image_ct-name" name="ct_name" class="form-control" id="modal-base" required>
                             <option></option>
-                            {% for c in conts %}
-                                <option>{{ c.name }}</option>
+                            {% for ct in containers %}
+                                <option>{{ ct.name }}</option>
                             {% endfor %}
                         </select>
                     </div>

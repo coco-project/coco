@@ -2,7 +2,7 @@ from django.contrib.auth.models import Group, User
 from django.db import models
 from django.utils.encoding import smart_unicode
 import ldapdb.models
-from ldapdb.models.fields import CharField, ListField, IntegerField
+from ldapdb.models import fields
 
 
 class LdapGroup(ldapdb.models.Model):
@@ -10,9 +10,9 @@ class LdapGroup(ldapdb.models.Model):
     base_dn = "ou=groups,dc=ipynbsrv,dc=ldap"
     object_classes = ['posixGroup']
 
-    gid = IntegerField(db_column='gidNumber', unique=True)
-    name = CharField(db_column='cn', max_length=200, primary_key=True)
-    members = ListField(db_column='memberUid')
+    gid = fields.IntegerField(db_column='gidNumber', unique=True)
+    name = fields.CharField(db_column='cn', max_length=200, primary_key=True)
+    members = fields.ListField(db_column='memberUid')
 
     def get_members(self):
         members = []
@@ -36,13 +36,13 @@ class LdapUser(ldapdb.models.Model):
     object_classes = ['inetOrgPerson', 'posixAccount']
 
     # inetOrgPerson
-    cn = CharField(db_column='cn', unique=True)
-    sn = CharField(db_column='sn', unique=True)
-    uid = IntegerField(db_column='uidNumber', unique=True)
-    username = CharField(db_column='uid', max_length=200, primary_key=True)
-    password = CharField(db_column='userPassword')
-    group = IntegerField(db_column='gidNumber')
-    home_directory = CharField(db_column='homeDirectory')
+    cn = fields.CharField(db_column='cn', unique=True)
+    sn = fields.CharField(db_column='sn', unique=True)
+    uid = fields.IntegerField(db_column='uidNumber', unique=True)
+    username = fields.CharField(db_column='uid', max_length=200, primary_key=True)
+    password = fields.CharField(db_column='userPassword')
+    group = fields.IntegerField(db_column='gidNumber')
+    home_directory = fields.CharField(db_column='homeDirectory')
 
     @staticmethod
     def for_user(user):
@@ -103,26 +103,16 @@ class Share(models.Model):
         return smart_unicode(self.name)
 
 
-class Host(models.Model):
-    ip = models.CharField(primary_key=True, null=False, max_length=15)
-    fqdn = models.CharField(unique=True, null=True, blank=True, max_length=75)
-    username = models.CharField(null=False, max_length=30)
-    ssh_port = models.IntegerField(null=False, default=22)
-    docker_version = models.CharField(null=False, max_length=12)
-    docker_port = models.IntegerField(null=False, max_length=6, default=9999)
-
-
 # FIXME: PK should be img_id and host
 class Image(models.Model):
     id = models.AutoField(primary_key=True)
-    img_id = models.CharField(null=False, max_length=64)
-    cmd = models.CharField(null=True, blank=True, max_length=100)
-    ports = models.CharField(null=True, blank=True, max_length=25)
     name = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
-    # host = models.ForeignKey(Host)
+    docker_id = models.CharField(null=False, max_length=64)
+    cmd = models.CharField(null=True, blank=True, max_length=100)
+    exposed_ports = models.CommaSeparatedIntegerField(null=True, blank=True, max_length=24)
+    proxied_port = models.PositiveIntegerField(null=False, max_length=6)
     owner = models.ForeignKey(User)
-    # tags = models.ManyToManyField(Tag)
     is_public = models.BooleanField(default=False)
     is_clone = models.BooleanField(default=False)
 
@@ -136,16 +126,13 @@ class Image(models.Model):
 # FIXME: PK should be ct_id and host
 class Container(models.Model):
     id = models.AutoField(primary_key=True)
-    ct_id = models.CharField(null=False, max_length=64)
     name = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
-    status = models.BooleanField(default=False)
-    #host = models.ForeignKey(Host)
+    docker_id = models.CharField(null=False, max_length=64)
     image = models.ForeignKey(Image)
     owner = models.ForeignKey(User)
-    #tags = models.ManyToManyField(Tag)
-    is_clone = models.BooleanField(default=False)
-    exposeport = models.CharField(null=True, blank=True, max_length=5)
+    running = models.BooleanField(default=False)
+    clone_of = models.ForeignKey('self')
 
     def __str__(self):
         return smart_unicode(self.name)

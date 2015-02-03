@@ -3,6 +3,10 @@ from django.http.response import HttpResponse
 from ipynbsrv.wui.models import Container, LdapUser
 
 
+COOKIE_NAME = 'username'
+URI_HEADER = 'HTTP_X_ORIGINAL_URI'
+
+
 """
 @user_passes_test decorator callback that checks either the
 passed in user is allowed to access the application or not.
@@ -25,11 +29,11 @@ Response codes of 20x will allow the user to access the requested resource.
 """
 def workspace_auth(request):
     if request.method == "GET":
-        username = request.get_signed_cookie('username', default=None)
+        username = request.get_signed_cookie(COOKIE_NAME, default=None)
         if username:  # ensure the signed cookie set at login is there
             user = User.objects.filter(username=username).first()
             if user:  # ensure the user really exists
-                uri = request.META.get('HTTP_X_ORIGINAL_URI')
+                uri = request.META.get(URI_HEADER)
                 if uri:  # ensure the X- header is present. its set by Nginx
                     splits = uri.split('/')
                     if len(splits) >= 4:

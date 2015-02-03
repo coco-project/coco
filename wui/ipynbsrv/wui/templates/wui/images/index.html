@@ -30,16 +30,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in images %}
+                        {% for img in images %}
                         <tr>
-                            <td>{{ i.name }}</td>
-                            <td>{{ i.description }}</td>
-                            <td style="text-align: center"><input type="checkbox" data-sort="1" {% if i.is_public == True %}checked{% endif %}></td>
+                            <td>{{ img.name }}</td>
+                            <td>{{ img.description }}</td>
+                            <td style="text-align: center"><input type="checkbox" data-sort="1" {% if img.is_public %}checked{% endif %}></td>
                             <td>
-                                {% if i.owner == owner %}
+                                {% if img.owner == request.user %}
                                 <form action="{% url 'image_delete' %}" method="POST" class="pull-right" role="form">
                                     {% csrf_token %}
-                                    <input type="hidden" name="id" value="{{ i.img_id }}">
+                                    <input type="hidden" name="id" value="{{ img.id }}">
                                     <button type="submit" class="btn btn-sm btn-danger" title="Delete this image?" data-toggle="confirmation" data-placement="left">
                                         <i class="glyphicon glyphicon-remove"></i>
                                     </button>

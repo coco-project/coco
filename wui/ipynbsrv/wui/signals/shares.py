@@ -4,9 +4,12 @@ import stat
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from ipynbsrv.wui.models import Group, LdapGroup, Share
-from ipynbsrv.wui.signals.signals import share_created, share_deleted
+from ipynbsrv.wui.models import LdapGroup, Share
+from ipynbsrv.wui.signals.signals import share_created, share_deleted, share_modified
 from ipynbsrv.wui.tools import Filesystem
+
+
+GROUP_PREFIX = 'share_'
 
 
 """
@@ -20,12 +23,12 @@ def created_handler(sender, share, **kwargs):
     path = os.path.join(settings.SHARE_ROOT, share.name)
     Filesystem.ensure_directory(path)
     # set owner and permissions
-    ldap_group = LdapGroup.objects.filter(name='share_' + share.name).first()
+    ldap_group = LdapGroup.objects.filter(name=GROUP_PREFIX + share.name).first()
     if ldap_group:
         os.chown(path, -1, ldap_group.gid)
         os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_ISGID)
     else:
-        raise "required LDAP group '{0}' does not exist.".format(share.name)
+        raise "required LDAP group '%s' does not exist." % share.name
 
 
 """
@@ -42,15 +45,23 @@ def deleted_handler(sender, share, **kwargs):
 
 
 """
-Internal receivers to map the Django built-in signals into custom ones.
+Method triggered by group_modified signals.
 """
-@receiver(post_delete, sender=Share, dispatch_uid='ipynbsrv.wui.signals.shares.post_delete_handler')
-def post_delete_handler(sender, instance, **kwargs):
-    share_deleted.send(sender, share=instance)
+@receiver(share_modified)
+def modified_handler(sender, share, fields, **kwargs):
+    if settings.DEBUG:
+        print "share_modified handler fired"
 
-@receiver(post_save, sender=Share, dispatch_uid='ipynbsrv.wui.signals.shares.post_save_handler')
+"""
+Internal receivers to map the Django built-in signals to custom ones.
+"""
+@receiver(post_delete, sender=Share)
+def post_delete_handler(sender, instance, **kwargs):
+    share_deleted.send(sender=sender, share=instance, kwargs=kwargs)
+
+@receiver(post_save, sender=Share)
 def post_save_handler(sender, instance, **kwargs):
     if kwargs['created']:
         share_created.send(sender, share=instance)
-    # else:
-    #     share_modified.send(sender, share=instance, fields=kwargs['update_fields'])
+    else:
+        share_modified.send(sender, share=instance, fields=kwargs['update_fields']. kwargs=kwargs)

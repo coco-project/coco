@@ -4,12 +4,11 @@ from django.conf.urls import patterns, url
 urlpatterns = patterns('',
     # /accounts/...
     url(r'^accounts/login/$', 'django.contrib.auth.views.login', {
-            'template_name': 'wui/user/login.html',
-            'extra_context': {
-                'title': 'Login'
-            }
+        'template_name': 'wui/user/login.html',
+        'extra_context': {
+            'title': 'Login'
         }
-    ),
+    }),
     url(r'^accounts/flag/$', 'ipynbsrv.wui.views.accounts.flag', name='accounts_flag'),
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='accounts_logout'),
     url(r'^accounts/unflag/$', 'ipynbsrv.wui.views.accounts.unflag', name='accounts_unflag'),

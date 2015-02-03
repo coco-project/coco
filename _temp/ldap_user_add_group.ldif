@@ -1,5 +1,0 @@
-dn: cn=_GROUP_,ou=groups,dc=docker,dc=local
-changetype: modify
-add: memberUID
-memberUID: _USER_
-

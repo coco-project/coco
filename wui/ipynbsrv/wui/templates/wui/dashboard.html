@@ -30,56 +30,56 @@
                             </button>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container">
                                 <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('connect-{{ c.ct_id }}').getElementsByTagName('button')[0].click();">Connect</a>
-                                    <form id="connect-{{ c.ct_id }}" action="/workspace/{{ c.exposeport }}/" method="GET" target="_blank" role="form">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('connect-{{ c.docker_id }}').getElementsByTagName('button')[0].click();">Connect</a>
+                                    <form id="connect-{{ c.docker_id }}" action="/workspace/{{ c.exposeport }}/" method="GET" target="_blank" role="form">
                                         {% csrf_token %}
                                         <button type="submit"></button>
                                     </form>
                                 </li>
                                 <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('stop-{{ c.ct_id }}').getElementsByTagName('button')[0].click();">Stop</a>
-                                    <form id="stop-{{ c.ct_id }}" action="{% url 'container_stop' %}" method="POST" role="form">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('stop-{{ c.docker_id }}').getElementsByTagName('button')[0].click();">Stop</a>
+                                    <form id="stop-{{ c.docker_id }}" action="{% url 'container_stop' %}" method="POST" role="form">
                                         {% csrf_token %}
-                                        <input name="id" type="hidden" value="{{ c.ct_id }}">
+                                        <input name="id" type="hidden" value="{{ c.docker_id }}">
                                         <button type="submit"></button>
                                     </form>
                                 </li>
                                 <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('restart-{{ c.ct_id }}').getElementsByTagName('button')[0].click();">Restart</a>
-                                    <form id="restart-{{ c.ct_id }}" action="{% url 'container_restart' %}" method="POST" role="form">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('restart-{{ c.docker_id }}').getElementsByTagName('button')[0].click();">Restart</a>
+                                    <form id="restart-{{ c.docker_id }}" action="{% url 'container_restart' %}" method="POST" role="form">
                                         {% csrf_token %}
-                                        <input name="id" type="hidden" value="{{ c.ct_id }}">
+                                        <input name="id" type="hidden" value="{{ c.docker_id }}">
                                         <button type="submit"></button>
                                     </form>
                                 </li>
                                 <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('delete-{{ c.ct_id }}').getElementsByTagName('button')[0].click();">Delete</a>
-                                    <form id="delete-{{ c.ct_id }}" action="{% url 'containers_delete' %}" method="POST" role="form">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('delete-{{ c.docker_id }}').getElementsByTagName('button')[0].click();">Delete</a>
+                                    <form id="delete-{{ c.docker_id }}" action="{% url 'containers_delete' %}" method="POST" role="form">
                                         {% csrf_token %}
-                                        <input name="id" type="hidden" value="{{ c.ct_id }}">
+                                        <input name="id" type="hidden" value="{{ c.docker_id }}">
                                         <button type="submit"></button>
                                     </form>
                                 </li>
                                 <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('clone-{{ c.ct_id }}').getElementsByTagName('button')[0].click();">Clone</a>
-                                    <form id="clone-{{ c.ct_id }}" action="{% url 'containers_clone' %}" method="POST" role="form">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('clone-{{ c.docker_id }}').getElementsByTagName('button')[0].click();">Clone</a>
+                                    <form id="clone-{{ c.docker_id }}" action="{% url 'containers_clone' %}" method="POST" role="form">
                                         {% csrf_token %}
                                         <input name="name" type="hidden" value="{{ c.name }}">
-                                        <input name="id" type="hidden" value="{{ c.ct_id }}">
+                                        <input name="id" type="hidden" value="{{ c.docker_id }}">
                                         <button type="submit"></button>
                                     </form>
                                 </li>
                                 <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('backup-{{ c.ct_id }}').getElementsByTagName('button')[0].click();">Backup</a>
-                                    <form id="backup-{{ c.ct_id }}" action="{% url 'containers_share' %}" method="POST" role="form">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('backup-{{ c.docker_id }}').getElementsByTagName('button')[0].click();">Backup</a>
+                                    <form id="backup-{{ c.docker_id }}" action="{% url 'containers_share' %}" method="POST" role="form">
                                         {% csrf_token %}
                                         <input type="hidden" id="modal-create-image_share" name="share" value="{{ c.name }}">
                                         <button type="submit" value="backup" data-toggle="modal2" data-target="#modal-image-create"></button>
                                     </form>
                                 </li>
                                 <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('share-{{ c.ct_id }}').getElementsByTagName('button')[0].click();">Share</a>
-                                    <form id="share-{{ c.ct_id }}" action="{% url 'containers_share' %}" method="POST" role="form">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('share-{{ c.docker_id }}').getElementsByTagName('button')[0].click();">Share</a>
+                                    <form id="share-{{ c.docker_id }}" action="{% url 'containers_share' %}" method="POST" role="form">
                                         {% csrf_token %}
                                         <input type="hidden" id="modal-create-image_share" name="share" value="{{ c.name }}">
                                         <button type="submit" value="share" data-toggle="modal3" data-target="#modal-image-create"></button>

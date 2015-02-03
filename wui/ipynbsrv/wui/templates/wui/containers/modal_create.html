@@ -22,8 +22,8 @@
                         <label for="modal-image">Image</label>
                         <select name="image" class="form-control" id="modal-image" required>
                             <option></option>
-                            {% for i in images %}
-                                <option>{{ i.name }}</option>
+                            {% for img in images %}
+                                <option>{{ img.name }}</option>
                             {% endfor %}
                         </select>
                     </div>

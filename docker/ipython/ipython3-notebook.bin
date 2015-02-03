@@ -69,4 +69,4 @@ chmod 0700 ${IPYTHON_SECURITY_DIR}
 echo "Starting the IPython notebook under user '${USER}' on port ${PORT}..."
 /sbin/setuser ${USER} \
     ipython3 notebook --no-browser --ip=0.0.0.0 \
-    --ipython-dir=${IPYTHON_DIR} --notebook-dir=/data --user=${USER}
+    --ipython-dir=${IPYTHON_DIR} --notebook-dir=/data

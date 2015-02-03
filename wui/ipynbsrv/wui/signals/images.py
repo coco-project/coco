@@ -1,57 +1,54 @@
-from django.db.models.signals import pre_delete, pre_save
+from django.conf import settings
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import Image
-from ipynbsrv.wui.signals.signals import *
+from ipynbsrv.wui.signals.signals import image_created, image_deleted, image_modified
 from ipynbsrv.wui.tools import Docker
 
 
-d = Docker()
+docker = Docker()
 
-""
+
+"""
+Handler triggered by image_created signals.
+"""
 @receiver(image_created)
-def created(sender, **kwargs):
-    print("Received image_created signal.")
+def created_handler(sender, image, kwargs):
+    if settings.DEBUG:
+        print "image_created handler fired"
 
 
-""
+"""
+Handler triggered by image_deleted signals.
+"""
 @receiver(image_deleted)
-def deleted(sender, id, **kwargs):
-    print("Received image_deleted signal.")
-    images = d.images()
-    tmp=False
-    for imgs in images:
-	if imgs['Id'] == id:
-	    tmp=True
-    if tmp:
-    	d.delImage(id)
+def deleted_handler(sender, image, **kwargs):
+    if settings.DEBUG:
+        print "Deleting image via signal..."
+    img_id = docker.images(name=image.name).first()
+    if img_id:
+        docker.remove_image(img_id)
+
+
+"""
+Handler triggered by image_modified signals.
+"""
+@receiver(image_modified)
+def modified_handler(sender, image, fields, kwargs):
+    if settings.DEBUG:
+        print "image_modified handler fired"
+
+
+"""
+Internal receivers to map the Django built-in signals to custom ones.
+"""
+@receiver(post_delete, sender=Image)
+def post_delete_handler(sender, instance, **kwargs):
+    image_deleted.send(sender=sender, image=instance, kwargs=kwargs)
+
+@receiver(post_save, sender=Image)
+def post_save_handler(sender, instance, **kwargs):
+    if kwargs['created']:
+        image_created.send(sender=sender, image=instance, kwargs=kwargs)
     else:
-	print("image doesnt exist")
-
-
-""
-@receiver(image_edited)
-def edited(sender, **kwargs):
-    print("Received image_edited signal.")
-
-
-""
-@receiver(image_shared)
-def shared(sender, **kwargs):
-    print("Received image_shared signal.")
-
-
-#
-# Bridges
-#
-""
-@receiver(pre_delete, sender=Image)
-def pre_delete(sender, instance, **kwargs):
-    print("Received pre_delete signal from image.")
-    image_deleted.send(sender='', id=instance.img_id)
-
-""
-@receiver(pre_save, sender=Image)
-def pre_save(sender, **kwargs):
-    print("Received pre_save signal from image.")
-    # TODO: raise signals
-
+        image_modified.send(sender=sender, image=instance, fields=kwargs['update_fields'], kwargs=kwargs)
