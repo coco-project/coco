@@ -70,6 +70,13 @@ def modified_handler(sender, user, fields, **kwargs):
 """
 Internal receivers to map the Django built-in signals to custom ones.
 """
+@receiver(m2m_changed, sender=User.groups.through)
+def m2m_changed_handler(sender, instance, **kwargs):
+    if isinstance(instance, User):
+        action = kwargs['action']
+        if action == 'post_add' or action == 'post_remove':
+            user_modified.send(sender=sender, user=instance, fields=['groups'], kwargs=kwargs)
+
 @receiver(post_delete, sender=User)
 def post_delete_handler(sender, instance, **kwargs):
     user_deleted.send(sender=sender, user=instance, kwargs=kwargs)

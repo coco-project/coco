@@ -24,7 +24,10 @@ def add_user(request):
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    share_id = int(request.POST.get('id'))
+    try:
+        share_id = int(request.POST.get('id'))
+    except ValueError:
+        share_id = -1
     usernames = request.POST.get('users')
     origin = request.POST.get('origin', None)
 

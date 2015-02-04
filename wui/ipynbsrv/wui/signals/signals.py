@@ -34,7 +34,7 @@ We use these signals to decouple internal Django users from our Docker installat
 It allows us to threat containers as regular Django objects across the whole app,
 while we can synchronize actions with the Docker installation in the handlers.
 """
-container_commited = Signal(providing_args=['container', 'image'])  # TODO: check args
+container_commited = Signal(providing_args=['container', 'image'])
 container_created = Signal(providing_args=['container'])
 container_deleted = Signal(providing_args=['container'])
 container_modified = Signal(providing_args=['container', 'fields'])

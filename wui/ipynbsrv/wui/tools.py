@@ -11,6 +11,12 @@ class Docker(object):
         self.client = Client(base_url='unix://var/run/docker.sock', version=settings.DOCKER_API_VERSION)
 
     """
+    Link: https://github.com/docker/docker-py/blob/master/docs/api.md#commit
+    """
+    def commit(self, container, name, tag='latest'):
+        self.client.commit(container=container, name=name, tag=tag)
+
+    """
     Link: https://github.com/docker/docker-py/blob/master/docs/api.md#containers
     """
     def containers(self, quiet=True, all=True):
@@ -19,7 +25,7 @@ class Docker(object):
     """
     Link: https://github.com/docker/docker-py/blob/master/docs/api.md#images
     """
-    def images(name=None, quiet=True, all=False):
+    def images(self, name=None, quiet=True, all=False):
         return self.client.images(name=name, quiet=quiet, all=all)
 
     """

@@ -91,10 +91,10 @@ Internal receivers to map the Django built-in signals to custom ones.
 """
 @receiver(m2m_changed, sender=User.groups.through)
 def m2m_changed_handler(sender, instance, **kwargs):
-    action = kwargs['action']
-    if action == 'post_add' or action == 'post_remove':
-        group_modified.send(sender=sender, group=instance, fields=['user_set'], kwargs=kwargs)
-        user_modified.send(sender=sender, user=User.objects.get(pk=kwargs['pk_set'].pop()), fields=['groups'], kwargs=kwargs)
+    if isinstance(instance, Group):
+        action = kwargs['action']
+        if action == 'post_add' or action == 'post_remove':
+            group_modified.send(sender=sender, group=instance, fields=['user_set'], kwargs=kwargs)
 
 
 @receiver(post_delete, sender=Group)

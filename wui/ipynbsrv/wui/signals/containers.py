@@ -2,9 +2,9 @@ import re
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from ipynbsrv.wui.models import Container
+from ipynbsrv.wui.models import Container, Image
 from ipynbsrv.wui.signals.signals import container_commited, container_created, container_deleted, container_modified, \
-    container_restarted, container_started, container_stopped
+    container_restarted, container_started, container_stopped, image_created
 from ipynbsrv.wui.tools import Docker
 
 
@@ -12,23 +12,23 @@ docker = Docker()
 
 
 @receiver(container_commited)
-def commited_handler(sender, container, **kwargs):
+def commited_handler(sender, container, image, **kwargs):
     if settings.DEBUG:
-        print "Committing container via signal..."
-    # TODO
+        print "container_commited handler fired"
+    image_created.send(sender=sender, image=image, kwargs=kwargs)
 
 
 @receiver(container_created)
 def created_handler(sender, container, **kwargs):
     if settings.DEBUG:
-        print "Creating container via signal..."
+        print "container_created handler fired"
     # TODO
 
 
 @receiver(container_deleted)
 def deleted_handler(sender, container, **kwargs):
     if settings.DEBUG:
-        print "Deleting container via signal..."
+        print "container_deleted handler fired"
     if container.docker_id in docker.containers():
         docker.remove_container(container.docker_id)
 
@@ -36,14 +36,14 @@ def deleted_handler(sender, container, **kwargs):
 @receiver(container_modified)
 def modified_handler(sender, container, fields, **kwargs):
     if settings.DEBUG:
-        print "Modifying container via signal..."
+        print "container_modified handler fired"
     # TODO
 
 
 @receiver(container_restarted)
 def restarted_handler(sender, container, **kwargs):
     if settings.DEBUG:
-        print "Restarting container via signal..."
+        print "container_restarted handler fired"
     if container.docker_id in docker.containers():
         docker.restart(container=container.docker_id)
 
@@ -51,14 +51,14 @@ def restarted_handler(sender, container, **kwargs):
 @receiver(container_started)
 def started_handler(sender, container, **kwargs):
     if settings.DEBUG:
-        print "Starting container via signal..."
+        print "container_started handler fired"
     # TOOD
 
 
 @receiver(container_stopped)
 def stopped_handler(sender, container, **kwargs):
     if settings.DEBUG:
-        print "Stopping container via signal..."
+        print "container_stopped handler fired"
     if container.docker_id in docker.containers(all=False):
         docker.stop(container=container.docker_id)
 

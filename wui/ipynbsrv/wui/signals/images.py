@@ -25,9 +25,9 @@ Handler triggered by image_deleted signals.
 def deleted_handler(sender, image, **kwargs):
     if settings.DEBUG:
         print "Deleting image via signal..."
-    img_id = docker.images(name=image.name).first()
-    if img_id:
-        docker.remove_image(img_id)
+    images = docker.images(name=image.name)
+    if len(images) == 1:
+        docker.remove_image(images.pop())
 
 
 """

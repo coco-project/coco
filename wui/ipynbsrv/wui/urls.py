@@ -25,10 +25,8 @@ urlpatterns = patterns('',
 
     # # /images(s)/...
     url(r'^images/$', 'ipynbsrv.wui.views.images.index', name='images'),
-    # url(r'^images/commit$', 'ipynbsrv.wui.views.images.commit', name='image_commit'),
+    url(r'^image/commit$', 'ipynbsrv.wui.views.images.commit', name='image_commit'),
     url(r'^image/delete$', 'ipynbsrv.wui.views.images.delete', name='image_delete'),
-    # url(r'^image/edit$', 'ipynbsrv.wui.views.images.edit', name='image::edit'),
-    # url(r'^image/share$', 'ipynbsrv.wui.views.images.share', name='image::share'),
 
     # /share(s)/...
     url(r'^shares/$', 'ipynbsrv.wui.views.shares.index', name='shares'),
