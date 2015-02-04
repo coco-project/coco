@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.core.exceptions import DoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponse
 from ipynbsrv.wui.models import Container, LdapUser, PortMapping
 
@@ -42,7 +42,7 @@ def workspace_auth(request):
                         container = PortMapping.objects.filter(external=port).first()
                         if container and container.owner == user:
                             return HttpResponse(status=200)
-            except DoesNotExist:
+            except ObjectDoesNotExist:
                 pass
 
     return HttpResponse(status=403)

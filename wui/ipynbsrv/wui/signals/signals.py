@@ -59,7 +59,7 @@ e.g. to create the share directory.
 """
 share_created = Signal(providing_args=['share'])
 share_deleted = Signal(providing_args=['share'])
-# share_member_added = Signal(providing_args=['share', 'user'])
-# share_member_leaved = Signal(providing_args=['share', 'member'])
-# share_member_removed = Signal(providing_args=['share', 'member'])
+share_member_added = Signal(providing_args=['share', 'user'])
+share_member_leaved = Signal(providing_args=['share', 'member'])
+share_member_removed = Signal(providing_args=['share', 'member'])
 share_modified = Signal(providing_args=['share', 'fields'])

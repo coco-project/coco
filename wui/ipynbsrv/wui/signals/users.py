@@ -3,7 +3,6 @@ import shutil
 import stat
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import LdapUser
@@ -20,22 +19,22 @@ Every LDAP user needs his home and public directory, so we create them here.
 def created_handler(sender, user, **kwargs):
     if settings.DEBUG:
         print "user_created handler fired"
-    try:
-        ldap_user = LdapUser.objects.get(pk=user.username)
+    username = user.get_username()
+    ldap_user = LdapUser.objects.filter(pk=username)
+    if ldap_user.exists():
+        ldap_user = ldap_user.first()
         # create the user's home directory
-        path = os.path.join(settings.HOME_ROOT, user.username)
+        path = os.path.join(settings.HOME_ROOT,username)
         Filesystem.ensure_directory(path)
         # set owner and permissions
         os.chown(path, ldap_user.id, ldap_user.group_id)
         os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
         # create the user's public directory
-        path = os.path.join(settings.PUBLIC_ROOT, ldap_user.username)
+        path = os.path.join(settings.PUBLIC_ROOT, username)
         Filesystem.ensure_directory(path)
         # set owner and permissions
         os.chown(path, ldap_user.id, ldap_user.group_id)
         os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
-    except ObjectDoesNotExist:
-        pass
 
 
 """
@@ -47,16 +46,16 @@ As soon as a user is deleted we can safely remove his home and public directory.
 def deleted_handler(sender, user, **kwargs):
     if settings.DEBUG:
         print "user_deleted handler fired"
-    try:
-        ldap_user = LdapUser.objects.get(pk=user.username)
+    username = user.get_username()
+    ldap_user = LdapUser.objects.filter(pk=username)
+    if ldap_user.exists():
+        ldap_user = ldap_user.first()
         # delete the user's home directory
-        path = os.path.join(settings.HOME_ROOT, ldap_user.username)
+        path = os.path.join(settings.HOME_ROOT, username)
         shutil.rmtree(path)
         # delete the user's public directory
-        path = os.path.join(settings.PUBLIC_ROOT, ldap_user.username)
+        path = os.path.join(settings.PUBLIC_ROOT, username)
         shutil.rmtree(path)
-    except ObjectDoesNotExist:
-        pass
 
 
 """

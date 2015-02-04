@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.decorators import user_passes_test
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect, render
 from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Share, Tag
@@ -29,20 +28,18 @@ def add_user(request):
     usernames = request.POST.get('users')
     origin = request.POST.get('origin', None)
 
-    try:
-        share = Share.objects.get(pk=share_id)
+    share = Share.objects.filter(pk=share_id)
+    if share.exists():
+        share = share.first()
         if share.owner == request.user:
             for user in usernames.split(","):
-                try:
-                    user = User.objects.get(username=username)
-                    if not share.is_member(user):
-                        share.group.user_set.add(user)
-                except ObjectDoesNotExist:
-                    pass
+                user = User.objects.filter(username=user)
+                if user.exists() and not share.is_member(user.first()):
+                    share.group.user_set.add(user.first())
             messages.success(request, "Sucessfully added the new member(s).")
         else:
             messages.error(request, "Not enough permissions to add a new user to that share.")
-    except ObjectDoesNotExist:
+    else:
         messages.error(request, "Share does not exist.")
 
     if origin:
@@ -110,14 +107,15 @@ def delete(request):
 
     share_id = int(request.POST.get('id'))
 
-    try:
-        share = Share.objects.get(pk=share_id)
+    share = Share.objects.filter(pk=share_id)
+    if share.exists():
+        share = share.first()
         if share.owner == request.user:
             share.delete()
             messages.success(request, "Share deleted sucessfully.")
         else:
             messages.error(request, "Not enough permissions to delete this share.")
-    except DoesNotExist:
+    else:
         messages.error(request, "Share does not exist.")
 
     return redirect('shares')
@@ -153,14 +151,15 @@ def leave(request):
 
     share_id = int(request.POST.get('id'))
 
-    try:
-        share = Share.objects.get(pk=share_id)
+    share = Share.objects.filter(pk=share_id)
+    if share.exists():
+        share = share.first()
         if share.owner == request.user:
             messages.error(request, "Cannot leave an owned share. Delete it instead.")
         else:
             share.group.user_set.remove(request.user)
             messages.success(request, "Successfully leaved the share.")
-    except ObjectDoesNotExist:
+    else:
         messages.error(request, "Share does not exist.")
 
     return redirect('shares')
@@ -177,8 +176,9 @@ def manage(request, share_id):
         messages.error(request, "Invalid request method.")
         return redirect('shares')
 
-    try:
-        share = Share.objects.get(pk=share_id)
+    share = Share.objects.filter(pk=share_id)
+    if share.exists():
+        share = share.first()
         if share.owner == request.user:
             return render(request, 'wui/shares/manage.html', {
                 'title': "Manage Share",
@@ -187,7 +187,7 @@ def manage(request, share_id):
             })
         else:
             messages.error(request, "Not enough permissions to manage this share.")
-    except ObjectDoesNotExist:
+    else:
         messages.error(request, "Share does not exist.")
 
     return redirect('shares')
@@ -211,20 +211,21 @@ def remove_user(request):
     share_id = int(request.POST.get('share_id'))
     user_id = int(request.POST.get('user_id'))
 
-    try:
-        share = Share.objects.get(pk=share_id)
+    share = Share.objects.filter(pk=share_id)
+    if share.exists():
+        share = share.first()
         if share.owner == request.user:
-            try:
-                user = User.objects.get(pk=user_id)
-                share.group.user_set.remove(user)
+            user = User.objects.filter(pk=user_id)
+            if user.exists():
+                share.group.user_set.remove(user.first())
                 messages.success(request, "Removed used from share.")
                 request.method = "GET"
                 return redirect('share_manage', share.id)
-            except ObjectDoesNotExist:
+            else:
                 messages.error(request, "User does not exist.")
         else:
             messages.error(request, "Not enough permissions for that.")
-    except ObjectDoesNotExist:
+    else:
         messages.error(request, "Share does not exist.")
 
     return redirect('shares')

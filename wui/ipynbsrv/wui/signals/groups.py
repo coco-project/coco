@@ -1,11 +1,10 @@
 from django.conf import settings
 from django.contrib.auth.models import Group, User
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import LdapGroup, LdapUser, Share
 from ipynbsrv.wui.signals.signals import group_created, group_deleted, group_member_added, \
-    group_member_removed, group_modified, share_deleted
+    group_member_removed, group_modified, share_deleted, user_modified
 
 
 """
@@ -33,15 +32,14 @@ they are deleted from Django.
 def deleted_handler(sender, group, **kwargs):
     if settings.DEBUG:
         print "group_deleted handler fired"
-    try:
-        ldap_group = LdapGroup.objects.get(pk=group.name)
-        ldap_group.delete()
+    ldap_group = LdapGroup.objects.filter(pk=group.name)
+    if ldap_group.exists():
+        ldap_group.first().delete()
         # make sure to also delete the share for this group
-        share = Share.objects.get(group=group)
-        share.delete()
-        share_deleted.send(None, share=share)  # Django should do that for us
-    except ObjectDoesNotExist:
-        pass
+        share = Share.objects.filter(group=group)
+        if share.exists():
+            share.first().delete()
+            share_deleted.send(sender=None, share=share)  # Django should do that for us
 
 
 """
@@ -54,13 +52,12 @@ if both exist.
 def member_added_handler(sender, group, member, **kwargs):
     if settings.DEBUG:
         print "group_member_added handler fired"
-    try:
-        ldap_group = LdapGroup.objects.get(pk=group.name)
-        ldap_user = LdapUser.objects.get(pk=member.username)
-        ldap_group.members.add(member.username)
-        ldap_group.save()
-    except ObjectDoesNotExist:
-        pass
+    ldap_group = LdapGroup.objects.get(pk=group.name)
+    members = []
+    for member in group.user_set.all():
+        members.append(member.get_username())
+    ldap_group.members = members
+    ldap_group.save()
 
 
 """
@@ -70,13 +67,7 @@ Method triggered by group_member_removed signals.
 def member_removed_handler(sender, group, member, **kwargs):
     if settings.DEBUG:
         print "group_member_removed handler fired"
-    try:
-        ldap_group = LdapGroup.objects.get(pk=group.name)
-        ldap_user = LdapUser.objects.get(pk=member.username)
-        ldap_group.members.remove(member.username)
-        ldap_group.save()
-    except ObjectDoesNotExist:
-        pass
+    member_added_handler(sender=sender, group=group, member=member, kwargs=kwargs)
 
 
 """
@@ -86,6 +77,13 @@ Method triggered by group_modified signals.
 def modified_handler(sender, group, fields, **kwargs):
     if settings.DEBUG:
         print "group_modified handler fired"
+    if 'user_set' in fields and 'action' in kwargs['kwargs']:
+        action = kwargs['kwargs']['action']
+        if action == 'post_add':
+            group_member_added.send(sender=sender, group=group, member=None, kwargs=kwargs)
+        elif action == 'post_remove':
+            group_member_removed.send(sender=sender, group=group, member=None, kwargs=kwargs)
+
 
 
 """
@@ -93,12 +91,11 @@ Internal receivers to map the Django built-in signals to custom ones.
 """
 @receiver(m2m_changed, sender=User.groups.through)
 def m2m_changed_handler(sender, instance, **kwargs):
-    user = User.objects.get(pk=pk_set.pop())
     action = kwargs['action']
-    if action == 'post_save':
-        group_member_added.send(sender=sender, group=instance, member=user, kwargs=kwargs)
-    elif action == 'post_delete':
-        group_member_removed.send(sender=sender, group=instance, member=user, kwargs=kwargs)
+    if action == 'post_add' or action == 'post_remove':
+        group_modified.send(sender=sender, group=instance, fields=['user_set'], kwargs=kwargs)
+        user_modified.send(sender=sender, user=User.objects.get(pk=kwargs['pk_set'].pop()), fields=['groups'], kwargs=kwargs)
+
 
 @receiver(post_delete, sender=Group)
 def post_delete_handler(sender, instance, **kwargs):

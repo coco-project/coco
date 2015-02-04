@@ -18,7 +18,7 @@ Signal receiver that creates the filesystem directory for a created share.
 @receiver(share_created)
 def created_handler(sender, share, **kwargs):
     if settings.DEBUG:
-        print "Creating share via signal..."
+        print "share_created handler fired"
     # create the directory
     path = os.path.join(settings.SHARE_ROOT, share.name)
     Filesystem.ensure_directory(path)
@@ -34,7 +34,7 @@ Signal receiver that deletes the filesystem directory for a removed share.
 @receiver(share_deleted)
 def deleted_handler(sender, share, **kwargs):
     if settings.DEBUG:
-        print "Deleting share via signal..."
+        print "share_deleted handler fired"
     # make sure the group is removed too
     share.group.delete()
     # remove the directory

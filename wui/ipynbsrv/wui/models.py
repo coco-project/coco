@@ -78,7 +78,7 @@ class Tag(models.Model):
 class Share(models.Model):
     name = models.CharField(unique=True, max_length=75)
     description = models.TextField(null=True, blank=True)
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, null=True, blank=True)
     owner = models.ForeignKey(User)
     group = models.ForeignKey(Group, unique=True)
 
