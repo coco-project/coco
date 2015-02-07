@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.decorators import user_passes_test
@@ -6,17 +7,12 @@ from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Share, Tag
 
 
-SHARE_GROUP_PREFIX = 'share_'
-
-
-"""
-POST only view to be used as POST action by forms trying to add
-new members to a share.
-
-URI: /share/add_user
-"""
 @user_passes_test(login_allowed)
 def add_user(request):
+    """
+    POST only view to be used as POST action by forms trying to add
+    new members to a share.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
@@ -52,14 +48,11 @@ def add_user(request):
     return redirect('shares')
 
 
-"""
-POST only view to be used as POST action by forms trying
-to create a new share.
-
-URI: /share/create
-"""
 @user_passes_test(login_allowed)
 def create(request):
+    """
+    POST only view to be used as POST action by forms trying to create a new share.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
@@ -76,7 +69,7 @@ def create(request):
         messages.error(request, "A share with that name already exists.")
     else:
         # creating the share's dedicated group
-        group = Group(name=SHARE_GROUP_PREFIX + name)
+        group = Group(name=settings.SHARE_GROUP_PREFIX + name)
         group.save()
         group.user_set.add(owner)
         # creating the share itself
@@ -93,14 +86,11 @@ def create(request):
     return redirect('shares')
 
 
-"""
-POST only view to be used as POST action by forms trying
-to delete a share.
-
-URI: /share/delete
-"""
 @user_passes_test(login_allowed)
 def delete(request):
+    """
+    POST only view to be used as POST action by forms trying to delete a share.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
@@ -124,27 +114,22 @@ def delete(request):
     return redirect('shares')
 
 
-"""
-Shares listing/index.
-
-URI: /shares/
-"""
 @user_passes_test(login_allowed)
 def index(request):
+    """
+    Shares listing/index.
+    """
     return render(request, 'wui/shares/index.html', {
         'title': "Shares",
         'shares': Share.for_user(request.user)
     })
 
 
-"""
-POST only view to be used by forms trying
-to remove a user from a share.
-
-URI: /share/leave
-"""
 @user_passes_test(login_allowed)
 def leave(request):
+    """
+    POST only view to be used by forms trying to remove a user from a share.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
@@ -168,13 +153,11 @@ def leave(request):
     return redirect('shares')
 
 
-"""
-Share detail/manage page.
-
-URI: /share/manage/<id>
-"""
 @user_passes_test(login_allowed)
 def manage(request, share_id):
+    """
+    Share detail/manage page.
+    """
     if request.method == "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
@@ -196,14 +179,11 @@ def manage(request, share_id):
     return redirect('shares')
 
 
-"""
-POST only view to be used by forms trying
-to remove a user from a share.
-
-URI: /share/remove_user
-"""
 @user_passes_test(login_allowed)
 def remove_user(request):
+    """
+    POST only view to be used by forms trying to remove a user from a share.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')

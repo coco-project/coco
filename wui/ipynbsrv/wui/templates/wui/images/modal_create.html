@@ -7,7 +7,7 @@
                 </button>
                 <h4 class="modal-title">New image</h4>
             </div>
-            <form role="form" action="{% url 'image_commit' %}" method="POST">
+            <form role="form" action="{% url 'container_commit' %}" method="POST">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="form-group">

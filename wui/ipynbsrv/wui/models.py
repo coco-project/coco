@@ -3,6 +3,8 @@ from django.contrib.auth.models import Group, User
 from django.db import models
 from django.utils.encoding import smart_unicode
 from ldapdb.models import fields
+from ipynbsrv.wui.signals.signals import *
+from random import randint
 
 
 class LdapGroup(ldapdb.models.Model):
@@ -57,6 +59,9 @@ class LdapUser(ldapdb.models.Model):
 
     def get_primary_group(self):
         return LdapGroup.objects.get(pk=self.pk)
+
+    def get_username(self):
+        return self.username
 
     def __str__(self):
         return smart_unicode(self.username)
@@ -129,6 +134,45 @@ class Container(models.Model):
     owner = models.ForeignKey(User)
     running = models.BooleanField(default=False)
     clone_of = models.ForeignKey('self')
+
+    def clone(self):
+        pre_container_cloned.send(sender=Container, container=self)
+        img = self.commit(img_name=self.name + "_clone", description=self.description, public=self.public, clone=True)
+        clone = Container(id=randint(0, 1000), name=self.name + "_clone", description=self.description, image=img,
+                          owner=self.owner, running=False, clone_of=self)
+        post_container_cloned.send(sender=Container, container=self, clone=clone)
+        clone.save()
+        if self.running:
+            clone.start()
+
+        return clone
+
+    def commit(self, img_name, description, public, clone=False):
+        pre_container_commited.send(sender=Container, container=self)
+        image = Image(id=randint(0, 1000), name=img_name, description=description, cmd=self.image.cmd, exposed_ports=self.image.exposed_ports,
+                      proxied_port=self.image.proxied_port, owner=self.owner, is_public=public, is_clone=clone)
+        post_container_commited.send(sender=Container, container=self, image=image)
+        image.save()
+
+        return image
+
+    def restart(self):
+        pre_container_restarted.send(sender=Container, container=self)
+        self.running = True
+        self.save(update_fields=['running'])
+        post_container_restarted.send(sender=Container, container=self)
+
+    def start(self):
+        pre_container_started.send(sender=Container, container=self)
+        self.running = True
+        self.save(update_fields=['running'])
+        post_container_started.send(sender=Container, container=self)
+
+    def stop(self):
+        pre_container_stopped.send(sender=Container, container=self)
+        self.running = False
+        self.save(update_fields=['running'])
+        post_container_stopped.send(sender=Container, container=self)
 
     def __str__(self):
         return smart_unicode(self.name)

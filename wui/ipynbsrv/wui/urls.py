@@ -9,23 +9,23 @@ urlpatterns = patterns('',
             'title': "Login"
         }
     }),
-    url(r'^accounts/flag/$', 'ipynbsrv.wui.views.accounts.flag', name='accounts_flag'),
+    url(r'^accounts/flag/$', 'ipynbsrv.wui.views.accounts.create_cookie', name='accounts_flag'),
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='accounts_logout'),
-    url(r'^accounts/unflag/$', 'ipynbsrv.wui.views.accounts.unflag', name='accounts_unflag'),
+    url(r'^accounts/unflag/$', 'ipynbsrv.wui.views.accounts.remove_cookie', name='accounts_unflag'),
 
     # /container(s)/...
-    # url(r'^containers/$', 'ipynbsrv.wui.views.containers.index', name='containers'),
-    # url(r'^containers/clone$', 'ipynbsrv.wui.views.containers.clone', name='containers_clone'),
-    # url(r'^containers/create$', 'ipynbsrv.wui.views.containers.create', name='container_create'),
-    # url(r'^containers/delete$', 'ipynbsrv.wui.views.containers.delCont', name='containers_delete'),
-    # url(r'^containers/stop$', 'ipynbsrv.wui.views.containers.stop', name='container_stop'),
-    # url(r'^containers/start$', 'ipynbsrv.wui.views.containers.start', name='container_start'),
-    # url(r'^containers/restart$', 'ipynbsrv.wui.views.containers.restart', name='container_restart'),
-    # url(r'^containers/share$', 'ipynbsrv.wui.views.containers.share', name='containers_share'),
+    url(r'^containers/$', 'ipynbsrv.wui.views.containers.index', name='containers'),
+    url(r'^container/clone$', 'ipynbsrv.wui.views.containers.clone', name='container_clone'),
+    url(r'^container/commit$', 'ipynbsrv.wui.views.containers.commit', name='container_commit'),
+    url(r'^container/create$', 'ipynbsrv.wui.views.containers.create', name='container_create'),
+    url(r'^container/delete$', 'ipynbsrv.wui.views.containers.delete', name='container_delete'),
+    url(r'^container/restart$', 'ipynbsrv.wui.views.containers.restart', name='container_restart'),
+    url(r'^container/share$', 'ipynbsrv.wui.views.containers.share', name='container_share'),
+    url(r'^container/start$', 'ipynbsrv.wui.views.containers.start', name='container_start'),
+    url(r'^container/stop$', 'ipynbsrv.wui.views.containers.stop', name='container_stop'),
 
     # # /images(s)/...
     url(r'^images/$', 'ipynbsrv.wui.views.images.index', name='images'),
-    url(r'^image/commit$', 'ipynbsrv.wui.views.images.commit', name='image_commit'),
     url(r'^image/delete$', 'ipynbsrv.wui.views.images.delete', name='image_delete'),
 
     # /share(s)/...
@@ -38,7 +38,7 @@ urlpatterns = patterns('',
     url(r'^share/remove_user$', 'ipynbsrv.wui.views.shares.remove_user', name='share_remove_user'),
 
     # internal
-    url(r'^_workspace_auth_check$', 'ipynbsrv.wui.auth.checks.workspace_auth'),
+    url(r'^_workspace_auth_check$', 'ipynbsrv.wui.auth.checks.workspace_auth_access'),
     url(r'^error/404$', 'ipynbsrv.wui.views.system.error_404'),
     url(r'^error/500$', 'ipynbsrv.wui.views.system.error_500'),
 

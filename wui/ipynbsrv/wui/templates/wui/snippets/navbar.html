@@ -16,6 +16,7 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
                 <li{% ifnav '^/$' %} class="active"{% endifnav %}><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li{% ifnav '^/containers/' %} class="active"{% endifnav %}><a href="{% url 'containers' %}">Containers</a></li>
                 <li{% ifnav '^/images/' %} class="active"{% endifnav %}><a href="{% url 'images' %}">Images</a></li>
                 <li{% ifnav '^/share' %} class="active"{% endifnav %}><a href="{% url 'shares' %}">Shares</a></li>
             </ul>
@@ -34,7 +35,7 @@
                     <a href="{% settings 'DOCS_URL' %}user-guide" title="User Guide" target="_blank">Use Guide</a>
                 </li>
                 <li class="hidden-sm hidden-md hidden-lg">
-                    <a href="{% settings 'PUBLIC_URL' %}{{ request.user.username }}" title="My publications" target="_blank">My publications</a>
+                    <a href="{% settings 'PUBLIC_URL' %}{{ request.user.get_username() }}" title="My publications" target="_blank">My publications</a>
                 </li>
                 <li class="hidden-sm hidden-md hidden-lg">
                     <a href="{% url 'accounts_unflag' %}" title="Logout">Logout</a>
