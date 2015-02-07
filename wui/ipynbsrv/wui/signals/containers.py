@@ -53,7 +53,8 @@ def create_on_host(sender, container, **kwargs):
             os.path.join('/data/', 'public'),
             os.path.join('/data/', 'shares')
         ]
-        ret = docker.create_container(name=container.name, image=container.image.docker_id, cmd=container.image.cmd,
+        ret = docker.create_container(name=container.name, image=container.image.docker_id,
+                                      cmd=container.image.cmd.replace('{{PORT}}', str(port_mapping.external)),
                                       ports=ports, volumes=volumes)
         container.docker_id = ret['Id']
         container.save(update_fields=['docker_id'])

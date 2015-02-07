@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.shortcuts import redirect, render
 from ipynbsrv.wui.auth.checks import login_allowed
-from ipynbsrv.wui.models import Container, Image
+from ipynbsrv.wui.models import Container, Image, PortMapping
 from random import randint
 
 
