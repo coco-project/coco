@@ -110,10 +110,11 @@ def start_on_host(sender, container, **kwargs):
                 ports[mapping.internal] = mapping.external
         # data mounts and volumes
         username = container.owner.get_username()
+        home_root = os.path.join('/srv/', os.path.join('ipynbsrv/', 'homes/'))
         public_root = os.path.join('/srv/', os.path.join('ipynbsrv/', 'public'))
         share_root = os.path.join('/srv/', os.path.join('ipynbsrv/', 'shares'))
         volumes = {
-            os.path.join(settings.HOME_ROOT, username): {
+            os.path.join(home_root, username): {
                 'bind': os.path.join('/home/', username),
                 'ro': False
             },
