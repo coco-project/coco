@@ -32,7 +32,7 @@ def create_on_host(sender, container, **kwargs):
         # get all needed ports
         ports = container.image.exposed_ports.split(',')
         ports.append(container.image.proxied_port)
-        ret = docker.create_container(name=container.name, image=container.image.id, cmd=container.image.cmd,
+        ret = docker.create_container(name=container.name, image=container.image.docker_id, cmd=container.image.cmd,
                                       ports=ports, volumes=None)
         container.docker_id = ret['Id']
         container.save(update_fields=['docker_id'])
@@ -49,7 +49,7 @@ def delete_on_host(sender, container, **kwargs):
         try:
             docker.remove_container(container.docker_id)
         except:
-            pass  # TODO: does not exist. what to do?
+            pass  # TODO: does not exist. what to do?
         # TODO: is that true? what about clones of clones etc.?
         # clone images are only used internally and can safely be removed
         # after deleting a cloned container
@@ -68,7 +68,7 @@ def restart_on_host(sender, container, **kwargs):
         try:
             docker.restart(container.docker_id)
         except:
-            pass  # TODO: does not exist. what to do?
+            pass  # TODO: does not exist. what to do?
 
 @receiver(container_stopped)
 def stop_on_host(sender, container, **kwargs):
@@ -81,7 +81,7 @@ def stop_on_host(sender, container, **kwargs):
         try:
             docker.stop(container.docker_id)
         except:
-            pass  # TODO: does not exist. what to do?
+            pass  # TODO: does not exist. what to do?
 
 
 @receiver(container_modified)

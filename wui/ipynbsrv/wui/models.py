@@ -7,6 +7,9 @@ from ipynbsrv.wui.signals.signals import *
 from random import randint
 
 
+CONTAINER_CLONE_SUFFIX = '_clone'
+
+
 class LdapGroup(ldapdb.models.Model):
     # LDAP meta-data
     base_dn = "ou=groups,dc=ipynbsrv,dc=ldap"  # TODO: get from settings
@@ -120,6 +123,9 @@ class Image(models.Model):
     is_public = models.BooleanField(default=False)
     is_clone = models.BooleanField(default=False)
 
+    def get_clean_name(self):
+        return self.name.split(self.owner.get_username() + "/", 1)[1]
+
     def __str__(self):
         return smart_unicode(self.name)
 
@@ -138,13 +144,21 @@ class Container(models.Model):
     clone_of = models.ForeignKey('self', null=True, blank=True)
 
     def clone(self):
-        img = self.commit(img_name=self.name + "_clone", description=self.description, public=self.public, clone=True)
-        clone = Container(id=randint(0, 1000), name=self.name + "_clone", description=self.description, image=img,
+        clone_name = self.name + CONTAINER_CLONE_SUFFIX
+        clone_img_name = self.owner.get_username() + "/" + self.get_clean_name() + CONTAINER_CLONE_SUFFIX
+        # if this is not the first clone, add count so names are unique
+        existing_clones = Container.objects.filter(clone_of=self)
+        if existing_clones.exists():
+            num_clones = existing_clones.len() + 1
+            clone_name += '_%d' % num_clones
+            clone_img_name += '_%d' % num_clones
+
+        img = self.commit(img_name=clone_img_name, description=self.image.description, public=False, clone=True)
+        clone = Container(id=randint(0, 1000), name=clone_name, description=self.description, image=img,
                           owner=self.owner, running=False, clone_of=self)
         container_cloned.send(sender=Container, container=self, clone=clone)
         clone.save()
 
-        # start the clone if the source container was running as well
         if self.running:
             clone.start()
         else:
@@ -160,23 +174,26 @@ class Container(models.Model):
 
         return image
 
+    def get_clean_name(self):
+        return self.name.split(self.owner.get_username() + "_", 1)[1]
+
     def restart(self):
         pre_container_restarted.send(sender=Container, container=self)
         self.running = True
         self.save(update_fields=['running'])
-        post_container_restarted.send(sender=Container, container=self)
+        container_restarted.send(sender=Container, container=self)
 
     def start(self):
         pre_container_started.send(sender=Container, container=self)
         self.running = True
         self.save(update_fields=['running'])
-        post_container_started.send(sender=Container, container=self)
+        container_started.send(sender=Container, container=self)
 
     def stop(self):
         pre_container_stopped.send(sender=Container, container=self)
         self.running = False
         self.save(update_fields=['running'])
-        post_container_stopped.send(sender=Container, container=self)
+        container_stopped.send(sender=Container, container=self)
 
     def __str__(self):
         return smart_unicode(self.name)

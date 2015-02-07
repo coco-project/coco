@@ -18,7 +18,7 @@
             {% for ct in containers %}
             <div class="col-xs-12 col-sm-6 col-md-4">
                 <div class="panel panel-success panel-container">
-                <div class="panel-heading">{{ ct.name }}</div>
+                <div class="panel-heading">{{ ct.get_clean_name }}</div>
                     <div class="panel-body">
                         {{ ct.description }}
                     </div>

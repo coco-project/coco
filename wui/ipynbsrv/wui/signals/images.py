@@ -21,7 +21,7 @@ def set_docker_image_id(sender, image, **kwargs):
     if image is not None:
         img = docker.images(name=image.name)
         if len(img) == 1:
-            image.docker_id = img.pop()['Id']
+            image.docker_id = img.pop()
             image.save(update_fields=['docker_id'])
 
 

@@ -19,8 +19,9 @@ def delete(request):
 
     img = Image.objects.filter(pk=img_id)
     if img.exists():
+        img = img.first()
         if img.owner == request.user:
-            img.first().delete()
+            img.delete()
             messages.success(request, "Image deleted successfully.")
         else:
             messages.error(request, "You don't have permissions to delete that image.")

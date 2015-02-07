@@ -39,8 +39,8 @@ def workspace_auth_access(request):
                     splits = uri.split('/')
                     if len(splits) >= 4:
                         port = splits[2]
-                        container = PortMapping.objects.filter(external=port).first()
-                        if container and container.owner == user:
+                        mapping = PortMapping.objects.filter(external=port)
+                        if mapping.exists() and mapping.first().container.owner == user:
                             return HttpResponse(status=200)
             except ObjectDoesNotExist:
                 pass

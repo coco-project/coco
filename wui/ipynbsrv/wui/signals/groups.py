@@ -76,7 +76,7 @@ def group_modified_handler(sender, group, fields, **kwargs):
     if settings.DEBUG:
         print "group_modified_handler receiver fired"
     kwargs = kwargs['kwargs']  # not sure why this is needed
-    if 'user_set' in fields:
+    if fields is not None and 'user_set' in fields:
         # get the user objects
         users = []
         if kwargs['pk_set'] is not None:

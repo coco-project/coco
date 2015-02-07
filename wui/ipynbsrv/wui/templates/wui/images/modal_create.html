@@ -15,7 +15,7 @@
                         <select id="modal-create-image_ct-name" name="ct_name" class="form-control" id="modal-base" required>
                             <option></option>
                             {% for ct in containers %}
-                                <option>{{ ct.name }}</option>
+                                <option>{{ ct.get_clean_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
