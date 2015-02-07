@@ -108,7 +108,7 @@ def post_delete_handler(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Group)
 def post_save_handler(sender, instance, **kwargs):
-    if 'created' in kwargs:
+    if 'created' in kwargs and kwargs['created']:
         group_created.send(sender=sender, group=instance, kwargs=kwargs)
     else:
         group_modified.send(sender=sender, group=instance, fields=kwargs['update_fields'], kwargs=kwargs)

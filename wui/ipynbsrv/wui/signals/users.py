@@ -97,7 +97,7 @@ def post_delete_handler(sender, instance, **kwargs):
 
 @receiver(post_save, sender=User)
 def post_save_handler(sender, instance, **kwargs):
-    if 'created' in kwargs:
+    if 'created' in kwargs and kwargs['created']:
         user_created.send(sender=sender, user=instance, kwargs=kwargs)
     else:
         user_modified.send(sender=sender, user=instance, fields=kwargs['update_fields'], kwargs=kwargs)

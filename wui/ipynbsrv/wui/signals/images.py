@@ -21,8 +21,8 @@ def set_docker_image_id(sender, image, **kwargs):
     if image is not None:
         img = docker.images(name=image.name)
         if len(img) == 1:
-            image.id = img.pop()['Id']
-            image.save()
+            image.docker_id = img.pop()['Id']
+            image.save(update_fields=['docker_id'])
 
 
 @receiver(image_deleted)
@@ -39,7 +39,7 @@ def remove_image_on_host(sender, image, **kwargs):
 
 
 @receiver(image_modified)
-def image_modified_handler(self, image, fields, **kwargs):
+def image_modified_handler(sender, image, fields, **kwargs):
     if settings.DEBUG:
         print "image_modified_handler receiver fired"
     # TODO: reflect changes to docker host
@@ -55,7 +55,7 @@ def post_delete_handler(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Image)
 def post_save_handler(sender, instance, **kwargs):
-    if 'created' in kwargs:
+    if 'created' in kwargs and kwargs['created']:
         image_created.send(sender=sender, image=instance, kwargs=kwargs)
     else:
         image_modified.send(sender=sender, image=instance, fields=kwargs['update_fields'], kwargs=kwargs)

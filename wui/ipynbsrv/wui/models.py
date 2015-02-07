@@ -109,7 +109,8 @@ class Share(models.Model):
 
 
 class Image(models.Model):
-    id = models.CharField(primary_key=True, max_length=64)
+    id = models.AutoField(primary_key=True)
+    docker_id = models.CharField(unique=True, max_length=64)
     name = models.CharField(unique=True, null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
     cmd = models.CharField(null=True, blank=True, max_length=100)
@@ -127,7 +128,8 @@ class Image(models.Model):
 
 
 class Container(models.Model):
-    id = models.CharField(primary_key=True, max_length=64)
+    id = models.AutoField(primary_key=True)
+    docker_id = models.CharField(unique=True, max_length=64)
     name = models.CharField(unique=True, null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
     image = models.ForeignKey(Image)

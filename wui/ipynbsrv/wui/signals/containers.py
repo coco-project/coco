@@ -18,7 +18,7 @@ def commit_on_host(sender, container, image, **kwargs):
     if settings.DEBUG:
         print "commit_on_host receiver fired"
     if container is not None and image is not None:
-        docker.commit(container.id, image.name)
+        docker.commit(container.docker_id, image.name)
 
 
 @receiver(container_created)
@@ -34,8 +34,8 @@ def create_on_host(sender, container, **kwargs):
         ports.append(container.image.proxied_port)
         ret = docker.create_container(name=container.name, image=container.image.id, cmd=container.image.cmd,
                                       ports=ports, volumes=None)
-        container.id = ret['Id']
-        container.save()
+        container.docker_id = ret['Id']
+        container.save(update_fields=['docker_id'])
 
 
 @receiver(container_deleted)
@@ -46,8 +46,10 @@ def delete_on_host(sender, container, **kwargs):
     if settings.DEBUG:
         print "delete_on_host receiver fired"
     if container is not None:
-        if container.id in docker.containers():
-            docker.remove_container(container.id)
+        try:
+            docker.remove_container(container.docker_id)
+        except:
+            pass  # TODO: does not exist. what to do?
         # TODO: is that true? what about clones of clones etc.?
         # clone images are only used internally and can safely be removed
         # after deleting a cloned container
@@ -63,9 +65,10 @@ def restart_on_host(sender, container, **kwargs):
     if settings.DEBUG:
         print "restart_on_host receiver fired"
     if container is not None:
-        if container.id in docker.containers():
-            docker.restart(container=container.id)
-
+        try:
+            docker.restart(container.docker_id)
+        except:
+            pass  # TODO: does not exist. what to do?
 
 @receiver(container_stopped)
 def stop_on_host(sender, container, **kwargs):
@@ -75,8 +78,10 @@ def stop_on_host(sender, container, **kwargs):
     if settings.DEBUG:
         print "stop_on_host receiver fired"
     if container is not None:
-        if container.id in docker.containers(all=False):
-            docker.stop(container=container.id)
+        try:
+            docker.stop(container.docker_id)
+        except:
+            pass  # TODO: does not exist. what to do?
 
 
 @receiver(container_modified)
@@ -96,7 +101,7 @@ def post_delete_handler(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Container)
 def post_save_handler(sender, instance, **kwargs):
-    if 'created' in kwargs:
+    if 'created' in kwargs and kwargs['created']:
         container_created.send(sender=sender, container=instance, kwargs=kwargs)
     else:
         container_modified.send(sender=sender, container=instance, fields=kwargs['update_fields'], kwargs=kwargs)

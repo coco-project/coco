@@ -57,7 +57,7 @@ def post_delete_handler(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Share)
 def post_save_handler(sender, instance, **kwargs):
-    if 'created' in kwargs:
+    if 'created' in kwargs and kwargs['created']:
         share_created.send(sender, share=instance, kwargs=kwargs)
     else:
         share_modified.send(sender, share=instance, fields=kwargs['update_fields'], kwargs=kwargs)

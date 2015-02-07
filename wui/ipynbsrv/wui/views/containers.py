@@ -18,8 +18,9 @@ def clone(request):
 
     ct_id = request.POST.get('id')
 
-    container = Container.objects.filter(id=ct_id)
+    container = Container.objects.filter(pk=ct_id)
     if container.exists():
+        container = container.first()
         if container.owner == request.user:
             container.clone()
         else:
@@ -46,6 +47,7 @@ def commit(request):
 
     container = Container.objects.filter(name=ct_name)
     if container.exists():
+        container = container.first()
         if container.owner == request.user:
             if Image.objects.filter(name=name).exists():
                 messages.error(request, "An image with that name already exists.")
@@ -78,7 +80,7 @@ def create(request):
     else:
         image = Image.objects.filter(name=image)
         if image.exists():
-            container = Container(id=randint(0, 1000), name=name, description=description, image=image.first(),
+            container = Container(docker_id=randint(0, 1000), name=name, description=description, image=image.first(),
                                   owner=request.user, running=False, clone_of=None)
             container.save()
             container.start()
@@ -100,8 +102,9 @@ def delete(request):
 
     ct_id = request.POST.get('id')
 
-    container = Container.objects.filter(id=ct_id)
+    container = Container.objects.filter(pk=ct_id)
     if container.exists():
+        container = container.first()
         if container.owner == request.user:
             container.delete()
             messages.success(request, "Container stopped successfully.")
@@ -133,8 +136,9 @@ def restart(request):
 
     ct_id = request.POST.get('id')
 
-    container = Container.objects.filter(id=ct_id)
+    container = Container.objects.filter(pk=ct_id)
     if container.exists():
+        container = container.first()
         if container.owner == request.user:
             container.restart()
             messages.success(request, "Container restarted successfully.")
@@ -162,8 +166,9 @@ def start(request):
 
     ct_id = request.POST.get('id')
 
-    container = Container.objects.filter(id=ct_id)
+    container = Container.objects.filter(pk=ct_id)
     if container.exists():
+        container = container.first()
         if container.owner == request.user:
             container.start()
             messages.success(request, "Container started successfully.")
@@ -186,8 +191,9 @@ def stop(request):
 
     ct_id = request.POST.get('id')
 
-    container = Container.objects.filter(id=ct_id)
+    container = Container.objects.filter(pk=ct_id)
     if container.exists():
+        container = container.first()
         if container.owner == request.user:
             container.stop()
             messages.success(request, "Container stopped successfully.")
