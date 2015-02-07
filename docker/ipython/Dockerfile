@@ -7,7 +7,8 @@ CMD ["/sbin/my_init", "--", "/usr/local/bin/init_cmd"]
 # Install system-wide pip for IPython
 RUN apt-get update && apt-get -y install python3-pip
 # Install IPython + Notebook
-RUN pip3 install "ipython[notebook]"
+RUN pip3 install terminado
+RUN pip3 install --pre "ipython[all]"
 
 # Packages and modules needed by nbconvert or .html export
 RUN apt-get -y install pandoc
