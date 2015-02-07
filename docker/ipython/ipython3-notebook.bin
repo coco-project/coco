@@ -36,6 +36,8 @@ ln -s /home/${USER} ${HOME_DIR}
 
 # chown the /data directory so the user is able to store his personal per-container
 # files in there
+chown ${USER}:${USER} /home/${USER}
+chmod 700 /home/${USER}
 chown ${USER}:${USER} /data
 find /data/ -not -path "/data/public/*" -not -path "/data/shares/*" \
     -not -user root | xargs chown ${USER}:${USER}
@@ -69,4 +71,4 @@ chmod 0700 ${IPYTHON_SECURITY_DIR}
 echo "Starting the IPython notebook under user '${USER}' on port ${PORT}..."
 /sbin/setuser ${USER} \
     ipython3 notebook --no-browser --ip=0.0.0.0 \
-    --ipython-dir=${IPYTHON_DIR} --notebook-dir=/data --user=${USER}
+    --ipython-dir=${IPYTHON_DIR} --notebook-dir=/data

@@ -57,7 +57,7 @@ TEMPLATE_CONTEXT_PROCESSORS = {
     "django.core.context_processors.static",
     "django.core.context_processors.tz",
     "django.contrib.messages.context_processors.messages",
-    "django.core.context_processors.request", # needed by ifnav_templatetag
+    "django.core.context_processors.request",  # needed by ifnav_templatetag
 }
 
 ROOT_URLCONF = 'ipynbsrv.urls'
@@ -122,15 +122,11 @@ AUTH_LDAP_SERVER_URI = DATABASES['ldap']['NAME']
 AUTH_LDAP_BIND_DN = DATABASES['ldap']['USER']
 AUTH_LDAP_BIND_PASSWORD = DATABASES['ldap']['PASSWORD']
 
-AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=ipynbsrv,dc=ldap",
-    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
-
-AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,dc=ipynbsrv,dc=ldap",
-    ldap.SCOPE_SUBTREE, "(objectClass=posixGroup)")
+AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=ipynbsrv,dc=ldap", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,dc=ipynbsrv,dc=ldap", ldap.SCOPE_SUBTREE, "(objectClass=posixGroup)")
 AUTH_LDAP_GROUP_TYPE = PosixGroupType()
 
 AUTH_LDAP_USER_ATTR_MAP = {}
-
 AUTH_LDAP_ALWAYS_UPDATE_USER = True
 AUTH_LDAP_CACHE_GROUPS = False
 
@@ -141,8 +137,11 @@ AUTHENTICATION_BACKENDS = (
 
 
 # Docker
+DOCKER_API_VERSION = '1.16'
 DOCKER_IFACE_IP = '172.17.42.1'
+DOCKER_FIRST_PORT = 49160
 
 
 # Various
+SHARE_GROUP_PREFIX = 'share_'
 SHARE_GROUPS_OFFSET = 9999

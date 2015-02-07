@@ -1,23 +1,28 @@
+import ldapdb.models
 from django.contrib.auth.models import Group, User
 from django.db import models
 from django.utils.encoding import smart_unicode
-import ldapdb.models
-from ldapdb.models.fields import CharField, ListField, IntegerField
+from ldapdb.models import fields
+from ipynbsrv.wui.signals.signals import *
+from random import randint
+
+
+CONTAINER_CLONE_SUFFIX = '_clone'
 
 
 class LdapGroup(ldapdb.models.Model):
     # LDAP meta-data
-    base_dn = "ou=groups,dc=ipynbsrv,dc=ldap"
+    base_dn = "ou=groups,dc=ipynbsrv,dc=ldap"  # TODO: get from settings
     object_classes = ['posixGroup']
 
-    gid = IntegerField(db_column='gidNumber', unique=True)
-    name = CharField(db_column='cn', max_length=200, primary_key=True)
-    members = ListField(db_column='memberUid')
+    id = fields.IntegerField(db_column='gidNumber', unique=True)
+    name = fields.CharField(db_column='cn', primary_key=True, max_length=200)
+    members = fields.ListField(db_column='memberUid')
 
     def get_members(self):
         members = []
-        for member_uid in self.members:
-            members.append(LdapUser.objects.get(pk=member_uid))
+        for member in self.members:
+            members.append(LdapUser.objects.get(pk=member))
         return members
 
     def is_member(self, user):
@@ -27,7 +32,7 @@ class LdapGroup(ldapdb.models.Model):
         return smart_unicode(self.name)
 
     def __unicode__(self):
-        return smart_unicode(self.name)
+        return self.__str__()
 
 
 class LdapUser(ldapdb.models.Model):
@@ -36,13 +41,13 @@ class LdapUser(ldapdb.models.Model):
     object_classes = ['inetOrgPerson', 'posixAccount']
 
     # inetOrgPerson
-    cn = CharField(db_column='cn', unique=True)
-    sn = CharField(db_column='sn', unique=True)
-    uid = IntegerField(db_column='uidNumber', unique=True)
-    username = CharField(db_column='uid', max_length=200, primary_key=True)
-    password = CharField(db_column='userPassword')
-    group = IntegerField(db_column='gidNumber')
-    home_directory = CharField(db_column='homeDirectory')
+    cn = fields.CharField(db_column='cn', unique=True)
+    sn = fields.CharField(db_column='sn', unique=True)
+    id = fields.IntegerField(db_column='uidNumber', unique=True)
+    username = fields.CharField(db_column='uid', primary_key=True, max_length=200)
+    password = fields.CharField(db_column='userPassword')
+    group_id = fields.IntegerField(db_column='gidNumber')
+    home_directory = fields.CharField(db_column='homeDirectory', unique=True)
 
     @staticmethod
     def for_user(user):
@@ -58,11 +63,14 @@ class LdapUser(ldapdb.models.Model):
     def get_primary_group(self):
         return LdapGroup.objects.get(pk=self.pk)
 
+    def get_username(self):
+        return self.username
+
     def __str__(self):
         return smart_unicode(self.username)
 
     def __unicode__(self):
-        return smart_unicode(self.username)
+        return self.__str__()
 
 
 class Tag(models.Model):
@@ -72,15 +80,15 @@ class Tag(models.Model):
         return smart_unicode(self.label)
 
     def __unicode__(self):
-        return smart_unicode(self.label)
+        return self.__str__()
 
 
 class Share(models.Model):
-    name = models.CharField(null=False, max_length=75)
+    name = models.CharField(unique=True, max_length=75)
     description = models.TextField(null=True, blank=True)
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, null=True, blank=True)
     owner = models.ForeignKey(User)
-    group = models.ForeignKey(Group)
+    group = models.ForeignKey(Group, unique=True)
 
     @staticmethod
     def for_user(user):
@@ -100,55 +108,112 @@ class Share(models.Model):
         return smart_unicode(self.name)
 
     def __unicode__(self):
-        return smart_unicode(self.name)
+        return self.__str__()
 
 
-class Host(models.Model):
-    ip = models.CharField(primary_key=True, null=False, max_length=15)
-    fqdn = models.CharField(unique=True, null=True, blank=True, max_length=75)
-    username = models.CharField(null=False, max_length=30)
-    ssh_port = models.IntegerField(null=False, default=22)
-    docker_version = models.CharField(null=False, max_length=12)
-    docker_port = models.IntegerField(null=False, max_length=6, default=9999)
-
-
-# FIXME: PK should be img_id and host
 class Image(models.Model):
     id = models.AutoField(primary_key=True)
-    img_id = models.CharField(null=False, max_length=64)
-    cmd = models.CharField(null=True, blank=True, max_length=100)
-    ports = models.CharField(null=True, blank=True, max_length=25)
-    name = models.CharField(null=False, max_length=75)
+    docker_id = models.CharField(unique=True, max_length=64)
+    name = models.CharField(unique=True, null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
-    # host = models.ForeignKey(Host)
+    cmd = models.CharField(null=True, blank=True, max_length=100)
+    exposed_ports = models.CommaSeparatedIntegerField(null=True, blank=True, max_length=24)
+    proxied_port = models.PositiveIntegerField(null=True, blank=True, max_length=6)
     owner = models.ForeignKey(User)
-    # tags = models.ManyToManyField(Tag)
     is_public = models.BooleanField(default=False)
     is_clone = models.BooleanField(default=False)
 
+    def get_clean_name(self):
+        return self.name.split(self.owner.get_username() + "/", 1)[1]
+
     def __str__(self):
         return smart_unicode(self.name)
 
     def __unicode__(self):
-        return smart_unicode(self.name)
+        return self.__str__()
 
 
-# FIXME: PK should be ct_id and host
 class Container(models.Model):
     id = models.AutoField(primary_key=True)
-    ct_id = models.CharField(null=False, max_length=64)
-    name = models.CharField(null=False, max_length=75)
+    docker_id = models.CharField(unique=True, max_length=64)
+    name = models.CharField(unique=True, null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
-    status = models.BooleanField(default=False)
-    #host = models.ForeignKey(Host)
     image = models.ForeignKey(Image)
     owner = models.ForeignKey(User)
-    #tags = models.ManyToManyField(Tag)
-    is_clone = models.BooleanField(default=False)
-    exposeport = models.CharField(null=True, blank=True, max_length=5)
+    running = models.BooleanField(default=False)
+    clone_of = models.ForeignKey('self', null=True, blank=True)
+
+    def clone(self):
+        clone_name = self.name + CONTAINER_CLONE_SUFFIX
+        clone_img_name = self.owner.get_username() + "/" + self.get_clean_name() + CONTAINER_CLONE_SUFFIX
+        # if this is not the first clone, add count so names are unique
+        existing_clones = Container.objects.filter(clone_of=self)
+        if existing_clones.exists():
+            num_clones = len(existing_clones) + 1
+            clone_name += '_%d' % num_clones
+            clone_img_name += '_%d' % num_clones
+
+        img = self.commit(img_name=clone_img_name, description=self.image.description, public=False, clone=True)
+        clone = Container(id=randint(0, 1000), name=clone_name, description=self.description, image=img,
+                          owner=self.owner, running=False, clone_of=self)
+        container_cloned.send(sender=Container, container=self, clone=clone)
+        clone.save()
+
+        if self.running:
+            clone.start()
+        else:
+            clone.stop()
+
+        return clone
+
+    def commit(self, img_name, description, public, clone=False):
+        image = Image(id=randint(0, 1000), name=img_name, description=description, cmd=self.image.cmd, exposed_ports=self.image.exposed_ports,
+                      proxied_port=self.image.proxied_port, owner=self.owner, is_public=public, is_clone=clone)
+        container_commited.send(sender=Container, container=self, image=image)
+        image.save()
+
+        return image
+
+    def get_clean_name(self):
+        return self.name.split(self.owner.get_username() + "_", 1)[1]
+
+    def restart(self):
+        pre_container_restarted.send(sender=Container, container=self)
+        self.running = True
+        self.save(update_fields=['running'])
+        container_restarted.send(sender=Container, container=self)
+
+    def start(self):
+        pre_container_started.send(sender=Container, container=self)
+        self.running = True
+        self.save(update_fields=['running'])
+        container_started.send(sender=Container, container=self)
+
+    def stop(self):
+        pre_container_stopped.send(sender=Container, container=self)
+        self.running = False
+        self.save(update_fields=['running'])
+        container_stopped.send(sender=Container, container=self)
 
     def __str__(self):
         return smart_unicode(self.name)
 
     def __unicode__(self):
-        return smart_unicode(self.name)
+        return self.__str__()
+
+
+class PortMapping(models.Model):
+    container = models.ForeignKey(Container)
+    internal = models.PositiveIntegerField(null=False, max_length=6)
+    external = models.PositiveIntegerField(unique=True, max_length=6)
+
+    def __str__(self):
+        return smart_unicode("%s: %i -> %i" % (self.container.name, self.internal, self.external))
+
+    def __unicode__(self):
+        return self.__str__()
+
+    class Meta:
+        get_latest_by = 'external'
+        order_with_respect_to = 'container'
+        unique_together = ('container', 'internal')

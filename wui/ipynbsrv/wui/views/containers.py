@@ -1,115 +1,210 @@
-from django.contrib.auth.decorators import user_passes_test
-from django.shortcuts import render
-from ipynbsrv.wui.auth.checks import login_allowed
-from ipynbsrv.wui.models import Container, Host, Image
-from ipynbsrv.wui.signals.containers import *
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
-
-
-""
-@user_passes_test(login_allowed)
-def index(request):
-    c = Container.objects.filter(owner=request.user)
-    i = Image.objects.filter((Q(owner=request.user)|Q(is_public=True))&Q(is_clone=False))
-    context = {
-        'title': 'Containers',
-    	'containers' : c,
-	'images' : i
-    }
-
-    return render(request, 'wui/containers/index.html', context)
-
-
-@user_passes_test(login_allowed)
-def stop(request):
-    c = Container.objects.filter(owner=request.user).filter(ct_id=request.POST.get('id')).first()
-    try:
-    	c.status = False
-    	c.save()
-    	messages.success(request, 'Container ' + c.name + ' successfully stopped')
-    except:
-	messages.error(request, "Cant Stop non-existing Container")
-	c.delete()
-	pass
-    return redirect('containers')
-
-
-@user_passes_test(login_allowed)
-def start(request):
-    c = Container.objects.filter(owner=request.user).filter(ct_id=request.POST.get('id')).get()
-    try:
-	c.status = True
-    	c.save()
-    	messages.success(request, 'Container ' + c.name + ' successfully stopped')
-    except:
-	messages.error(request, "Cant Start non-existing Container")
-   	c.delete()
-	pass
-    return redirect('containers')
-
-
-@user_passes_test(login_allowed)
-def restart(request):
-    c = Container.objects.filter(owner=request.user).filter(ct_id=request.POST.get('id')).get()
-    try:
-    	container_restarted.send(sender='', container=c)
-    	messages.success(request, 'Container ' + c.name + ' successfully restarted')
-    except:
-	messages.error(request, "Cant Restart non-existing Container")
-   	c.delete()
-	pass
-    return redirect('containers')
-
-
-
-@user_passes_test(login_allowed)
-def delCont(request):
-    c = Container.objects.filter(ct_id=request.POST.get('id')).get()
-    c.delete()
-    if c.is_clone:
-	c.image.delete()
-    messages.success(request, 'Container ' + c.name + ' successfully deleted')
-    return redirect('containers')
-
-
-@user_passes_test(login_allowed)
-def create(request):
-    i = Image.objects.filter(name=request.POST.get('image')).get()
-    container = Container.objects.order_by('exposeport')
-    if container.count() == 0:
-	portid = 49152
-    else:
-    	cont = container.last()
-    	portid = int(cont.exposeport)+1
-    name = request.POST.get('name')
-    c = Container(name=name, description=request.POST.get('description'), owner=request.user, image=i, status=True, exposeport=portid)
-    container_created.send(sender='', container=c, image=i)
-    c.save()
-    messages.success(request, 'Container ' + c.name + ' successfully created')
-    return redirect('containers')
+from django.shortcuts import redirect, render
+from ipynbsrv.wui.auth.checks import login_allowed
+from ipynbsrv.wui.models import Container, Image, PortMapping
+from random import randint
 
 
 @user_passes_test(login_allowed)
 def clone(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('containers')
+    if 'id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('containers')
+
     ct_id = request.POST.get('id')
-    name = str(request.POST.get('name'))
-    cont = Container.objects.filter(owner=request.user).filter(ct_id=ct_id).first()
-    i = Image(cmd=cont.image.cmd, ports=cont.image.ports, name=name+"_clone", description='Clone', is_clone=True, owner=request.user)
-    container_commited.send(sender='', image=i, ct_id=ct_id, name=str(request.user)+"_"+name+"_clone")
-    i.save()
-    container = Container.objects.order_by('exposeport')
-    if container.count() == 0:
-	portid = 49152
+
+    container = Container.objects.filter(pk=ct_id)
+    if container.exists():
+        container = container.first()
+        if container.owner == request.user:
+            container.clone()
+        else:
+            messages.error(request, "You don't have permissions to clone that container.")
     else:
-    	conta = container.last()
-    	portid = int(conta.exposeport)+len(cont.image.ports.split(','))+1
-    c = Container(name=name+"_clone", description='Clone', is_clone=True, owner=request.user, status=True, image=i, exposeport=portid)
-    container_created.send(sender='',container=c, image=i)
-    c.save()
+        messages.error(request, "Container does not exist.")
+
     return redirect('containers')
+
+
+@user_passes_test(login_allowed)
+def commit(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('images')
+    if 'ct_name' not in request.POST or 'name' not in request.POST or 'description' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('images')
+
+    ct_name = request.user.get_username() + '_' + request.POST.get('ct_name')
+    name = request.user.get_username() + '/' + request.POST.get('name')
+    description = request.POST.get('description')
+    public = request.POST.get('public', "")
+
+    container = Container.objects.filter(name=ct_name)
+    if container.exists():
+        container = container.first()
+        if container.owner == request.user:
+            if Image.objects.filter(name=name).exists():
+                messages.error(request, "An image with that name already exists.")
+            else:
+                container.commit(img_name=name, description=description, public=public == "True", clone=False)
+                messages.success(request, "Sucessfully created the image.")
+        else:
+            messages.error(request, "You don't have permissions to commit that container.")
+    else:
+        messages.error(request, "Selected base container does not exist.")
+
+    # TODO: messages are shown on containers page
+    return redirect('images')
+
+
+@user_passes_test(login_allowed)
+def create(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('images')
+    if 'name' not in request.POST or 'description' not in request.POST or 'image' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('images')
+
+    name = request.user.get_username() + '_' + request.POST.get('name')
+    description = request.POST.get('description')
+    image = request.POST.get('image')
+
+    if Container.objects.filter(name=name).exists():
+        messages.error(request, "A container with that name already exists.")
+    else:
+        image = Image.objects.filter(name=image)
+        if image.exists():
+            container = Container(docker_id=randint(0, 1000), name=name, description=description, image=image.first(),
+                                  owner=request.user, running=False, clone_of=None)
+            container.save()
+            container.start()
+            messages.success(request, "Container created successfully.")
+        else:
+            messages.error(request, "Container base image does not exist.")
+
+    return redirect('containers')
+
+
+@user_passes_test(login_allowed)
+def delete(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('containers')
+    if 'id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('containers')
+
+    ct_id = request.POST.get('id')
+
+    container = Container.objects.filter(pk=ct_id)
+    if container.exists():
+        container = container.first()
+        if container.owner == request.user:
+            container.delete()
+            messages.success(request, "Container deleted successfully.")
+        else:
+            messages.error(request, "You don't have permissions to stop that container.")
+    else:
+        messages.error(request, "Container does not exist.")
+
+    return redirect('containers')
+
+
+@user_passes_test(login_allowed)
+def index(request):
+    containers = Container.objects.filter(owner=request.user)
+    for container in containers:
+        container.workspace_port = PortMapping.objects.filter(container=container).filter(internal=container.image.proxied_port).first().external
+
+    return render(request, 'wui/containers/index.html', {
+        'title': "Containers",
+        'containers': containers,
+        'images': Image.objects.filter((Q(owner=request.user) | Q(is_public=True)) & Q(is_clone=False))
+    })
+
+
+@user_passes_test(login_allowed)
+def restart(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('containers')
+    if 'id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('containers')
+
+    ct_id = request.POST.get('id')
+
+    container = Container.objects.filter(pk=ct_id)
+    if container.exists():
+        container = container.first()
+        if container.owner == request.user:
+            container.restart()
+            messages.success(request, "Container restarted successfully.")
+        else:
+            messages.error(request, "You don't have permissions to stop that container.")
+    else:
+        messages.error(request, "Container does not exist.")
+
+    return redirect('containers')
+
 
 @user_passes_test(login_allowed)
 def share(request):
     return redirect('images')
+
+
+@user_passes_test(login_allowed)
+def start(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('containers')
+    if 'id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('containers')
+
+    ct_id = request.POST.get('id')
+
+    container = Container.objects.filter(pk=ct_id)
+    if container.exists():
+        container = container.first()
+        if container.owner == request.user:
+            container.start()
+            messages.success(request, "Container started successfully.")
+        else:
+            messages.error(request, "You don't have permissions to start that container.")
+    else:
+        messages.error(request, "Container does not exist.")
+
+    return redirect('containers')
+
+
+@user_passes_test(login_allowed)
+def stop(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('containers')
+    if 'id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('containers')
+
+    ct_id = request.POST.get('id')
+
+    container = Container.objects.filter(pk=ct_id)
+    if container.exists():
+        container = container.first()
+        if container.owner == request.user:
+            container.stop()
+            messages.success(request, "Container stopped successfully.")
+        else:
+            messages.error(request, "You don't have permissions to stop that container.")
+    else:
+        messages.error(request, "Container does not exist.")
+
+    return redirect('containers')

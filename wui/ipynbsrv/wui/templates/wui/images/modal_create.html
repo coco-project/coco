@@ -7,21 +7,21 @@
                 </button>
                 <h4 class="modal-title">New image</h4>
             </div>
-            <form role="form" action="{% url 'image_commit' %}" method="POST">
+            <form role="form" action="{% url 'container_commit' %}" method="POST">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="modal-base">Base container</label>
                         <select id="modal-create-image_ct-name" name="ct_name" class="form-control" id="modal-base" required>
                             <option></option>
-                            {% for c in conts %}
-                                <option>{{ c.name }}</option>
+                            {% for ct in containers %}
+                                <option>{{ ct.get_clean_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="modal-name">Name</label>
-                        <input name="name"  type="text" class="form-control" id="modal-name" placeholder="e.g fhnw-maths " required>
+                        <input name="name" type="text" class="form-control" id="modal-name" placeholder="e.g fhnw-maths " required>
                     </div>
                     <div class="form-group">
                         <label for="modal-description">Description</label>

@@ -5,8 +5,8 @@
 {% block title %} - Images{% endblock %}
 
 {% block external_css %}
-<link rel="stylesheet" href="//cdn.datatables.net/1.10.4/css/jquery.dataTables.min.css">
-<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.css">
+<link rel="stylesheet" href="{% static 'bower_components/datatables/media/css/jquery.dataTables.min.css' %}">
+<link rel="stylesheet" href="{% static 'bower_components/datatables-plugins-bootstrap3/dist/css/datatables-plugins-bootstrap3.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -30,16 +30,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for i in images %}
+                        {% for img in images %}
                         <tr>
-                            <td>{{ i.name }}</td>
-                            <td>{{ i.description }}</td>
-                            <td style="text-align: center"><input type="checkbox" data-sort="1" {% if i.is_public == True %}checked{% endif %}></td>
+                            <td>{{ img.name }}</td>
+                            <td>{{ img.description }}</td>
+                            <td style="text-align: center"><input type="checkbox" data-sort="1" {% if img.is_public %}checked{% endif %}></td>
                             <td>
-                                {% if i.owner == owner %}
+                                {% if img.owner == request.user %}
                                 <form action="{% url 'image_delete' %}" method="POST" class="pull-right" role="form">
                                     {% csrf_token %}
-                                    <input type="hidden" name="id" value="{{ i.img_id }}">
+                                    <input type="hidden" name="id" value="{{ img.id }}">
                                     <button type="submit" class="btn btn-sm btn-danger" title="Delete this image?" data-toggle="confirmation" data-placement="left">
                                         <i class="glyphicon glyphicon-remove"></i>
                                     </button>
@@ -62,9 +62,9 @@
 {% endblock %}
 
 {% block js %}
-<script src="//cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js"></script>
-<script src="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.js"></script>
-<script src="//rawgit.com/mistic100/Bootstrap-Confirmation/master/bootstrap-confirmation.min.js"></script>
+<script src="{% static 'bower_components/datatables/media/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'bower_components/datatables-plugins-bootstrap3/dist/js/datatables-plugins-bootstrap3.min.js' %}"></script>
+<script src="{% static 'bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js' %}"></script>
 <script>
 function createCookie (name, value, days) {
     var expires;

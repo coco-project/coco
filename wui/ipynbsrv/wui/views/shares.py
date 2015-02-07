@@ -1,42 +1,36 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import redirect, render
 from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Share, Tag
-from ipynbsrv.wui.signals.signals import group_modified, share_user_added, share_user_leaved, share_user_removed
 
 
-"""
-POST only view to be used as POST action by forms trying to add
-new members to a share.
-
-URI: /share/add_user
-"""
 @user_passes_test(login_allowed)
 def add_user(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-
-    if not 'id' in request.POST or not 'users' in request.POST:
+    if 'id' not in request.POST or 'users' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    share_id = request.POST.get('id', -1)
-    usernames = request.POST.get('users', '')
+    try:
+        share_id = int(request.POST.get('id'))
+    except ValueError:
+        share_id = -1
+    usernames = request.POST.get('users')
     origin = request.POST.get('origin', None)
-    share = Share.objects.filter(pk=share_id).first()
 
-    if share:
+    share = Share.objects.filter(pk=share_id)
+    if share.exists():
+        share = share.first()
         if share.owner == request.user:
-            for username in usernames.split(","):
-                user = User.objects.filter(username=username).first()
-                if user and not share.is_member(user):
-                    share.group.user_set.add(user)
-                    group_modified.send(None, group=share.group, fields=None)  # should be fired by Django
-                    share_user_added.send(None, share=share, user=user)
-
+            for user in usernames.split(","):
+                user = User.objects.filter(username=user)
+                if user.exists() and not share.is_member(user.first()):
+                    share.group.user_set.add(user.first())
             messages.success(request, "Sucessfully added the new member(s).")
         else:
             messages.error(request, "Not enough permissions to add a new user to that share.")
@@ -50,49 +44,27 @@ def add_user(request):
     return redirect('shares')
 
 
-"""
-Shares listing/index.
-
-URI: /shares/
-"""
-@user_passes_test(login_allowed)
-def index(request):
-    user = request.user
-    return render(request, 'wui/shares/index.html', {
-        'title': "Shares",
-        'shares': Share.for_user(user)
-    })
-
-
-"""
-POST only view to be used as POST action by forms trying
-to create a new share.
-
-URI: /share/create
-"""
 @user_passes_test(login_allowed)
 def create(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-
-    if not 'name' in request.POST or not 'description' in request.POST or not 'tags' in request.POST:
+    if 'name' not in request.POST or 'description' not in request.POST or 'tags' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    name  = request.POST.get('name')
-    desc  = request.POST.get('description', '')
-    tags  = request.POST.get('tags', '')
+    name = request.POST.get('name')
+    desc = request.POST.get('description', '')
+    tags = request.POST.get('tags', '')
     owner = request.user
 
-    if Share.objects.filter(name=name):
+    if Share.objects.filter(name=name).exists():
         messages.error(request, "A share with that name already exists.")
     else:
         # creating the share's dedicated group
-        group = Group(name='share_' + name)
+        group = Group(name=settings.SHARE_GROUP_PREFIX + name)
         group.save()
         group.user_set.add(owner)
-        group_modified.send(None, group=group, fields=None)  # should be fired by Django
         # creating the share itself
         share = Share(name=name, description=desc, owner=owner, group=group)
         share.save()
@@ -107,25 +79,20 @@ def create(request):
     return redirect('shares')
 
 
-"""
-POST only view to be used as POST action by forms trying
-to delete a share.
-
-URI: /share/delete
-"""
 @user_passes_test(login_allowed)
 def delete(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-
-    if not 'id' in request.POST:
+    if 'id' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    share_id = request.POST.get('id')
-    share = Share.objects.filter(pk=share_id).first()
-    if share:
+    share_id = int(request.POST.get('id'))
+
+    share = Share.objects.filter(pk=share_id)
+    if share.exists():
+        share = share.first()
         if share.owner == request.user:
             share.delete()
             messages.success(request, "Share deleted sucessfully.")
@@ -137,32 +104,35 @@ def delete(request):
     return redirect('shares')
 
 
-"""
-POST only view to be used by forms trying
-to remove a user from a share.
+@user_passes_test(login_allowed)
+def index(request):
+    """
+    Shares listing/index.
+    """
+    return render(request, 'wui/shares/index.html', {
+        'title': "Shares",
+        'shares': Share.for_user(request.user)
+    })
 
-URI: /share/leave
-"""
+
 @user_passes_test(login_allowed)
 def leave(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-
-    if not 'id' in request.POST:
+    if 'id' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    share_id = request.POST.get('id')
-    share = Share.objects.filter(pk=share_id).first()
-    if share:
+    share_id = int(request.POST.get('id'))
+
+    share = Share.objects.filter(pk=share_id)
+    if share.exists():
+        share = share.first()
         if share.owner == request.user:
             messages.error(request, "Cannot leave an owned share. Delete it instead.")
         else:
             share.group.user_set.remove(request.user)
-            group_modified.send(None, group=share.group, fields=None)  # should be fired by Django
-            share_user_leaved.send(None, share=share, user=request.user)
-
             messages.success(request, "Successfully leaved the share.")
     else:
         messages.error(request, "Share does not exist.")
@@ -170,19 +140,15 @@ def leave(request):
     return redirect('shares')
 
 
-"""
-Share detail/manage page.
-
-URI: /share/manage/<id>
-"""
 @user_passes_test(login_allowed)
 def manage(request, share_id):
     if request.method == "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
 
-    share = Share.objects.filter(pk=share_id).first()
-    if share:
+    share = Share.objects.filter(pk=share_id)
+    if share.exists():
+        share = share.first()
         if share.owner == request.user:
             return render(request, 'wui/shares/manage.html', {
                 'title': "Manage Share",
@@ -197,34 +163,25 @@ def manage(request, share_id):
     return redirect('shares')
 
 
-"""
-POST only view to be used by forms trying
-to remove a user from a share.
-
-URI: /share/remove_user
-"""
 @user_passes_test(login_allowed)
 def remove_user(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-
-    if not 'share_id' in request.POST or not 'user_id' in request.POST:
+    if 'share_id' not in request.POST or 'user_id' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    share_id = request.POST.get('share_id')
-    user_id = request.POST.get('user_id')
-    share = Share.objects.filter(pk=share_id).first()
-    user = User.objects.filter(pk=user_id).first()
+    share_id = int(request.POST.get('share_id'))
+    user_id = int(request.POST.get('user_id'))
 
-    if share:
+    share = Share.objects.filter(pk=share_id)
+    if share.exists():
+        share = share.first()
         if share.owner == request.user:
-            if user:
-                share.group.user_set.remove(user)
-                group_modified.send(None, group=share.group, fields=None)  # should be fired by Django
-                share_user_removed.send(None, share=share, user=user)
-
+            user = User.objects.filter(pk=user_id)
+            if user.exists():
+                share.group.user_set.remove(user.first())
                 messages.success(request, "Removed used from share.")
                 request.method = "GET"
                 return redirect('share_manage', share.id)
