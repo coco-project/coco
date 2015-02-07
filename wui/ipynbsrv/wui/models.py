@@ -133,25 +133,27 @@ class Container(models.Model):
     image = models.ForeignKey(Image)
     owner = models.ForeignKey(User)
     running = models.BooleanField(default=False)
-    clone_of = models.ForeignKey('self')
+    clone_of = models.ForeignKey('self', null=True, blank=True)
 
     def clone(self):
-        pre_container_cloned.send(sender=Container, container=self)
         img = self.commit(img_name=self.name + "_clone", description=self.description, public=self.public, clone=True)
         clone = Container(id=randint(0, 1000), name=self.name + "_clone", description=self.description, image=img,
                           owner=self.owner, running=False, clone_of=self)
-        post_container_cloned.send(sender=Container, container=self, clone=clone)
+        container_cloned.send(sender=Container, container=self, clone=clone)
         clone.save()
+
+        # start the clone if the source container was running as well
         if self.running:
             clone.start()
+        else:
+            clone.stop()
 
         return clone
 
     def commit(self, img_name, description, public, clone=False):
-        pre_container_commited.send(sender=Container, container=self)
         image = Image(id=randint(0, 1000), name=img_name, description=description, cmd=self.image.cmd, exposed_ports=self.image.exposed_ports,
                       proxied_port=self.image.proxied_port, owner=self.owner, is_public=public, is_clone=clone)
-        post_container_commited.send(sender=Container, container=self, image=image)
+        container_commited.send(sender=Container, container=self, image=image)
         image.save()
 
         return image

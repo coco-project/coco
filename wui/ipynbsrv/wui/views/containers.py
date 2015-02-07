@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.shortcuts import redirect, render
 from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Container, Image
+from random import randint
 
 
 @user_passes_test(login_allowed)
@@ -73,6 +74,8 @@ def create(request):
     image = request.POST.get('image')
 
     if Container.objects.filter(name=name).exists():
+        messages.error(request, "A container with that name already exists.")
+    else:
         image = Image.objects.filter(name=image)
         if image.exists():
             container = Container(id=randint(0, 1000), name=name, description=description, image=image.first(),
@@ -82,8 +85,6 @@ def create(request):
             messages.success(request, "Container created successfully.")
         else:
             messages.error(request, "Container base image does not exist.")
-    else:
-        messages.error(request, "A container with that name already exists.")
 
     return redirect('containers')
 

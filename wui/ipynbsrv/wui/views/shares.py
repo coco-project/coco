@@ -9,10 +9,6 @@ from ipynbsrv.wui.models import Share, Tag
 
 @user_passes_test(login_allowed)
 def add_user(request):
-    """
-    POST only view to be used as POST action by forms trying to add
-    new members to a share.
-    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
@@ -50,9 +46,6 @@ def add_user(request):
 
 @user_passes_test(login_allowed)
 def create(request):
-    """
-    POST only view to be used as POST action by forms trying to create a new share.
-    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
@@ -88,9 +81,6 @@ def create(request):
 
 @user_passes_test(login_allowed)
 def delete(request):
-    """
-    POST only view to be used as POST action by forms trying to delete a share.
-    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
@@ -127,9 +117,6 @@ def index(request):
 
 @user_passes_test(login_allowed)
 def leave(request):
-    """
-    POST only view to be used by forms trying to remove a user from a share.
-    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
@@ -155,9 +142,6 @@ def leave(request):
 
 @user_passes_test(login_allowed)
 def manage(request, share_id):
-    """
-    Share detail/manage page.
-    """
     if request.method == "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
@@ -181,9 +165,6 @@ def manage(request, share_id):
 
 @user_passes_test(login_allowed)
 def remove_user(request):
-    """
-    POST only view to be used by forms trying to remove a user from a share.
-    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')

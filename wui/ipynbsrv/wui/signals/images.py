@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import Image
 from ipynbsrv.wui.signals.signals import *
@@ -9,20 +9,36 @@ from ipynbsrv.wui.tools import Docker
 docker = Docker()
 
 
-@receiver(post_image_deleted)
+@receiver(image_created)
+def set_docker_image_id(sender, image, **kwargs):
+    """
+    Signal to replace the internal dummy ID with the one from Docker.
+    Since images are only created through container commits, everything else
+    is already done.
+    """
+    if settings.DEBUG:
+        print "set_docker_image_id receiver fired"
+    if image is not None:
+        img = docker.images(name=image.name)
+        if len(img) == 1:
+            image.id = img.pop()['Id']
+            image.save()
+
+
+@receiver(image_deleted)
 def remove_image_on_host(sender, image, **kwargs):
     """
-    Signal receiver used to remove Docker images from the host
-    when one is deleted from the DB.
+    Signal receiver used to remove Docker images from the host when one is deleted from the DB.
     """
     if settings.DEBUG:
         print "remove_image_on_host receiver fired"
-    images = docker.images(name=image.name)
-    if len(images) == 1:
-        docker.remove_image(images.pop())
+    if image is not None:
+        img = docker.images(name=image.name)
+        if len(img) == 1:
+            docker.remove_image(img.pop())
 
 
-@receiver(post_image_modified)
+@receiver(image_modified)
 def image_modified_handler(self, image, fields, **kwargs):
     if settings.DEBUG:
         print "image_modified_handler receiver fired"
@@ -34,31 +50,12 @@ def image_modified_handler(self, image, fields, **kwargs):
 
 @receiver(post_delete, sender=Image)
 def post_delete_handler(sender, instance, **kwargs):
-    post_image_deleted.send(sender=sender, image=instance, kwargs=kwargs)
-    image_deleted.send(sender=sender, image=instance, action='post_delete', kwargs=kwargs)
-
-
-@receiver(pre_delete, sender=Image)
-def pre_delete_handler(sender, instance, **kwargs):
-    pre_image_deleted.send(sender=sender, image=instance, kwargs=kwargs)
-    image_deleted.send(sender=sender, image=instance, action='pre_delete', kwargs=kwargs)
+    image_deleted.send(sender=sender, image=instance, kwargs=kwargs)
 
 
 @receiver(post_save, sender=Image)
 def post_save_handler(sender, instance, **kwargs):
-    if kwargs['created']:
-        post_image_created.send(sender=sender, image=instance, kwargs=kwargs)
-        image_created.send(sender=sender, image=instance, action='post_save', kwargs=kwargs)
+    if 'created' in kwargs:
+        image_created.send(sender=sender, image=instance, kwargs=kwargs)
     else:
-        post_image_modified.send(sender=sender, image=instance, fields=kwargs['update_fields'], kwargs=kwargs)
-        image_modified.send(sender=sender, image=instance, fields=kwargs['update_fields'], action='post_save', kwargs=kwargs)
-
-
-@receiver(pre_save, sender=Image)
-def pre_save_handler(sender, instance, **kwargs):
-    if kwargs['created']:
-        pre_image_created.send(sender=sender, image=instance, kwargs=kwargs)
-        image_created.send(sender=sender, image=instance, action='pre_save', kwargs=kwargs)
-    else:
-        pre_image_modified.send(sender=sender, image=instance, fields=kwargs['update_fields'], kwargs=kwargs)
-        image_modified.send(sender=sender, image=instance, fields=kwargs['update_fields'], action='pre_save', kwargs=kwargs)
+        image_modified.send(sender=sender, image=instance, fields=kwargs['update_fields'], kwargs=kwargs)

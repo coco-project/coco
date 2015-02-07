@@ -14,7 +14,7 @@ class Docker(object):
         return self.client.containers(quiet=quiet, all=all)
 
     def create_container(self, name, image, cmd, ports=None, volumes=None, env=None, detach=True):
-        return self.client.create_container(name=name, image=image, cmd=cmd, ports=ports,
+        return self.client.create_container(name=name, image=image, command=cmd, ports=ports,
                                             volumes=volumes, environment=env, detach=detach)
 
     def images(self, name=None, quiet=True, all=False):
