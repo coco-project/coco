@@ -149,7 +149,7 @@ class Container(models.Model):
         # if this is not the first clone, add count so names are unique
         existing_clones = Container.objects.filter(clone_of=self)
         if existing_clones.exists():
-            num_clones = existing_clones.len() + 1
+            num_clones = len(existing_clones) + 1
             clone_name += '_%d' % num_clones
             clone_img_name += '_%d' % num_clones
 

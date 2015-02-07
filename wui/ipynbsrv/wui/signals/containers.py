@@ -1,8 +1,9 @@
+import os.path
 import re
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from ipynbsrv.wui.models import Container, Image
+from ipynbsrv.wui.models import Container, Image, PortMapping
 from ipynbsrv.wui.signals.signals import *
 from ipynbsrv.wui.tools import Docker
 
@@ -29,11 +30,29 @@ def create_on_host(sender, container, **kwargs):
     if settings.DEBUG:
         print "create_on_host receiver fired"
     if container is not None:
-        # get all needed ports
-        ports = container.image.exposed_ports.split(',')
+        # pre-allocate port mappings
+        port_mappings = PortMapping.objects.all()
+        if port_mappings.exists():
+            exposed_port = port_mappings.latest().external + 1
+        else:
+            exposed_port = settings.DOCKER_START_PORT
+        # allocate ports and add them to the list for create_container
+        ports = []
+        for port in container.image.exposed_ports.split(','):
+            port = int(port)
+            ports.append(port)
+            port_mapping = PortMapping(container=container, internal=port, external=exposed_port++)
+            port_mapping.save()
         ports.append(container.image.proxied_port)
+        port_mapping = PortMapping(container=container, internal=container.image.proxied_port, external=exposed_port)
+        # list of mountpoints
+        volumes = [
+            os.path.join('/home/', container.owner.get_username()).
+            os.path.join('/data/', 'public'),
+            os.path.join('/data/', 'shares')
+        ]
         ret = docker.create_container(name=container.name, image=container.image.docker_id, cmd=container.image.cmd,
-                                      ports=ports, volumes=None)
+                                      ports=ports, volumes=volumes)
         container.docker_id = ret['Id']
         container.save(update_fields=['docker_id'])
 
@@ -69,6 +88,45 @@ def restart_on_host(sender, container, **kwargs):
             docker.restart(container.docker_id)
         except:
             pass  # TODO: does not exist. what to do?
+
+
+@receiver(container_started)
+def start_on_host(sender, container, **kwargs):
+    """
+    Signal to start the container on the Docker host
+    """
+    if settings.DEBUG:
+        print "start_on_host receiver fired"
+    if container is not None:
+        # port bindings
+        ports = {}
+        for mapping in PortMapping.objects.filter(container=container):
+            if mapping.internal == container.proxied_port:
+                ports[mapping.internal] = (settings.DOCKER_IFACE_IP, mapping.external)
+            else:
+                ports[mapping.internal] = mapping.external
+        # data mounts and volumes
+        username = container.owner.get_username()
+        volumes = {
+            os.path.join(settings.HOME_ROOT, username): {
+                'bind': os.path.join('/home/', username)
+                'ro': False
+            },
+            settings.PUBLIC_ROOT: {
+                'bind': os.path.join('/data/', 'public')
+                'ro': False
+            },
+            settings.SHARE_ROOT: {
+                'bind': os.path.join('/data/', 'shares')
+                'ro': False
+            }
+        }
+        # container linking
+        links = [
+            ('ipynbsrv.ldap', 'ipynbsrv.ldap')
+        ]
+        docker.start(container=container.docker_id, port_binds=ports, volume_binds=volumes, links=links)
+
 
 @receiver(container_stopped)
 def stop_on_host(sender, container, **kwargs):

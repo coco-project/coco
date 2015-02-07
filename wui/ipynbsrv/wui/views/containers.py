@@ -36,14 +36,14 @@ def commit(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('images')
-    if 'ct_name' not in request.POST or 'name' not in request.POST or 'description' not in request.POST or 'public' not in request.POST:
+    if 'ct_name' not in request.POST or 'name' not in request.POST or 'description' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 
-    ct_name = request.POST.get('ct_name')
+    ct_name = request.user.get_username() + '_' + request.POST.get('ct_name')
     name = request.user.get_username() + '/' + request.POST.get('name')
     description = request.POST.get('description')
-    public = request.POST.get('public')
+    public = request.POST.get('public', "")
 
     container = Container.objects.filter(name=ct_name)
     if container.exists():
@@ -59,6 +59,7 @@ def commit(request):
     else:
         messages.error(request, "Selected base container does not exist.")
 
+    # TODO: messages are shown on containers page
     return redirect('images')
 
 
@@ -107,7 +108,7 @@ def delete(request):
         container = container.first()
         if container.owner == request.user:
             container.delete()
-            messages.success(request, "Container stopped successfully.")
+            messages.success(request, "Container deleted successfully.")
         else:
             messages.error(request, "You don't have permissions to stop that container.")
     else:

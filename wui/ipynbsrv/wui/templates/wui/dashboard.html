@@ -72,7 +72,7 @@
                                     <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('backup-{{ ct.id }}').getElementsByTagName('button')[0].click();">Backup</a>
                                     <form id="backup-{{ ct.id }}" action="{% url 'container_share' %}" method="POST" role="form">
                                         {% csrf_token %}
-                                        <input type="hidden" id="modal-create-image_share" name="share" value="{{ ct.name }}">
+                                        <input type="hidden" id="modal-create-image_share" name="share" value="{{ ct.get_clean_name }}">
                                         <button type="submit" value="backup" data-toggle="modal2" data-target="#modal-image-create"></button>
                                     </form>
                                 </li>
@@ -80,7 +80,7 @@
                                     <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('share-{{ ct.id }}').getElementsByTagName('button')[0].click();">Share</a>
                                     <form id="share-{{ ct.id }}" action="{% url 'container_share' %}" method="POST" role="form">
                                         {% csrf_token %}
-                                        <input type="hidden" id="modal-create-image_share" name="share" value="{{ ct.name }}">
+                                        <input type="hidden" id="modal-create-image_share" name="share" value="{{ ct.get_clean_name }}">
                                         <button type="submit" value="share" data-toggle="modal3" data-target="#modal-image-create"></button>
                                     </form>
                                 </li>
