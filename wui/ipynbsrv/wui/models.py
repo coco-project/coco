@@ -208,7 +208,7 @@ class PortMapping(models.Model):
     external = models.PositiveIntegerField(unique=True, max_length=6)
 
     def __str__(self):
-        return smart_unicode("%s: %i -> %i" % self.container.name, self.internal, self.external)
+        return smart_unicode("%s: %i -> %i" % (self.container.name, self.internal, self.external))
 
     def __unicode__(self):
         return self.__str__()

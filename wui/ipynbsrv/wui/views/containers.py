@@ -119,9 +119,13 @@ def delete(request):
 
 @user_passes_test(login_allowed)
 def index(request):
+    containers = Container.objects.filter(owner=request.user)
+    for container in containers:
+        container.workspace_port = PortMapping.objects.filter(container=container).filter(internal=container.image.proxied_port).first().external
+
     return render(request, 'wui/containers/index.html', {
         'title': "Containers",
-        'containers': Container.objects.filter(owner=request.user),
+        'containers': containers,
         'images': Image.objects.filter((Q(owner=request.user) | Q(is_public=True)) & Q(is_clone=False))
     })
 

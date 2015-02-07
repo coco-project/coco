@@ -31,7 +31,7 @@
                             <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_{{ ct.id }}">
                                 <li role="presentation">
                                     <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('connect-{{ ct.id }}').getElementsByTagName('button')[0].click();">Connect</a>
-                                    <form id="connect-{{ ct.id }}" action="/workspace/{{ TODO }}/" method="GET" target="_blank" role="form">
+                                    <form id="connect-{{ ct.id }}" action="/workspace/{{ ct.workspace_port }}/" method="GET" target="_blank" role="form">
                                         {% csrf_token %}
                                         <button type="submit"></button>
                                     </form>

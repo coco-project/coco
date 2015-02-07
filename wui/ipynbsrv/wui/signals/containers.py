@@ -30,24 +30,26 @@ def create_on_host(sender, container, **kwargs):
     if settings.DEBUG:
         print "create_on_host receiver fired"
     if container is not None:
-        # pre-allocate port mappings
+        # find start port for this container
         port_mappings = PortMapping.objects.all()
         if port_mappings.exists():
             exposed_port = port_mappings.latest().external + 1
         else:
-            exposed_port = settings.DOCKER_START_PORT
+            exposed_port = settings.DOCKER_FIRST_PORT
         # allocate ports and add them to the list for create_container
         ports = []
         for port in container.image.exposed_ports.split(','):
             port = int(port)
             ports.append(port)
-            port_mapping = PortMapping(container=container, internal=port, external=exposed_port++)
+            port_mapping = PortMapping(container=container, internal=port, external=exposed_port)
             port_mapping.save()
+            exposed_port += 1
         ports.append(container.image.proxied_port)
         port_mapping = PortMapping(container=container, internal=container.image.proxied_port, external=exposed_port)
+        port_mapping.save()
         # list of mountpoints
         volumes = [
-            os.path.join('/home/', container.owner.get_username()).
+            os.path.join('/home/', container.owner.get_username()),
             os.path.join('/data/', 'public'),
             os.path.join('/data/', 'shares')
         ]
@@ -101,7 +103,7 @@ def start_on_host(sender, container, **kwargs):
         # port bindings
         ports = {}
         for mapping in PortMapping.objects.filter(container=container):
-            if mapping.internal == container.proxied_port:
+            if mapping.internal == container.image.proxied_port:
                 ports[mapping.internal] = (settings.DOCKER_IFACE_IP, mapping.external)
             else:
                 ports[mapping.internal] = mapping.external
@@ -109,15 +111,15 @@ def start_on_host(sender, container, **kwargs):
         username = container.owner.get_username()
         volumes = {
             os.path.join(settings.HOME_ROOT, username): {
-                'bind': os.path.join('/home/', username)
+                'bind': os.path.join('/home/', username),
                 'ro': False
             },
             settings.PUBLIC_ROOT: {
-                'bind': os.path.join('/data/', 'public')
+                'bind': os.path.join('/data/', 'public'),
                 'ro': False
             },
             settings.SHARE_ROOT: {
-                'bind': os.path.join('/data/', 'shares')
+                'bind': os.path.join('/data/', 'shares'),
                 'ro': False
             }
         }
