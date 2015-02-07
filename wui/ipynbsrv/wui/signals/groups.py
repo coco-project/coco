@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import Group, User
-from django.db.models.signals import m2m_changed, post_delete, post_save
+from django.db.models.signals import m2m_changed, post_delete, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import LdapGroup, LdapUser, Share
 from ipynbsrv.wui.signals.signals import *
@@ -86,42 +86,41 @@ def modified_handler(sender, group, fields, **kwargs):
 def m2m_changed_handler(sender, instance, **kwargs):
     if isinstance(instance, Group):
         action = kwargs['action']
-        if action == 'post_add' or action == 'post_remove'
-        or action == 'pre_add' or action == 'pre_remove':
+        if action == 'post_add' or action == 'post_remove' or action == 'pre_add' or action == 'pre_remove':
             if action == 'post_add' or action == 'post_remove':
                 post_group_modified.send(sender=sender, group=instance, fields=['user_set'], kwargs=kwargs)
             elif action == 'pre_add' or action == 'pre_remove':
                 pre_group_modified.send(sender=sender, group=instance, fields=['user_set'], kwargs=kwargs)
-            group_modified.send(sender=sender, group=instance, fields=['user_set'], action=action kwargs=kwargs)
+            group_modified.send(sender=sender, group=instance, fields=['user_set'], action=action, kwargs=kwargs)
 
 
 @receiver(post_delete, sender=Group)
 def post_delete_handler(sender, instance, **kwargs):
     post_group_deleted.send(sender=sender, group=instance, kwargs=kwargs)
-    group_deleted.send(sender=sender, group=instance, action='post_delete' kwargs=kwargs)
+    group_deleted.send(sender=sender, group=instance, action='post_delete', kwargs=kwargs)
 
 
 @receiver(pre_delete, sender=Group)
 def pre_delete_handler(sender, instance, **kwargs):
     pre_group_deleted.send(sender=sender, group=instance, kwargs=kwargs)
-    group_deleted.send(sender=sender, group=instance, action='pre_delete' kwargs=kwargs)
+    group_deleted.send(sender=sender, group=instance, action='pre_delete', kwargs=kwargs)
 
 
 @receiver(post_save, sender=Group)
 def post_save_handler(sender, instance, **kwargs):
     if kwargs['created']:
         post_group_created.send(sender=sender, group=instance, kwargs=kwargs)
-        group_created.send(sender=sender, group=instance, action='post_save' kwargs=kwargs)
+        group_created.send(sender=sender, group=instance, action='post_save', kwargs=kwargs)
     else:
         post_group_modified.send(sender=sender, group=instance, fields=kwargs['update_fields'], kwargs=kwargs)
-        group_modified.send(sender=sender, group=instance, fields=kwargs['update_fields'], action='post_save' kwargs=kwargs)
+        group_modified.send(sender=sender, group=instance, fields=kwargs['update_fields'], action='post_save', kwargs=kwargs)
 
 
 @receiver(pre_save, sender=Group)
 def pre_save_handler(sender, instance, **kwargs):
     if kwargs['created']:
         pre_group_created.send(sender=sender, group=instance, kwargs=kwargs)
-        group_created.send(sender=sender, group=instance, action='pre_save' kwargs=kwargs)
+        group_created.send(sender=sender, group=instance, action='pre_save', kwargs=kwargs)
     else:
         pre_group_modified.send(sender=sender, group=instance, fields=kwargs['update_fields'], kwargs=kwargs)
-        group_modified.send(sender=sender, group=instance, fields=kwargs['update_fields'], action='pre_save' kwargs=kwargs)
+        group_modified.send(sender=sender, group=instance, fields=kwargs['update_fields'], action='pre_save', kwargs=kwargs)

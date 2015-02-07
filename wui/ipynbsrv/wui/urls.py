@@ -43,5 +43,5 @@ urlpatterns = patterns('',
     url(r'^error/500$', 'ipynbsrv.wui.views.system.error_500'),
 
     # /
-    url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard'),
+    url(r'^$', 'ipynbsrv.wui.views.common.dashboard', name='dashboard')
 )

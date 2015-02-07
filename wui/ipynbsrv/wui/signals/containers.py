@@ -1,6 +1,6 @@
 import re
 from django.conf import settings
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import Container, Image
 from ipynbsrv.wui.signals.signals import *
@@ -40,7 +40,7 @@ def delete_on_host(sender, container, **kwargs):
         docker.remove_container(container.id)
     # clone images are only used internally and can safely be removed
     # after deleting a cloned container
-    if container.clone_of not None:
+    if container.clone_of:
         container.image.delete()
 
 
@@ -73,13 +73,13 @@ def container_modified_handler(sender, container, fields, **kwargs):
 @receiver(post_delete, sender=Container)
 def post_delete_handler(sender, instance, **kwargs):
     post_container_deleted.send(sender=sender, container=instance, kwargs=kwargs)
-    container_deleted.send(sender=sender, container=instance, action='post_delete' kwargs=kwargs)
+    container_deleted.send(sender=sender, container=instance, action='post_delete', kwargs=kwargs)
 
 
 @receiver(post_delete, sender=Container)
 def pre_delete_handler(sender, instance, **kwargs):
     pre_container_deleted.send(sender=sender, container=instance, kwargs=kwargs)
-    container_deleted.send(sender=sender, container=instance, action='pre_delete' kwargs=kwargs)
+    container_deleted.send(sender=sender, container=instance, action='pre_delete', kwargs=kwargs)
 
 
 @receiver(post_save, sender=Container)

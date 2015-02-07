@@ -2,7 +2,7 @@ import os.path
 import shutil
 import stat
 from django.conf import settings
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import LdapGroup, Share
 from ipynbsrv.wui.signals.signals import *
@@ -51,30 +51,30 @@ def share_modified_handler(sender, share, fields, **kwargs):
 @receiver(post_delete, sender=Share)
 def post_delete_handler(sender, instance, **kwargs):
     post_share_deleted.send(sender=sender, share=instance, kwargs=kwargs)
-    share_deleted.send(sender=sender, share=instance, action='post_delete' kwargs=kwargs)
+    share_deleted.send(sender=sender, share=instance, action='post_delete', kwargs=kwargs)
 
 
 @receiver(pre_delete, sender=Share)
 def pre_delete_handler(sender, instance, **kwargs):
     pre_share_deleted.send(sender=sender, share=instance, kwargs=kwargs)
-    share_deleted.send(sender=sender, share=instance, action='pre_delete' kwargs=kwargs)
+    share_deleted.send(sender=sender, share=instance, action='pre_delete', kwargs=kwargs)
 
 
 @receiver(post_save, sender=Share)
 def post_save_handler(sender, instance, **kwargs):
     if kwargs['created']:
         post_share_created.send(sender, share=instance, kwargs=kwargs)
-        share_created.send(sender, share=instance, action='post_save' kwargs=kwargs)
+        share_created.send(sender, share=instance, action='post_save', kwargs=kwargs)
     else:
         post_share_modified.send(sender, share=instance, fields=kwargs['update_fields'], kwargs=kwargs)
-        share_modified.send(sender, share=instance, fields=kwargs['update_fields'], action='post_save' kwargs=kwargs)
+        share_modified.send(sender, share=instance, fields=kwargs['update_fields'], action='post_save', kwargs=kwargs)
 
 
 @receiver(pre_save, sender=Share)
 def pre_save_handler(sender, instance, **kwargs):
     if kwargs['created']:
         pre_share_created.send(sender, share=instance, kwargs=kwargs)
-        share_created.send(sender, share=instance, action='pre_save' kwargs=kwargs)
+        share_created.send(sender, share=instance, action='pre_save', kwargs=kwargs)
     else:
         pre_share_modified.send(sender, share=instance, fields=kwargs['update_fields'], kwargs=kwargs)
-        share_modified.send(sender, share=instance, fields=kwargs['update_fields'], action='pre_save' kwargs=kwargs)
+        share_modified.send(sender, share=instance, fields=kwargs['update_fields'], action='pre_save', kwargs=kwargs)

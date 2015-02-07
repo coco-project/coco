@@ -34,8 +34,7 @@ def commit(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('images')
-    if 'ct_name' not in request.POST or 'name' not in request.POST or 'description' not in request.POST
-    or 'public' not in request.POST:
+    if 'ct_name' not in request.POST or 'name' not in request.POST or 'description' not in request.POST or 'public' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 

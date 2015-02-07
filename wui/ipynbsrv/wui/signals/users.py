@@ -3,7 +3,7 @@ import shutil
 import stat
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models.signals import m2m_changed, post_delete, post_save
+from django.db.models.signals import m2m_changed, post_delete, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from ipynbsrv.wui.models import LdapUser
 from ipynbsrv.wui.signals.signals import *
@@ -68,8 +68,7 @@ def user_modified_handler(sender, user, fields, **kwargs):
 def m2m_changed_handler(sender, instance, **kwargs):
     if isinstance(instance, User):
         action = kwargs['action']
-        if action == 'post_add' or action == 'post_remove'
-        or action == 'pre_add' or action == 'pre_remove':
+        if action == 'post_add' or action == 'post_remove' or action == 'pre_add' or action == 'pre_remove':
             if action == 'post_add' or action == 'post_remove':
                 post_user_modified.send(sender=sender, user=instance, fields=['groups'], kwargs=kwargs)
             elif action == 'pre_add' or action == 'pre_remove':
