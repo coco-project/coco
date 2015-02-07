@@ -75,7 +75,7 @@ def delete_on_host(sender, container, **kwargs):
         # TODO: is that true? what about clones of clones etc.?
         # clone images are only used internally and can safely be removed
         # after deleting a cloned container
-        if container.clone_of:
+        if container.clone_of is not None:
             container.image.delete()
 
 

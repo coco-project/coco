@@ -182,7 +182,7 @@ def remove_user(request):
             user = User.objects.filter(pk=user_id)
             if user.exists():
                 share.group.user_set.remove(user.first())
-                messages.success(request, "Removed used from share.")
+                messages.success(request, "Removed user from share.")
                 request.method = "GET"
                 return redirect('share_manage', share.id)
             else:

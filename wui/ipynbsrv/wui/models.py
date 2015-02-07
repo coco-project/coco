@@ -178,19 +178,16 @@ class Container(models.Model):
         return self.name.split(self.owner.get_username() + "_", 1)[1]
 
     def restart(self):
-        pre_container_restarted.send(sender=Container, container=self)
         self.running = True
         self.save(update_fields=['running'])
         container_restarted.send(sender=Container, container=self)
 
     def start(self):
-        pre_container_started.send(sender=Container, container=self)
         self.running = True
         self.save(update_fields=['running'])
         container_started.send(sender=Container, container=self)
 
     def stop(self):
-        pre_container_stopped.send(sender=Container, container=self)
         self.running = False
         self.save(update_fields=['running'])
         container_stopped.send(sender=Container, container=self)

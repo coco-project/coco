@@ -121,7 +121,9 @@ def delete(request):
 def index(request):
     containers = Container.objects.filter(owner=request.user)
     for container in containers:
-        container.workspace_port = PortMapping.objects.filter(container=container).filter(internal=container.image.proxied_port).first().external
+            port_mappings = PortMapping.objects.filter(container=container)
+            container.port_mappings = port_mappings.filter(~Q(internal=container.image.proxied_port))
+            container.workspace_port = port_mappings.filter(internal=container.image.proxied_port).first().external
 
     return render(request, 'wui/containers/index.html', {
         'title': "Containers",

@@ -25,6 +25,24 @@
                     <div class="panel-body">
                         {{ ct.description }}
                     </div>
+                    {% if ct.running and ct.port_mappings %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th width="50%">Internal</th>
+                                <th width="50%">External</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for port_mapping in ct.port_mappings %}
+                            <tr>
+                                <td>{{ port_mapping.internal }}</td>
+                                <td>{{ port_mapping.external }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
                     <div class="panel-footer">
                         <div class="dropdown">
                             <button class="btn btn-default btn-block dropdown-toggle" type="button" id="actions-container_{{ ct.id }}" data-toggle="dropdown" aria-expanded="true">

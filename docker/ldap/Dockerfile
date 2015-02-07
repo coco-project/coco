@@ -32,6 +32,7 @@ RUN sed -i 's/compat/compat ldap/' /etc/nsswitch.conf
 RUN echo "nss_override_attribute_value loginShell /bin/bash" >> /etc/ldap.conf
 
 # Allow password based SSH login but only for container owner
+RUN rm -f /etc/service/sshd/down
 RUN echo "UsePAM yes" >> /etc/ssh/sshd_config
 RUN echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
 # http://www.cyberciti.biz/tips/linux-pam-configuration-that-allows-or-deny-login-via-the-sshd-server.html
