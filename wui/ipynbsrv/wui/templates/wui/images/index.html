@@ -12,7 +12,7 @@
 {% block content %}
 <div class="row">
     <div class="col-xs-12">
-        {% include "wui/snippets/messages.html" %}
+        {% include "wui/snippets/messages.html" with messages=messages only %}
 
         <h1>Images</h1>
         <form role="form">
@@ -58,7 +58,7 @@
             <div class="alert alert-info">You do not have access to any images yet.</div>
         {% endif %}
 
-        {% include "wui/images/modal_create.html" with containers=containers selected=selected share=share %}
+        {% include "wui/images/modal_create.html" with containers=containers selected=selected share=share csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}

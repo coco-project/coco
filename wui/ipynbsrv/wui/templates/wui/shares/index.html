@@ -11,7 +11,7 @@
 {% block content %}
 <div class="row">
     <div class="col-xs-12">
-        {% include "wui/snippets/messages.html" %}
+        {% include "wui/snippets/messages.html" with messages=messages only %}
 
         <h1>Shares</h1>
         <form role="form">
@@ -81,8 +81,8 @@
             <div class="alert alert-info">You have no shares yet.</div>
         {% endif %}
 
-        {% include "wui/shares/modal_adduser.html" %}
-        {% include "wui/shares/modal_create.html" %}
+        {% include "wui/shares/modal_adduser.html" csrf_token=csrf_token only %}
+        {% include "wui/shares/modal_create.html" csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}

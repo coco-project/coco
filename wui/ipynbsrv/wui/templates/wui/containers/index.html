@@ -5,131 +5,15 @@
 {% block content %}
 <div class="row">
     <div class="col-xs-12">
-        {% include "wui/snippets/messages.html" %}
+        {% include "wui/snippets/messages.html" with messages=messages only %}
 
         <h1>Containers</h1>
         <form role="form">
             <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-container">Create new</button>
         </form>
 
-        {% if containers %}
-        <div class="row container-grid">
-           {% for ct in containers %}
-            <div class="col-xs-12 col-sm-6 col-md-4">
-                {% if ct.running %}
-                    <div class="panel panel-success panel-container">
-                {% else %}
-                    <div class="panel panel-danger panel-container">
-                {% endif %}
-                    <div class="panel-heading">{{ ct.get_clean_name }}</div>
-                    <div class="panel-body">
-                        {{ ct.description }}
-                    </div>
-                    {% if ct.running and ct.port_mappings %}
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th width="50%">Internal</th>
-                                <th width="50%">External</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for port_mapping in ct.port_mappings %}
-                            <tr>
-                                <td>{{ port_mapping.internal }}</td>
-                                <td>{{ port_mapping.external }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% endif %}
-                    <div class="panel-footer">
-                        <div class="dropdown">
-                            <button class="btn btn-default btn-block dropdown-toggle" type="button" id="actions-container_{{ ct.id }}" data-toggle="dropdown" aria-expanded="true">
-                            Actions
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
-                                {% if ct.running %}
-                                    <li role="presentation">
-                                        <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('connect-{{ ct.id }}').getElementsByTagName('button')[0].click();">Connect</a>
-                                        <form id="connect-{{ ct.id }}" action="/workspace/{{ ct.workspace_port }}/" method="GET" target="_blank" role="form">
-                                            {% csrf_token %}
-                                            <button type="submit"></button>
-                                        </form>
-                                    </li>
-                                    <li role="presentation">
-                                        <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('stop-{{ ct.id }}').getElementsByTagName('button')[0].click();">Stop</a>
-                                        <form id="stop-{{ ct.id }}" action="{% url 'container_stop' %}" method="POST" role="form">
-                                            {% csrf_token %}
-                                            <input name="id" type="hidden" value="{{ ct.id }}">
-                                            <button type="submit"></button>
-                                        </form>
-                                    </li>
-                                    <li role="presentation">
-                                        <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('restart-{{ ct.id }}').getElementsByTagName('button')[0].click();">Restart</a>
-                                        <form id="restart-{{ ct.id }}" action="{% url 'container_restart' %}" method="POST" role="form">
-                                            {% csrf_token %}
-                                            <input name="id" type="hidden" value="{{ ct.id }}">
-                                            <button type="submit"><button>
-                                        </form>
-                                    </li>
-                                {% else %}
-                                    <li role="presentation">
-                                        <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('start-{{ ct.id }}').getElementsByTagName('button')[0].click();">Start</a>
-                                        <form id="start-{{ ct.id }}" action="{% url 'container_start' %}" method="POST" role="form">
-                                            {% csrf_token %}
-                                            <input name="id" type="hidden" value="{{ ct.id }}">
-                                            <button type="submit"></button>
-                                        </form>
-                                    </li>
-                                {% endif %}
-                                <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('delete-{{ ct.id }}').getElementsByTagName('button')[0].click();">Delete</a>
-                                    <form id="delete-{{ ct.id }}" action="{% url 'container_delete' %}" method="POST" role="form">
-                                        {% csrf_token %}
-                                        <input name="id" type="hidden" value="{{ ct.id }}">
-                                        <button type="submit"></button>
-                                    </form>
-                                </li>
-                                <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('clone-{{ ct.id }}').getElementsByTagName('button')[0].click();">Clone</a>
-                                    <form id="clone-{{ ct.id }}" action="{% url 'container_clone' %}" method="POST" role="form">
-                                        {% csrf_token %}
-                                        <input name="id" type="hidden" value="{{ ct.id }}">
-                                        <button type="submit"></button>
-                                    </form>
-                                </li>
-                                <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('backup-{{ ct.id }}').getElementsByTagName('button')[0].click();">Backup</a>
-                                    <form id="backup-{{ ct.id }}" action="{% url 'images' %}" method="GET" role="form">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="backup" value="1">
-                                        <input type="hidden" name="ct" value="{{ ct.id }}">
-                                        <button type="submit"></button>
-                                    </form>
-                                </li>
-                                <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('share-{{ ct.id }}').getElementsByTagName('button')[0].click();">Share</a>
-                                    <form id="share-{{ ct.id }}" action="{% url 'images' %}" method="GET" role="form">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="share" value="1">
-                                        <input type="hidden" name="ct" value="{{ ct.id }}">
-                                        <button type="submit"></button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-           {% endfor %}
-        </div>
-        {% else %}
-            <div class="alert alert-info">You have no containers yet.</div>
-        {% endif %}
-
-        {% include "wui/containers/modal_create.html" %}
+        {% include "wui/snippets/container_grid.html" with containers=containers csrf_token=csrf_token only %}
+        {% include "wui/containers/modal_create.html" with images=images csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}
