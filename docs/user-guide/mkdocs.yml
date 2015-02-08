@@ -1,0 +1,8 @@
+site_name: User Guide
+theme: readthedocs
+
+docs_dir: .
+site_dir: ../../wui/ipynbsrv/wui/static/docs/user-guide
+
+pages:
+- [index.md, Home]

@@ -1,6 +1,5 @@
 # Django development DB
 *.sqlite3
-wui/ipynbsrv/wui/migrations/
 
 # Python compiled files
 *.pyc
@@ -10,3 +9,6 @@ wui/ipynbsrv/wui/static/bower_components
 
 # LESS generated CSS
 wui/ipynbsrv/wui/static/css/main.css
+
+# mkdocs output
+wui/ipynbsrv/wui/static/docs/user-guide/*

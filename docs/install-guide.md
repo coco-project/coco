@@ -29,7 +29,7 @@ To make the setup as easy as possible, we wrote a tiny shell script that will pe
 
 ```bash
 $ apt-get -y install wget  # or yum for EL
-$ BRANCH=develop  # use master for stable release
+$ BRANCH=master  # use develop for development version
 $ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/scripts/setup_docker_host.sh
 $ chmod +x setup_docker_host.sh && ./setup_docker_host.sh
 ```
@@ -285,6 +285,7 @@ $ apt-get -y install python-dev libldap2-dev libsasl2-dev libssl-dev  # for djan
 $ apt-get -y install python-psycopg2  # for Django PostgreSQL
 $ apt-get -y install nodejs-legacy npm
 $ npm -g install bower less  # for frontend assets
+$ pip install mkdocs  # for the user guide
 ```
 
 #### Django/Application
@@ -307,7 +308,7 @@ $ su ipynbsrv
 ```bash
 cd ~
 mkdir -p data/homes data/public data/shares
-BRANCH=develop  # use master for stable
+BRANCH=master  # use develop for development version
 git clone -b $BRANCH https://git.rackster.ch/fhnw/ipynbsrv.git _repo
 ln -s /srv/ipynbsrv/_repo/wui/ /srv/ipynbsrv/www
 ```
@@ -363,6 +364,7 @@ Some of them need adjustment, so open it with `nano ipynbsrv/settings.py` and de
 | DATABASES.default.PASSWORD | The `Postgres` password you took
 | DATABASES.ldap.PASSWORD    | The `LDAP` admin password you took
 | TIME_ZONE                  | Your timezone (e.g. `Europe/Zurich`)
+| DOCKER\_API\_VERSION       | Get it with `docker version`
 | DOCKER\_IFACE\_IP          | The IP address of the `docker0` iface
 
 > Note: For `DOCKER_IFACE_IP` issue `ifconfig docker0 | grep inet\ addr:` on the dedicated node.
@@ -371,11 +373,11 @@ All other values should be fine.
 
 Now that you have the `DOCKER_IFACE_IP`, open `/srv/ipynbsrv/_repo/confs/nginx/ipynbsrv.conf` and replace:
 
-    proxy_pass  http://$host:$1;
+    proxy_pass  http://172.17.42.1:$1;
 
 with:
 
-    proxy_pass http://"ip goes here":$1;
+    proxy_pass http://"DOCKER_IFACE_IP":$1;
 
 ###### manage.py
 
@@ -396,6 +398,13 @@ bower install  # installs external dependencies
 mkdir css
 lessc --compress less/main.less css/main.css  # compile LESS to CSS
 cd ~/www
+```
+
+The user guide must be generated as well:
+
+```bash
+cd /srv/ipynbsrv/_repo/docs/user-guide/
+mkdocs build --clean
 ```
 
 Last but not least, finalize the whole setup by issueing:
