@@ -36,7 +36,9 @@
                         <tr>
                             <td>{{ img.name }}</td>
                             <td>{{ img.description }}</td>
-                            <td style="text-align: center"><input type="checkbox" data-sort="1" {% if img.is_public %}checked{% endif %}></td>
+                            <td style="text-align: center">
+                                <input type="checkbox" data-sort="1"{% if img.is_public %} checked{% endif %}{% if img.owner != request.user %} disabled{% endif %}>
+                            </td>
                             <td>
                                 {% if img.owner == request.user %}
                                 <form action="{% url 'image_delete' %}" method="POST" class="pull-right" role="form">
