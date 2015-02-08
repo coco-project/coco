@@ -158,11 +158,6 @@ def restart(request):
 
 
 @user_passes_test(login_allowed)
-def share(request):
-    return redirect('images')
-
-
-@user_passes_test(login_allowed)
 def start(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")

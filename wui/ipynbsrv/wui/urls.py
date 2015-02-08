@@ -20,7 +20,6 @@ urlpatterns = patterns('',
     url(r'^container/create$', 'ipynbsrv.wui.views.containers.create', name='container_create'),
     url(r'^container/delete$', 'ipynbsrv.wui.views.containers.delete', name='container_delete'),
     url(r'^container/restart$', 'ipynbsrv.wui.views.containers.restart', name='container_restart'),
-    url(r'^container/share$', 'ipynbsrv.wui.views.containers.share', name='container_share'),
     url(r'^container/start$', 'ipynbsrv.wui.views.containers.start', name='container_start'),
     url(r'^container/stop$', 'ipynbsrv.wui.views.containers.stop', name='container_stop'),
 
