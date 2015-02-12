@@ -24,7 +24,7 @@ def delete(request):
             img.delete()
             messages.success(request, "Image deleted successfully.")
         else:
-            messages.error(request, "You don't have permissions to delete that image.")
+            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Image does not exist.")
 

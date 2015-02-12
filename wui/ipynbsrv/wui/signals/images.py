@@ -19,7 +19,7 @@ def set_docker_image_id(sender, image, **kwargs):
     if settings.DEBUG:
         print "set_docker_image_id receiver fired"
     if image is not None:
-        img = docker.images(name=image.name)
+        img = docker.images(name=image.get_full_name())
         if len(img) == 1:
             image.docker_id = img.pop()
             image.save(update_fields=['docker_id'])
@@ -33,7 +33,7 @@ def remove_image_on_host(sender, image, **kwargs):
     if settings.DEBUG:
         print "remove_image_on_host receiver fired"
     if image is not None:
-        img = docker.images(name=image.name)
+        img = docker.images(name=image.get_full_name())
         if len(img) == 1:
             docker.remove_image(img.pop())
 

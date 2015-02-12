@@ -16,7 +16,7 @@ def clone(request):
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
-    ct_id = request.POST.get('id')
+    ct_id = int(request.POST.get('id'))
 
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
@@ -24,7 +24,7 @@ def clone(request):
         if container.owner == request.user:
             container.clone()
         else:
-            messages.error(request, "You don't have permissions to clone that container.")
+            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Container does not exist.")
 
@@ -36,26 +36,26 @@ def commit(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('images')
-    if 'ct_name' not in request.POST or 'name' not in request.POST or 'description' not in request.POST:
+    if 'ct_id' not in request.POST or 'img_name' not in request.POST or 'description' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 
-    ct_name = request.user.get_username() + '_' + request.POST.get('ct_name')
-    name = request.user.get_username() + '/' + request.POST.get('name')
+    ct_id = int(request.POST.get('ct_id'))
+    img_name = request.POST.get('img_name')
     description = request.POST.get('description')
     public = request.POST.get('public', "")
 
-    container = Container.objects.filter(name=ct_name)
+    container = Container.objects.filter(pk=ct_id)
     if container.exists():
         container = container.first()
         if container.owner == request.user:
-            if Image.objects.filter(name=name).exists():
+            if Image.objects.filter(name=img_name).filter(owner=request.user).exists():
                 messages.error(request, "An image with that name already exists.")
             else:
-                container.commit(img_name=name, description=description, public=public == "True", clone=False)
+                container.commit(img_name=request.user.get_username() + '/' + img_name, description=description, public=public == "True", clone=False)
                 messages.success(request, "Sucessfully created the image.")
         else:
-            messages.error(request, "You don't have permissions to commit that container.")
+            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Selected base container does not exist.")
 
@@ -68,24 +68,28 @@ def create(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('images')
-    if 'name' not in request.POST or 'description' not in request.POST or 'image' not in request.POST:
+    if 'name' not in request.POST or 'description' not in request.POST or 'image_id' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 
-    name = request.user.get_username() + '_' + request.POST.get('name')
+    name = request.POST.get('name')
     description = request.POST.get('description')
-    image = request.POST.get('image')
+    image_id = int(request.POST.get('image_id'))
 
-    if Container.objects.filter(name=name).exists():
+    if Container.objects.filter(name=name).filter(owner=request.user).exists():
         messages.error(request, "A container with that name already exists.")
     else:
-        image = Image.objects.filter(name=image)
+        image = Image.objects.filter(pk=image_id)
         if image.exists():
-            container = Container(docker_id=randint(0, 1000), name=name, description=description, image=image.first(),
-                                  owner=request.user, running=False, clone_of=None)
-            container.save()
-            container.start()
-            messages.success(request, "Container created successfully.")
+            image = image.first()
+            if image.owner == request.user or image.is_public:
+                container = Container(docker_id=randint(0, 1000), name=name, description=description, image=image,
+                                      owner=request.user, running=False, clone_of=None)
+                container.save()
+                container.start()
+                messages.success(request, "Container created successfully.")
+            else:
+                messages.error(request, "You don't have enough permissions for the requested operation.")
         else:
             messages.error(request, "Container base image does not exist.")
 
@@ -101,7 +105,7 @@ def delete(request):
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
-    ct_id = request.POST.get('id')
+    ct_id = int(request.POST.get('id'))
 
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
@@ -110,7 +114,7 @@ def delete(request):
             container.delete()
             messages.success(request, "Container deleted successfully.")
         else:
-            messages.error(request, "You don't have permissions to stop that container.")
+            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Container does not exist.")
 
@@ -141,7 +145,7 @@ def restart(request):
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
-    ct_id = request.POST.get('id')
+    ct_id = int(request.POST.get('id'))
 
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
@@ -150,7 +154,7 @@ def restart(request):
             container.restart()
             messages.success(request, "Container restarted successfully.")
         else:
-            messages.error(request, "You don't have permissions to stop that container.")
+            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Container does not exist.")
 
@@ -166,7 +170,7 @@ def start(request):
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
-    ct_id = request.POST.get('id')
+    ct_id = int(request.POST.get('id'))
 
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
@@ -175,7 +179,7 @@ def start(request):
             container.start()
             messages.success(request, "Container started successfully.")
         else:
-            messages.error(request, "You don't have permissions to start that container.")
+            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Container does not exist.")
 
@@ -191,7 +195,7 @@ def stop(request):
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
-    ct_id = request.POST.get('id')
+    ct_id = int(request.POST.get('id'))
 
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
@@ -200,7 +204,7 @@ def stop(request):
             container.stop()
             messages.success(request, "Container stopped successfully.")
         else:
-            messages.error(request, "You don't have permissions to stop that container.")
+            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Container does not exist.")
 

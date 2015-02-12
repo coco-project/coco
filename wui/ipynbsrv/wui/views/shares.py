@@ -31,9 +31,9 @@ def add_user(request):
                 user = User.objects.filter(username=user)
                 if user.exists() and not share.is_member(user.first()):
                     share.group.user_set.add(user.first())
-            messages.success(request, "Sucessfully added the new member(s).")
+            messages.success(request, "Sucessfully added the new member(s) to the share.")
         else:
-            messages.error(request, "Not enough permissions to add a new user to that share.")
+            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Share does not exist.")
 
@@ -97,7 +97,7 @@ def delete(request):
             share.delete()
             messages.success(request, "Share deleted sucessfully.")
         else:
-            messages.error(request, "Not enough permissions to delete this share.")
+            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Share does not exist.")
 
@@ -130,10 +130,10 @@ def leave(request):
     if share.exists():
         share = share.first()
         if share.owner == request.user:
-            messages.error(request, "Cannot leave an owned share. Delete it instead.")
+            messages.error(request, "You cannot leave an owned share. Please delete it instead.")
         else:
             share.group.user_set.remove(request.user)
-            messages.success(request, "Successfully leaved the share.")
+            messages.success(request, "You successfully leaved the share.")
     else:
         messages.error(request, "Share does not exist.")
 
@@ -156,7 +156,7 @@ def manage(request, share_id):
                 'members': share.get_members()
             })
         else:
-            messages.error(request, "Not enough permissions to manage this share.")
+            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Share does not exist.")
 
@@ -182,13 +182,13 @@ def remove_user(request):
             user = User.objects.filter(pk=user_id)
             if user.exists():
                 share.group.user_set.remove(user.first())
-                messages.success(request, "Removed user from share.")
+                messages.success(request, "Sucessfully removed the user from the share.")
                 request.method = "GET"
                 return redirect('share_manage', share.id)
             else:
                 messages.error(request, "User does not exist.")
         else:
-            messages.error(request, "Not enough permissions for that.")
+            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Share does not exist.")
 

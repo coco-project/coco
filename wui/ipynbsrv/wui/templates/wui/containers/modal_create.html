@@ -20,10 +20,10 @@
                     </div>
                     <div class="form-group">
                         <label for="image">Image</label>
-                        <select name="image" class="form-control" required>
+                        <select name="image_id" class="form-control" required>
                             <option></option>
                             {% for img in images %}
-                                <option>{{ img.name }}</option>
+                                <option value="{{ img.id }}">{{ img.get_full_name }}</option>
                             {% endfor %}
                         </select>
                     </div>

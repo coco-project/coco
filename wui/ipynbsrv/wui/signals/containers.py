@@ -19,7 +19,7 @@ def commit_on_host(sender, container, image, **kwargs):
     if settings.DEBUG:
         print "commit_on_host receiver fired"
     if container is not None and image is not None:
-        docker.commit(container.docker_id, image.name)
+        docker.commit(container.docker_id, image.get_full_name())
 
 
 @receiver(container_created)
@@ -53,7 +53,7 @@ def create_on_host(sender, container, **kwargs):
             os.path.join('/data/', 'public'),
             os.path.join('/data/', 'shares')
         ]
-        ret = docker.create_container(name=container.name, image=container.image.docker_id,
+        ret = docker.create_container(name=container.get_full_name(), image=container.image.docker_id,
                                       cmd=container.image.cmd.replace('{{PORT}}', str(port_mapping.external)),
                                       ports=ports, volumes=volumes)
         container.docker_id = ret['Id']

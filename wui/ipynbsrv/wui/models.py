@@ -114,7 +114,7 @@ class Share(models.Model):
 class Image(models.Model):
     id = models.AutoField(primary_key=True)
     docker_id = models.CharField(unique=True, max_length=64)
-    name = models.CharField(unique=True, null=False, max_length=75)
+    name = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
     cmd = models.CharField(null=True, blank=True, max_length=100)
     exposed_ports = models.CommaSeparatedIntegerField(null=True, blank=True, max_length=24)
@@ -123,8 +123,8 @@ class Image(models.Model):
     is_public = models.BooleanField(default=False)
     is_clone = models.BooleanField(default=False)
 
-    def get_clean_name(self):
-        return self.name.split(self.owner.get_username() + "/", 1)[1]
+    def get_full_name(self):
+        return self.owner.get_username() + "/" + self.name
 
     def __str__(self):
         return smart_unicode(self.name)
@@ -132,11 +132,14 @@ class Image(models.Model):
     def __unicode__(self):
         return self.__str__()
 
+    class Meta:
+        unique_together = ('name', 'owner')
+
 
 class Container(models.Model):
     id = models.AutoField(primary_key=True)
     docker_id = models.CharField(unique=True, max_length=64)
-    name = models.CharField(unique=True, null=False, max_length=75)
+    name = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
     image = models.ForeignKey(Image)
     owner = models.ForeignKey(User)
@@ -145,7 +148,7 @@ class Container(models.Model):
 
     def clone(self):
         clone_name = self.name + CONTAINER_CLONE_SUFFIX
-        clone_img_name = self.owner.get_username() + "/" + self.get_clean_name() + CONTAINER_CLONE_SUFFIX
+        clone_img_name = self.owner.get_username() + "/" + self.name + CONTAINER_CLONE_SUFFIX
         # if this is not the first clone, add count so names are unique
         existing_clones = Container.objects.filter(clone_of=self)
         if existing_clones.exists():
@@ -174,8 +177,8 @@ class Container(models.Model):
 
         return image
 
-    def get_clean_name(self):
-        return self.name.split(self.owner.get_username() + "_", 1)[1]
+    def get_full_name(self):
+        return self.owner.get_username() + "_" + self.name
 
     def restart(self):
         self.running = True
@@ -197,6 +200,9 @@ class Container(models.Model):
 
     def __unicode__(self):
         return self.__str__()
+
+    class Meta:
+        unique_together = ('name', 'owner')
 
 
 class PortMapping(models.Model):
