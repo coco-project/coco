@@ -52,14 +52,13 @@ def commit(request):
             if Image.objects.filter(name=img_name).filter(owner=request.user).exists():
                 messages.error(request, "An image with that name already exists.")
             else:
-                container.commit(img_name=request.user.get_username() + '/' + img_name, description=description, public=public == "True", clone=False)
+                container.commit(img_name=img_name, description=description, public=public == "True", clone=False)
                 messages.success(request, "Sucessfully created the image.")
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Selected base container does not exist.")
 
-    # TODO: messages are shown on containers page
     return redirect('images')
 
 
