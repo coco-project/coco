@@ -148,7 +148,7 @@ class Container(models.Model):
 
     def clone(self):
         clone_name = self.name + CONTAINER_CLONE_SUFFIX
-        clone_img_name = self.owner.get_username() + "/" + self.name + CONTAINER_CLONE_SUFFIX
+        clone_img_name = self.name + CONTAINER_CLONE_SUFFIX
         # if this is not the first clone, add count so names are unique
         existing_clones = Container.objects.filter(clone_of=self)
         if existing_clones.exists():
