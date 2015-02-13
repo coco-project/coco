@@ -61,6 +61,7 @@ tar xzf master.tar.gz
 ./baseimage-docker-master/install-tools.sh
 rm -rf master.tar.gz baseimage-docker-master
 # pull the base image for our templates
+docker pull phusion/baseimage:0.9.15
 docker pull phusion/baseimage:0.9.16
 
 # create the data directories
