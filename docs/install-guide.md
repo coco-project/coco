@@ -332,7 +332,7 @@ user  www-data;
 worker_processes  auto;
 
 http {
-    # remove the servers already defined here
+    # remove the servers already defined here, but not other stuff like mime.types etc.
     include /usr/local/openresty/nginx/conf/sites-enabled/*.conf;
 }
 ```
