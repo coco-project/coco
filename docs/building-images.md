@@ -28,7 +28,7 @@ $ IMG_NAME=base-ldap
 $ BRANCH=develop  # use master for stable
 $ mkdir $IMG_NAME
 $ cd $IMG_NAME
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/ldap/Dockerfile
+$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/$IMG_NAME/Dockerfile
 $ docker build -t ipynbsrv/$IMG_NAME .
 ```
 
@@ -52,8 +52,8 @@ $ IMG_NAME=ipython3-notebook
 $ BRANCH=develop  # use master for stable
 $ mkdir $IMG_NAME
 $ cd $IMG_NAME
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/ipython/Dockerfile
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/ipython/${IMG_NAME}.bin
+$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/$IMG_NAME/Dockerfile
+$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/$IMG_NAME/$IMG_NAME.bin
 $ docker build -t ipynbsrv/$IMG_NAME .
 ```
 
