@@ -26,6 +26,9 @@ class Docker(object):
     def remove_image(self, image, force=True):
         self.client.remove_image(image=image, force=force)
 
+    def restart(self, container, timeout=10):
+        self.client.restart(container=container, timeout=timeout)
+
     def start(self, container, port_binds=None, volume_binds=None, links=None):
         self.client.start(container=container, port_bindings=port_binds, binds=volume_binds, links=links)
 
