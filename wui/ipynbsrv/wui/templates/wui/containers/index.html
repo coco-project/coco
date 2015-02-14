@@ -9,7 +9,7 @@
 
         <h1>Containers</h1>
         <form role="form">
-            <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-container">Create new</button>
+            <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-container" {% if not images %}disabled{% endif %}>Create new</button>
         </form>
 
         {% include "wui/snippets/container_grid.html" with containers=containers csrf_token=csrf_token only %}
