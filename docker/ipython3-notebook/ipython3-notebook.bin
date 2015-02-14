@@ -54,7 +54,7 @@ chown -R ${USER} /usr/local/lib/python3.4/dist-packages/
 IPYTHON_DIR="/data/.ipython"
 if [ ! -d "${IPYTHON_DIR}" ]; then
     /sbin/setuser ${USER} \
-        ipython profile create default --ipython-dir=${IPYTHON_DIR}
+        ipython3 profile create default --ipython-dir=${IPYTHON_DIR}
 fi
 IPYTHON_NB_CONF="${IPYTHON_DIR}/profile_default/ipython_notebook_config.py"
 sed -i "s/[# ]*c.NotebookApp.base_url = '.*'/c.NotebookApp.base_url = '\/workspace\/${PORT}\/'/" ${IPYTHON_NB_CONF}
