@@ -15,11 +15,11 @@ If you follow the whole guide step-by-step, you should end-up with a fully funct
 
 ### Tested Distributions
 
-- CentOS 7 (in theory only)
-- Ubuntu 14.04 (LTS)
-- Ubuntu 14.10
+- CentOS 7 64-bit (in theory only)
+- Ubuntu 14.04 (LTS) 64-bit
+- Ubuntu 14.10 64-bit
 
-> **Recommended distro:** Ubuntu 14.04 (LTS)
+> **Recommended distro:** Ubuntu 14.04 (LTS) 64-bit
 
 ### Dedicated Node
 
