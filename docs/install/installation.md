@@ -1,8 +1,9 @@
 # ipynbsrv
 
 > IPython Notebook Multi-User Server
+> - https://git.rackster.ch/groups/ipynbsrv
 
-## Setup
+## Installation
 
 The following introduction steps explain how to setup a fresh box as an IPython notebook multi-user server.    
 If you follow the whole guide step-by-step, you should end-up with a fully functional, ready-to-use system.
@@ -29,8 +30,8 @@ To make the setup as easy as possible, we wrote a tiny shell script that will pe
 
 ```bash
 $ apt-get -y install wget  # or yum for EL
-$ BRANCH=master  # use develop for development version
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/scripts/setup_docker_host.sh
+$ BRANCH=develop  # use master for stable
+$ wget https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/$BRANCH/lib/scripts/setup_docker_host.sh
 $ chmod +x setup_docker_host.sh && ./setup_docker_host.sh
 ```
 
@@ -38,7 +39,7 @@ $ chmod +x setup_docker_host.sh && ./setup_docker_host.sh
 
 All it does is, create some directories inside `/srv/ipynbsrv`, install the Docker packages/environment and configure the system to use `LDAP` as an additional backend for user management.
 
-**Ubuntu only:** There is one thing you should double-check (we noticed serveral *problems* here) however. Open the file `/etc/nsswitch.conf` and ensure the lines for `passwd`, `group` and `shadow` end with `ldap`, like so:
+There is one thing you should double-check (we noticed serveral *problems* here) however. Open the file `/etc/nsswitch.conf` and ensure the lines for `passwd`, `group` and `shadow` end with `ldap`, like so:
 
 ```bash
 passwd:         compat ldap
@@ -56,7 +57,7 @@ Again, there is a shell script available that will perform most operations for y
 Start over by issueing:
 
 ```bash
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/scripts/create_ldap_container.sh
+$ wget https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/$BRANCH/lib/scripts/create_ldap_container.sh
 $ chmod +x create_ldap_container.sh && ./create_ldap_container.sh
 ```
 
@@ -88,7 +89,7 @@ and verify they are correct. If they are, you can finish the wizard and connect 
 
 You should have a view similiar to this:
 
-![Apache Directory Studio Connection](https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/docs/img/apache_directory_studio_connection.png)
+![Apache Directory Studio Connection](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/install/_img/apache_directory_studio_connection.png)
 
 ##### Creating Records
 
@@ -100,7 +101,7 @@ Now that you are connected to the LDAP server, we can continue by creating a new
 
 In the upcoming dialog, choose the object class `posixGroup`, click `Add` and go on to the next screen, which you should fill in like this:
 
-![Apache Directory Studion Group Creation CN](https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/docs/img/apache_directory_studio_group_cn.png)
+![Apache Directory Studion Group Creation CN](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/install/_img/apache_directory_studio_group_cn.png)
 
 > The value of `cn` is the desired username for which this group is.
 
@@ -108,7 +109,7 @@ Click `Next` and enter a group ID. If this is your first group (and it should be
 
 Again, you should end up with a view like this:
 
-![Apache Directory Studio Group Overview](https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/docs/img/apache_directory_studio_group.png)
+![Apache Directory Studio Group Overview](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/install/_img/apache_directory_studio_group.png)
 
 I have already right-clicked somewhere in the information window, because we need to add another attribute to the group:
 
@@ -116,7 +117,7 @@ I have already right-clicked somewhere in the information window, because we nee
 
 and enter the same username in the red-colored field. Done!
 
-![Apache Directory Studio Group Overview](https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/docs/img/apache_directory_studio_group_final.png)
+![Apache Directory Studio Group Overview](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/install/_img/apache_directory_studio_group_final.png)
 
 > Note: From now on, you should choose `Use existing entry as template` when creating a new group. That way you do not have to fill in everything again each time (**but do not forget to change the username fields**).
 
@@ -128,7 +129,7 @@ In the upcoming dialog, choose the object classes `inetOrgPerson` and `posixAcco
 
 As with the group, use `cn=username` as `RND` and click `Next`. You end up with a window that has some red-bordered fields (`gidNumber`, `sn` etc.), which you must fill out like on the screen below:
 
-![Apache Directory Studio User Wizard](https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/docs/img/apache_directory_studio_user.png)
+![Apache Directory Studio User Wizard](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/install/_img/apache_directory_studio_user.png)
 
 > The `gidNumber` is the ID of the group you have just created. I like to keep it in sync with the `uidNumber`, so it is easier to remember.
 
@@ -150,7 +151,7 @@ Again, there is a shell script available that will perform most operations for y
 Start over by issueing:
 
 ```bash
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/scripts/create_postgresql_container.sh
+$ wget https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/$BRANCH/lib/scripts/create_postgresql_container.sh
 $ chmod +x create_postgresql_container.sh && ./create_postgresql_container.sh
 ```
 
@@ -167,7 +168,7 @@ The WUI container is the trickiest one to setup, yet everyone should be able to 
 Yes, you have guessed correctly. There is yet another script to bootstrap the container for you:
 
 ```bash
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/scripts/create_wui_container.sh
+$ wget https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/$BRANCH/lib/scripts/create_wui_container.sh
 $ chmod +x create_wui_container.sh && ./create_wui_container.sh
 ```
 
@@ -308,19 +309,19 @@ $ su ipynbsrv
 ```bash
 cd ~
 mkdir -p data/homes data/public data/shares
-BRANCH=master  # use develop for development version
-git clone -b $BRANCH https://git.rackster.ch/fhnw/ipynbsrv.git _repo
-ln -s /srv/ipynbsrv/_repo/wui/ /srv/ipynbsrv/www
+BRANCH=develop  # use master for stable
+git clone -b $BRANCH https://git.rackster.ch/ipynbsrv/ipynbsrv.git _repo
+ln -s /srv/ipynbsrv/_repo/ /srv/ipynbsrv/www
 ```
 
 As `root` again (use `exit` to become `root`), install some more Python modules and configure `Nginx`:
 
 ```bash
-$ cd /srv/ipynbsrv/_repo/wui/
+$ cd /srv/ipynbsrv/_repo/
 $ pip install -r requirements.txt
 $ mkdir -p /var/run/ipynbsrv/
 $ mkdir /usr/local/openresty/nginx/conf/sites-enabled
-$ ln -s /srv/ipynbsrv/_repo/confs/nginx/ipynbsrv.conf /usr/local/openresty/nginx/conf/sites-enabled/
+$ ln -s /srv/ipynbsrv/_repo/lib/confs/nginx/ipynbsrv.conf /usr/local/openresty/nginx/conf/sites-enabled/
 
 $ nano /usr/local/openresty/nginx/conf/nginx.conf
 ```
@@ -371,7 +372,7 @@ Some of them need adjustment, so open it with `nano ipynbsrv/settings.py` and de
 
 All other values should be fine.
 
-Now that you have the `DOCKER_IFACE_IP`, open `/srv/ipynbsrv/_repo/confs/nginx/ipynbsrv.conf` and replace:
+Now that you have the `DOCKER_IFACE_IP`, open `/srv/ipynbsrv/_repo/lib/confs/nginx/ipynbsrv.conf` and replace:
 
     proxy_pass  http://172.17.42.1:$1;
 
@@ -426,8 +427,3 @@ exit
 so the script continues. It will create a local image from the container and bootstrap a new instance using that one. As soon as it has completed, you're all done.
 
 Congratulations!
-
-## What's Next?
-
-- [Build the Docker base image for user container images (`base-ldap`)](building-images.md#base-ldap)
-- [Build the IPython Notebook Docker image](building-images.md#ipython3-notebook)

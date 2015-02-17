@@ -1,12 +1,15 @@
 # ipynbsrv
 
 > IPython Notebook Multi-User Server
+> - https://git.rackster.ch/groups/ipynbsrv
 
-## Building Images
+## Images
+
+### Building the images
 
 The following chapters will tell you how to build Docker images to be used in ipynbsrv. Through the currently available images aren't very generic, one should be able to create others as well by extracting some of the information found here.
 
-### Base LDAP
+#### Base LDAP
 
 This is the base image for all images that will be made available to end users. It performs operations such as:
 
@@ -28,11 +31,11 @@ $ IMG_NAME=base-ldap
 $ BRANCH=develop  # use master for stable
 $ mkdir $IMG_NAME
 $ cd $IMG_NAME
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/$IMG_NAME/Dockerfile
+$ wget https://git.rackster.ch/ipynbsrv/dockerfiles/raw/$BRANCH/$IMG_NAME/Dockerfile
 $ docker build -t ipynbsrv/$IMG_NAME .
 ```
 
-### IPython3 Notebook
+#### IPython Notebook (Py2)
 
 The **ipynbsrv** stack was documented and developed as part of a school project. The main goal was the creation of a multi-user IPython notebook server, so it's not a surprise the only available image right now is an IPython one.
 
@@ -48,21 +51,41 @@ To build the image, issue the commands below:
 > Make sure you have already built the `base-ldap` image. It is the base image in use!
 
 ```bash
-$ IMG_NAME=ipython3-notebook
+$ IMG_NAME=ipython2-notebook
 $ BRANCH=develop  # use master for stable
 $ mkdir $IMG_NAME
 $ cd $IMG_NAME
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/$IMG_NAME/Dockerfile
-$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/$BRANCH/docker/$IMG_NAME/$IMG_NAME.bin
+$ wget https://git.rackster.ch/ipynbsrv/dockerfiles/raw/$BRANCH/$IMG_NAME/Dockerfile
+$ wget https://git.rackster.ch/ipynbsrv/dockerfiles/raw/$BRANCH/$IMG_NAME/$IMG_NAME.bin
 $ docker build -t ipynbsrv/$IMG_NAME .
 ```
 
 During the build process, some errors might show up. That is because some commands try to open an interactive dialog - and that is not possible. Just ignore them for now.
 
-#### Adding to Django
+#### IPython Notebook (Py3)
 
-To make the image available to end users, you have to add the image to our application.
+To build the image, issue the commands below:
+
+> Make sure you have already built the `base-ldap` image. It is the base image in use!
+
+```bash
+$ IMG_NAME=ipython3-notebook
+$ BRANCH=develop  # use master for stable
+$ mkdir $IMG_NAME
+$ cd $IMG_NAME
+$ wget https://git.rackster.ch/ipynbsrv/dockerfiles/raw/$BRANCH/$IMG_NAME/Dockerfile
+$ wget https://git.rackster.ch/ipynbsrv/dockerfiles/raw/$BRANCH/$IMG_NAME/$IMG_NAME.bin
+$ docker build -t ipynbsrv/$IMG_NAME .
+```
+
+During the build process, some errors might show up. That is because some commands try to open an interactive dialog - and that is not possible. Just ignore them for now.
+
+### Registering the images
+
+To make an image available to end users, you have to add the image to the application.
 
 Open the administration interface (`http://"dedicated node"/admin`) and login with the superuser account. Click on `Images` in the `IPython Notebook Server Web Interface` box and create a new entry like on the screen below:
 
-![Django Admin Interface: Adding the IPython Notebook image](https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/docs/img/django_add_ipython_image.png)
+![Django Admin Interface: Adding the IPython Notebook image](https://git.rackster.ch/ipynbsrv/raw/develop/docs/images/_img/django_add_ipython_image.png)
+
+> Make sure to adjust fields that are different for a given image!

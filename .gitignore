@@ -5,10 +5,10 @@
 *.pyc
 
 # Bower packages
-wui/ipynbsrv/wui/static/bower_components
+ipynbsrv/wui/static/bower_components
 
 # LESS generated CSS
-wui/ipynbsrv/wui/static/css/main.css
+ipynbsrv/wui/static/css/main.css
 
 # mkdocs output
-wui/ipynbsrv/wui/static/docs/user-guide/*
+ipynbsrv/wui/static/docs/user-guide/*
