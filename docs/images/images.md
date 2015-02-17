@@ -86,6 +86,6 @@ To make an image available to end users, you have to add the image to the applic
 
 Open the administration interface (`http://"dedicated node"/admin`) and login with the superuser account. Click on `Images` in the `IPython Notebook Server Web Interface` box and create a new entry like on the screen below:
 
-![Django Admin Interface: Adding the IPython Notebook image](https://git.rackster.ch/ipynbsrv/raw/develop/docs/images/_img/django_add_ipython_image.png)
+![Django Admin Interface: Adding the IPython Notebook image](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/images/_img/django_add_ipython_image.png)
 
 > Make sure to adjust fields that are different for a given image!
