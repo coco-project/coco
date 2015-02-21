@@ -180,6 +180,9 @@ class Container(models.Model):
     def get_full_name(self):
         return self.owner.get_username() + "_" + self.name
 
+    def has_clones(self):
+        return Container.objects.filter(clone_of=self).exists()
+
     def restart(self):
         self.running = True
         self.save(update_fields=['running'])

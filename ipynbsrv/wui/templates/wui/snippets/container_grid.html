@@ -71,7 +71,7 @@
                             </li>
                         {% endif %}
                         <li role="presentation">
-                            <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('delete-{{ ct.id }}').getElementsByTagName('button')[0].click();">Delete</a>
+                            <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('delete-{{ ct.id }}').getElementsByTagName('button')[0].click();" title="Delete this container?{% if ct.has_clones %} All clones will be deleted as well.{% endif %}" data-toggle="confirmation" data-placement="bottom">Delete</a>
                             <form id="delete-{{ ct.id }}" action="{% url 'container_delete' %}" method="POST" role="form">
                                 {% csrf_token %}
                                 <input name="id" type="hidden" value="{{ ct.id }}">

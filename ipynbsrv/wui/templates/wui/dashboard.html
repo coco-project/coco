@@ -1,5 +1,7 @@
 {% extends "wui/base.html" %}
 
+{% load staticfiles %}
+
 {% block title %} - Dashboard{% endblock %}
 
 {% block content %}
@@ -18,4 +20,16 @@
         {% include "wui/snippets/container_grid.html" with containers=containers csrf_token=csrf_token only %}
     </div>
 </div>
+{% endblock %}
+
+{% block js %}
+{% comment "Would be better placed in snippets/container_grid.html" %}{% endcomment %}
+<script src="{% static 'bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js' %}"></script>
+<script>
+$(function () {
+    $('[data-toggle="confirmation"]').confirmation({
+        popout: true
+    });
+});
+</script>
 {% endblock %}
