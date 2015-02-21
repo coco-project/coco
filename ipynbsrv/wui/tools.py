@@ -29,8 +29,8 @@ class Docker(object):
     def restart(self, container, timeout=10):
         self.client.restart(container=container, timeout=timeout)
 
-    def start(self, container, port_binds=None, volume_binds=None, links=None):
-        self.client.start(container=container, port_bindings=port_binds, binds=volume_binds, links=links)
+    def start(self, container, port_binds=None, volume_binds=None, links=None, privileged=True):
+        self.client.start(container=container, port_bindings=port_binds, binds=volume_binds, links=links, privileged=privileged)
 
     def stop(self, container, timeout=10):
         self.client.stop(container=container, timeout=timeout)
