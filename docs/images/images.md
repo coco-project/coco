@@ -28,7 +28,7 @@ To build the image, execute the following commands on the Docker host:
 
 ```bash
 $ IMG_NAME=base-ldap
-$ BRANCH=develop  # use master for stable
+$ BRANCH=master
 $ mkdir $IMG_NAME
 $ cd $IMG_NAME
 $ wget https://git.rackster.ch/ipynbsrv/dockerfiles/raw/$BRANCH/$IMG_NAME/Dockerfile
@@ -52,7 +52,7 @@ To build the image, issue the commands below:
 
 ```bash
 $ IMG_NAME=ipython2-notebook
-$ BRANCH=develop  # use master for stable
+$ BRANCH=master
 $ mkdir $IMG_NAME
 $ cd $IMG_NAME
 $ wget https://git.rackster.ch/ipynbsrv/dockerfiles/raw/$BRANCH/$IMG_NAME/Dockerfile
@@ -70,7 +70,7 @@ To build the image, issue the commands below:
 
 ```bash
 $ IMG_NAME=ipython3-notebook
-$ BRANCH=develop  # use master for stable
+$ BRANCH=master
 $ mkdir $IMG_NAME
 $ cd $IMG_NAME
 $ wget https://git.rackster.ch/ipynbsrv/dockerfiles/raw/$BRANCH/$IMG_NAME/Dockerfile
@@ -86,6 +86,6 @@ To make an image available to end users, you have to add the image to the applic
 
 Open the administration interface (`http://"dedicated node"/admin`) and login with the superuser account. Click on `Images` in the `IPython Notebook Server Web Interface` box and create a new entry like on the screen below:
 
-![Django Admin Interface: Adding the IPython Notebook image](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/images/_img/django_add_ipython_image.png)
+![Django Admin Interface: Adding the IPython Notebook image](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/docs/images/_img/django_add_ipython_image.png)
 
 > Make sure to adjust fields that are different for a given image!

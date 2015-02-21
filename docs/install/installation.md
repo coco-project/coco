@@ -30,7 +30,7 @@ To make the setup as easy as possible, we wrote a tiny shell script that will pe
 
 ```bash
 $ apt-get -y install wget  # or yum for EL
-$ BRANCH=develop  # use master for stable
+$ BRANCH=master
 $ wget https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/$BRANCH/lib/scripts/setup_docker_host.sh
 $ chmod +x setup_docker_host.sh && ./setup_docker_host.sh
 ```
@@ -89,7 +89,7 @@ and verify they are correct. If they are, you can finish the wizard and connect 
 
 You should have a view similiar to this:
 
-![Apache Directory Studio Connection](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/install/_img/apache_directory_studio_connection.png)
+![Apache Directory Studio Connection](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/docs/install/_img/apache_directory_studio_connection.png)
 
 ##### Creating Records
 
@@ -101,7 +101,7 @@ Now that you are connected to the LDAP server, we can continue by creating a new
 
 In the upcoming dialog, choose the object class `posixGroup`, click `Add` and go on to the next screen, which you should fill in like this:
 
-![Apache Directory Studion Group Creation CN](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/install/_img/apache_directory_studio_group_cn.png)
+![Apache Directory Studion Group Creation CN](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/docs/install/_img/apache_directory_studio_group_cn.png)
 
 > The value of `cn` is the desired username for which this group is.
 
@@ -109,7 +109,7 @@ Click `Next` and enter a group ID. If this is your first group (and it should be
 
 Again, you should end up with a view like this:
 
-![Apache Directory Studio Group Overview](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/install/_img/apache_directory_studio_group.png)
+![Apache Directory Studio Group Overview](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/docs/install/_img/apache_directory_studio_group.png)
 
 I have already right-clicked somewhere in the information window, because we need to add another attribute to the group:
 
@@ -117,7 +117,7 @@ I have already right-clicked somewhere in the information window, because we nee
 
 and enter the same username in the red-colored field. Done!
 
-![Apache Directory Studio Group Overview](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/install/_img/apache_directory_studio_group_final.png)
+![Apache Directory Studio Group Overview](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/docs/install/_img/apache_directory_studio_group_final.png)
 
 > Note: From now on, you should choose `Use existing entry as template` when creating a new group. That way you do not have to fill in everything again each time (**but do not forget to change the username fields**).
 
@@ -129,7 +129,7 @@ In the upcoming dialog, choose the object classes `inetOrgPerson` and `posixAcco
 
 As with the group, use `cn=username` as `RND` and click `Next`. You end up with a window that has some red-bordered fields (`gidNumber`, `sn` etc.), which you must fill out like on the screen below:
 
-![Apache Directory Studio User Wizard](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/develop/docs/install/_img/apache_directory_studio_user.png)
+![Apache Directory Studio User Wizard](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/docs/install/_img/apache_directory_studio_user.png)
 
 > The `gidNumber` is the ID of the group you have just created. I like to keep it in sync with the `uidNumber`, so it is easier to remember.
 
@@ -309,7 +309,7 @@ $ su ipynbsrv
 ```bash
 cd ~
 mkdir -p data/homes data/public data/shares
-BRANCH=develop  # use master for stable
+BRANCH=master
 git clone -b $BRANCH https://git.rackster.ch/ipynbsrv/ipynbsrv.git _repo
 ln -s /srv/ipynbsrv/_repo/ /srv/ipynbsrv/www
 ```
