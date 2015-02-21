@@ -13,7 +13,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 CT_NAME="ipynbsrv.wui"
-CMD="/sbin/my_init -- /usr/bin/uwsgi_python --ini /srv/ipynbsrv/_repo/confs/uwsgi/ipynbsrv.ini"
+CMD="/sbin/my_init -- /usr/bin/uwsgi_python --ini /srv/ipynbsrv/_repo/lib/confs/uwsgi/ipynbsrv.ini"
 
 echo "------------------------------------------------------------"
 echo "Starting and entering the WUI server container creation..."

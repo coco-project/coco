@@ -8,7 +8,7 @@ urlpatterns = patterns('',
         'extra_context': {
             'title': "Login"
         }
-    }),
+    }, name='accounts_login'),
     url(r'^accounts/flag/$', 'ipynbsrv.wui.views.accounts.create_cookie', name='accounts_flag'),
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='accounts_logout'),
     url(r'^accounts/unflag/$', 'ipynbsrv.wui.views.accounts.remove_cookie', name='accounts_unflag'),

@@ -102,10 +102,14 @@ MESSAGE_TAGS = {
 
 
 # URLs and filesystem paths
-LOGIN_REDIRECT_URL = '/accounts/flag'
-PUBLIC_URL = '/public/'
-STATIC_URL = '/static/'
-DOCS_URL = '/docs/'
+from django.core.urlresolvers import get_script_prefix
+SCRIPT_PREFIX = get_script_prefix()  # do not modify
+
+LOGIN_URL = SCRIPT_PREFIX + 'accounts/login'
+LOGIN_REDIRECT_URL = SCRIPT_PREFIX + 'accounts/flag'
+PUBLIC_URL = SCRIPT_PREFIX + 'public/'
+STATIC_URL = SCRIPT_PREFIX + 'static/'
+DOCS_URL = SCRIPT_PREFIX + 'docs/'
 
 STATIC_ROOT = '/srv/ipynbsrv/www/static/'
 DATA_ROOT = '/srv/ipynbsrv/data/'

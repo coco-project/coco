@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import user_passes_test
+from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from ipynbsrv.wui.auth.checks import login_allowed
@@ -16,7 +17,7 @@ def create_cookie(request):
     we need a way to identify the user there. So we bypass here to create a signed cookie
     for that purpose.
     """
-    response = HttpResponseRedirect('/')
+    response = HttpResponseRedirect(reverse('dashboard'))
     response.set_signed_cookie(COOKIE_NAME, request.user.username, httponly=True)
     return response
 
@@ -29,6 +30,6 @@ def remove_cookie(request):
     We use that chance to remove the cookie we created after his login
     which authorizes him to access his workspaces.
     """
-    response = HttpResponseRedirect('/accounts/logout')
+    response = HttpResponseRedirect(reverse('accounts_logout'))
     response.delete_cookie(COOKIE_NAME)
     return response
