@@ -72,10 +72,7 @@ def delete_on_host(sender, container, **kwargs):
             docker.remove_container(container.docker_id)
         except:
             pass  # TODO: does not exist. what to do?
-        # TODO: is that true? what about clones of clones etc.?
-        # clone images are only used internally and can safely be removed
-        # after deleting a cloned container
-        if container.clone_of is not None:
+        if container.image.is_clone:
             container.image.delete()
 
 

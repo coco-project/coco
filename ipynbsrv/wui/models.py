@@ -127,7 +127,7 @@ class Image(models.Model):
         return self.owner.get_username() + "/" + self.name
 
     def __str__(self):
-        return smart_unicode(self.name)
+        return smart_unicode(self.get_full_name())
 
     def __unicode__(self):
         return self.__str__()
@@ -144,7 +144,7 @@ class Container(models.Model):
     image = models.ForeignKey(Image)
     owner = models.ForeignKey(User)
     running = models.BooleanField(default=False)
-    clone_of = models.ForeignKey('self', null=True, blank=True)
+    clone_of = models.ForeignKey('self', null=True, blank=True, default=None)
 
     def clone(self):
         clone_name = self.name + CONTAINER_CLONE_SUFFIX
@@ -196,7 +196,7 @@ class Container(models.Model):
         container_stopped.send(sender=Container, container=self)
 
     def __str__(self):
-        return smart_unicode(self.name)
+        return smart_unicode(self.get_full_name())
 
     def __unicode__(self):
         return self.__str__()
