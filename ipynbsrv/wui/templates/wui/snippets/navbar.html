@@ -21,10 +21,10 @@
                 <li{% ifnav '^/share' %} class="active"{% endifnav %}><a href="{% url 'shares' %}">Shares</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li class="hidden-xs"><a href="{% settings 'DOCS_URL' %}user-guide" data-tooltip data-placement="bottom" title="User Guide" target="_blank">
+                <li class="hidden-xs"><a href="{% settings 'DOCS_URL' %}user-guide/" data-tooltip data-placement="bottom" title="User Guide" target="_blank">
                     <i class="glyphicon glyphicon-question-sign" aria-hidden="true"></i>
                 </a></li>
-                <li class="hidden-xs"><a href="{% settings 'PUBLIC_URL' %}{{ user.get_username }}" data-tooltip data-placement="bottom" title="My publications" target="_blank">
+                <li class="hidden-xs"><a href="{% settings 'PUBLIC_URL' %}{{ user.get_username }}/" data-tooltip data-placement="bottom" title="My publications" target="_blank">
                     <i class="glyphicon glyphicon-globe" aria-hidden="true"></i>
                 </a></li>
                 <li class="hidden-xs"><a href="{% url 'accounts_unflag' %}" data-tooltip data-placement="bottom" title="Logout">
@@ -32,10 +32,10 @@
                 </a></li>
 
                 <li class="hidden-sm hidden-md hidden-lg">
-                    <a href="{% settings 'DOCS_URL' %}user-guide" title="User Guide" target="_blank">Use Guide</a>
+                    <a href="{% settings 'DOCS_URL' %}user-guide/" title="User Guide" target="_blank">Use Guide</a>
                 </li>
                 <li class="hidden-sm hidden-md hidden-lg">
-                    <a href="{% settings 'PUBLIC_URL' %}{{ user.get_username }}" title="My publications" target="_blank">My publications</a>
+                    <a href="{% settings 'PUBLIC_URL' %}{{ user.get_username }}/" title="My publications" target="_blank">My publications</a>
                 </li>
                 <li class="hidden-sm hidden-md hidden-lg">
                     <a href="{% url 'accounts_unflag' %}" title="Logout">Logout</a>
