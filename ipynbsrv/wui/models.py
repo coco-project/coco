@@ -101,6 +101,11 @@ class Share(models.Model):
     def get_members(self):
         return self.group.user_set.all()
 
+    @staticmethod
+    def get_unsynchonized_fields():
+        # TODO: support these
+        return ('name', 'owner', 'group')
+
     def is_member(self, user):
         return user in self.get_members()
 
@@ -125,6 +130,11 @@ class Image(models.Model):
 
     def get_full_name(self):
         return self.owner.get_username() + "/" + self.name
+
+    @staticmethod
+    def get_unsynchonized_fields():
+        # TODO: support is_public changes
+        return ('docker_id', 'is_public', 'is_clone')
 
     def __str__(self):
         return smart_unicode(self.get_full_name())
@@ -180,6 +190,11 @@ class Container(models.Model):
     def get_full_name(self):
         return self.owner.get_username() + "_" + self.name
 
+    @staticmethod
+    def get_unsynchonized_fields():
+        # TODO: support name and running changes
+        return ('docker_id', 'name', 'image', 'owner', 'running', 'clone_of')
+
     def has_clones(self):
         return Container.objects.filter(clone_of=self).exists()
 
@@ -212,6 +227,10 @@ class PortMapping(models.Model):
     container = models.ForeignKey(Container)
     internal = models.PositiveIntegerField(null=False, max_length=6)
     external = models.PositiveIntegerField(unique=True, max_length=6)
+
+    @staticmethod
+    def get_unsynchonized_fields():
+        return ('container', 'internal', 'external')
 
     def __str__(self):
         return smart_unicode("%s: %i -> %i" % (self.container.name, self.internal, self.external))
