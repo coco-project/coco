@@ -401,6 +401,8 @@ lessc --compress less/main.less css/main.css  # compile LESS to CSS
 cd ~/www
 ```
 
+> If `bower install` doesn't work, try forcing `git` to use HTTP protocol: `git config --global url.https://.insteadOf git://`
+
 The user guide must be generated as well:
 
 ```bash
