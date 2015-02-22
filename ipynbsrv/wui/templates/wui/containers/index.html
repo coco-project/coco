@@ -1,8 +1,6 @@
-{% extends "wui/base.html" %}
+{% extends 'wui/base.html' %}
 
 {% load staticfiles %}
-
-{% block title %} - Containers{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -14,14 +12,14 @@
             <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-container" {% if not images %}disabled{% endif %}>Create new</button>
         </form>
 
-        {% include "wui/snippets/container_grid.html" with containers=containers csrf_token=csrf_token only %}
-        {% include "wui/containers/modal_create.html" with images=images csrf_token=csrf_token only %}
+        {% include 'wui/snippets/container_grid.html' with containers=containers csrf_token=csrf_token only %}
+        {% include 'wui/containers/modal_create.html' with images=images csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}
 
 {% block js %}
-{% comment "Would be better placed in snippets/container_grid.html" %}{% endcomment %}
+{% comment 'Would be better placed in snippets/container_grid.html' %}{% endcomment %}
 <script src="{% static 'bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js' %}"></script>
 <script>
 $(function () {

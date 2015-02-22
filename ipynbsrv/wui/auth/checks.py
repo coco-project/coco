@@ -37,7 +37,7 @@ def workspace_auth_access(request):
                 uri = request.META.get(URI_HEADER)
                 if uri:  # ensure the X- header is present. its set by Nginx
                     splits = uri.split('/')
-                    if len(splits) >= 4:
+                    if len(splits) >= 3:
                         port = splits[2]
                         mapping = PortMapping.objects.filter(external=port)
                         if mapping.exists() and mapping.first().container.owner == user:

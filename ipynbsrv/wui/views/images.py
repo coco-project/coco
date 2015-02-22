@@ -34,7 +34,7 @@ def delete(request):
 @user_passes_test(login_allowed)
 def index(request):
     return render(request, 'wui/images/index.html', {
-        'title': 'Images',
+        'title': "Images",
         'containers': Container.objects.filter(owner=request.user),
         'images': Image.objects.filter((Q(owner=request.user) | Q(is_public=True)) & Q(is_clone=False)),
         # meta information for the create modal

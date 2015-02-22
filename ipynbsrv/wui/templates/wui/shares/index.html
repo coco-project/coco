@@ -1,4 +1,4 @@
-{% extends "wui/base.html" %}
+{% extends 'wui/base.html' %}
 
 {% load staticfiles %}
 
@@ -11,7 +11,7 @@
 {% block content %}
 <div class="row">
     <div class="col-xs-12">
-        {% include "wui/snippets/messages.html" with messages=messages only %}
+        {% include 'wui/snippets/messages.html' with messages=messages only %}
 
         <h1>Shares</h1>
         <form role="form">
@@ -53,7 +53,7 @@
                             <button type="button" class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-share-adduser" title="Add new member(s)" data-tooltip>
                                 <i class="glyphicon glyphicon-plus"></i>
                             </button>
-                            <a href="/share/manage/{{ share.id }}" class="btn btn-sm btn-default" title="Manage members" data-tooltip>
+                            <a href="{% url 'share_manage' share.id %}" class="btn btn-sm btn-default" title="Manage members" data-tooltip>
                                 <i class="glyphicon glyphicon-th-list" aria-hidden="true"></i>
                             </a>
                             <form action="{% url 'share_delete' %}" method="POST" role="form" class="form-action">
@@ -81,8 +81,8 @@
             <div class="alert alert-info">You have no shares yet.</div>
         {% endif %}
 
-        {% include "wui/shares/modal_adduser.html" with csrf_token=csrf_token only %}
-        {% include "wui/shares/modal_create.html" with csrf_token=csrf_token only %}
+        {% include 'wui/shares/modal_adduser.html' with csrf_token=csrf_token only %}
+        {% include 'wui/shares/modal_create.html' with csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}

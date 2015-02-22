@@ -1,8 +1,6 @@
-{% extends "wui/base.html" %}
+{% extends 'wui/base.html' %}
 
 {% load staticfiles %}
-
-{% block title %} - Images{% endblock %}
 
 {% block external_css %}
 <link rel="stylesheet" href="{% static 'bower_components/datatables/media/css/jquery.dataTables.min.css' %}">
@@ -12,7 +10,7 @@
 {% block content %}
 <div class="row">
     <div class="col-xs-12">
-        {% include "wui/snippets/messages.html" with messages=messages only %}
+        {% include 'wui/snippets/messages.html' with messages=messages only %}
 
         <h1>Images</h1>
         <form role="form">
@@ -60,7 +58,7 @@
             <div class="alert alert-info">You do not have access to any images yet.</div>
         {% endif %}
 
-        {% include "wui/images/modal_create.html" with containers=containers selected=selected share=share csrf_token=csrf_token only %}
+        {% include 'wui/images/modal_create.html' with containers=containers selected=selected share=share csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}
