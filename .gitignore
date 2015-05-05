@@ -1,3 +1,9 @@
+# shell
+.bash_history
+
+# IntelliJ
+.idea
+
 # Django development DB
 *.sqlite3
 
