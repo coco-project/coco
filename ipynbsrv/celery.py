@@ -10,8 +10,9 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ipynbsrv.settings')
 # causes problems with celery docker container
 # from django.conf import settings
 
+# rabbitmq docker container has to be linked as 'rabbit'
 app = Celery('ipynbsrv',
-             broker='amqp://guest:guest@172.17.0.2',
+             broker='amqp://guest:guest@rabbit',
              backend='rpc',)
 
 # Using a string here means the worker will not have to
