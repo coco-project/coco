@@ -149,3 +149,6 @@ DOCKER_FIRST_PORT = 49160
 # Shares
 SHARE_GROUP_PREFIX = 'share_'
 SHARE_GROUPS_OFFSET = 9999
+
+# define all classes with tasks
+CELERY_IMPORTS = ('ipynbsrv.wui.tools')
