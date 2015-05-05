@@ -1,7 +1,4 @@
 import os.path
-from django.conf import settings
-from docker import Client
-from requests import request
 
 # import celery configuration
 from ipynbsrv.celery import app
@@ -27,6 +24,7 @@ class Docker(object):
         return str("[POST] http://" + host + ":8080/container")
         return self.client.create_container(name=name, image=image, command=cmd, ports=ports,
                                             volumes=volumes, environment=env, detach=detach)
+
     @staticmethod
     @app.task(name='ipynbsrv.wui.tools.remove_container')
     def remove_container(host, container, force=True):
