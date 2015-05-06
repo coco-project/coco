@@ -147,8 +147,24 @@ class Image(models.Model):
         unique_together = ('name', 'owner')
 
 
+class Server(models.Model):
+    id = models.AutoField(primary_key=True)
+    hostname = models.CharField(name='hostname', null=False, max_length=255, unique=True)
+    bridge_ip = models.CharField(name='bridge_ip', null=False, max_length=15, unique=True)
+
+    def info(self):
+        return Host.host_info(self.hostname)
+
+    def status(self):
+        return Host.host_status(self.hostname)
+
+    def service(self, service):
+        return Host.host_status(self.hostname, service)
+    
+
 class Container(models.Model):
     id = models.AutoField(primary_key=True)
+    host = models.ForeignKey(Server)
     docker_id = models.CharField(unique=True, max_length=64)
     name = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
@@ -243,18 +259,3 @@ class PortMapping(models.Model):
         get_latest_by = 'external'
         order_with_respect_to = 'container'
         unique_together = ('container', 'internal')
-
-
-class Server(models.Model):
-    id = models.AutoField(primary_key=True)
-    hostname = models.CharField(name='hostname', null=False, max_length=255, unique=True)
-    bridge_ip = models.CharField(name='bridge_ip', null=False, max_length=15, unique=True)
-
-    def info(self):
-        return Host.host_info(self.hostname)
-
-    def status(self):
-        return Host.host_status(self.hostname)
-
-    def service(self, service):
-        return Host.host_status(self.hostname, service)
