@@ -27,7 +27,7 @@ class Docker(object):
     @app.task(name='ipynbsrv.wui.tools.create_container')
     def create_container(host, name, image, cmd, ports=None, volumes=None, env=None, detach=True):
         try:
-            return r = requests.post(
+            return requests.post(
                 url="http://%s:8080/containers" % host,
                 data=json.dumps({
                     "name": name,
