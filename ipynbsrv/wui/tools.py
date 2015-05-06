@@ -37,7 +37,7 @@ class Docker(object):
             ).content
             print('Response HTTP Status Code : {status_code}'.format(status_code=r.status_code))
             print('Response HTTP Response Body : {content}'.format(content=r.content))
-        except requests.exceptions.RequestException as e:
+        except:
             print('HTTP Request failed')
 
     @staticmethod

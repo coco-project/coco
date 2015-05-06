@@ -23,7 +23,7 @@ def commit_on_host(sender, container, image, **kwargs):
 
 
 @receiver(container_created)
-def create_on_host(sender, host, container, **kwargs):
+def create_on_host(sender, container, **kwargs):
     """
     Signal to create new containers and replace the ID with the one from Docker.
     """
@@ -54,9 +54,11 @@ def create_on_host(sender, host, container, **kwargs):
             os.path.join('/data/', 'shares')
         ]
 
-        ret = docker.create_container(host=host, name=container.get_full_name(), image=container.image.docker_id,
-                                      cmd=container.image.cmd.replace('{{PORT}}', str(port_mapping.external)),
-                                      ports=ports, volumes=volumes)
+        ret = docker.create_container(
+            host=container.host, name=container.get_full_name(), image=container.image.get_full_name(),
+            cmd=container.image.cmd.replace('{{PORT}}', str(port_mapping.external)),
+            ports=ports, volumes=volumes
+        )
 
         container.docker_id = str(json.loads(ret)['data']['Id'])
         container.save(update_fields=['docker_id'])
