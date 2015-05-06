@@ -1,5 +1,5 @@
 import os.path
-import re
+import json
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
@@ -23,7 +23,7 @@ def commit_on_host(sender, container, image, **kwargs):
 
 
 @receiver(container_created)
-def create_on_host(sender, container, **kwargs):
+def create_on_host(sender, host, container, **kwargs):
     """
     Signal to create new containers and replace the ID with the one from Docker.
     """
@@ -53,10 +53,11 @@ def create_on_host(sender, container, **kwargs):
             os.path.join('/data/', 'public'),
             os.path.join('/data/', 'shares')
         ]
-        ret = docker.create_container(name=container.get_full_name(), image=container.image.docker_id,
+        ret = docker.create_container(host=host, name=container.get_full_name(), image=container.image.docker_id,
                                       cmd=container.image.cmd.replace('{{PORT}}', str(port_mapping.external)),
                                       ports=ports, volumes=volumes)
-        container.docker_id = ret['Id']
+
+        container.docker_id = str(json.loads(ret)['data']['Id'])
         container.save(update_fields=['docker_id'])
 
 
@@ -128,7 +129,7 @@ def start_on_host(sender, container, **kwargs):
         links = [
             ('ipynbsrv.ldap', 'ipynbsrv.ldap')
         ]
-        docker.start(container=container.docker_id, port_binds=ports, volume_binds=volumes, links=links)
+        docker.start(host=container.host, container=container.docker_id, port_binds=ports, volume_binds=volumes, links=links)
 
 
 @receiver(container_stopped)
@@ -140,7 +141,7 @@ def stop_on_host(sender, container, **kwargs):
         print "stop_on_host receiver fired"
     if container is not None:
         try:
-            docker.stop(container.docker_id)
+            docker.stop(containercontainer.docker_id)
         except:
             pass  # TODO: does not exist. what to do?
 

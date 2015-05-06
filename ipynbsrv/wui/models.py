@@ -160,7 +160,7 @@ class Server(models.Model):
 
     def service(self, service):
         return Host.host_status(self.hostname, service)
-    
+
 
 class Container(models.Model):
     id = models.AutoField(primary_key=True)
