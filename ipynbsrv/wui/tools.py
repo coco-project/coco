@@ -1,6 +1,6 @@
 import os.path
 
-from requests import request
+import requests
 
 # import celery configuration
 from ipynbsrv.celery import app
@@ -12,7 +12,7 @@ class Docker(object):
     @app.task(name='ipynbsrv.wui.tools.commit')
     def commit(host, container, name, tag='latest'):
         url = "http://" + host + ":8080/" + container
-        return request('get', url).content
+        return requests.get(url).content
         #return self.client.commit(container=container, repository=name, tag=tag)
 
     @staticmethod
@@ -20,7 +20,7 @@ class Docker(object):
     def containers(host, quiet=True, all=True):
         # TODO: actually have to get list of containers from every host
         url = "http://" + host + ":8080/container"
-        return request('get', url).content
+        return requests.get(url).content
         #return self.client.containers(quiet=quiet, all=all)
 
     @staticmethod
@@ -43,7 +43,7 @@ class Docker(object):
     @app.task(name='ipynbsrv.wui.tools.images')
     def images(host, name=None, quiet=True, all=False):
         url = "http://" + host + ":8080/images"
-        return request('get', url).content
+        return requests.get(url).content
         #return self.client.images(name=name, quiet=quiet, all=all)
 
     @staticmethod
@@ -58,22 +58,45 @@ class Docker(object):
     @app.task(name='ipynbsrv.wui.tools.restart')
     def restart(host, container, timeout=10):
         url = "http://" + host + ":8080/container/" + container + "/restart"
-        return request('get', url).content
+        return requests.get(url).content
         #self.client.restart(container=container, timeout=timeout)
 
     @staticmethod
     @app.task(name='ipynbsrv.wui.tools.start')
     def start(container, host, port_binds=None, volume_binds=None, links=None):
         url = "http://" + host + ":8080/container/" + container + "/start"
-        return request('get', url).content
+        return requests.get(url).content
         #self.client.start(container=container, port_bindings=port_binds, binds=volume_binds, links=links)
 
     @staticmethod
     @app.task(name='ipynbsrv.wui.tools.stop')
     def stop(host, container, timeout=10):
         url = "http://" + host + ":8080/container/" + container + "/stop"
-        return request('get', url).content
+        return requests.get(url).content
         #self.client.stop(container=container, timeout=timeout)
+
+
+class Host(object):
+
+    @staticmethod
+    @app.task(name='ipynbsrv.wui.tools.host_info')
+    def host_info(host):
+        url = "http://" + host + ":8080/host/info"
+        return requests.get(url).content
+
+    @staticmethod
+    @app.task(name='ipynbsrv.wui.tools.host_info')
+    def host_status(host):
+        url = "http://" + host + ":8080/host/status"
+        return requests.get(url).content
+
+
+    @staticmethod
+    @app.task(name='ipynbsrv.wui.tools.service_status')
+    def service_status(host, service):
+        url = "http://" + host + ":8080/host/service"
+        return requests.get(url).content
+
 
 
 class Filesystem(object):
