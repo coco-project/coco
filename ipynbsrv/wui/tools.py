@@ -1,5 +1,5 @@
+import json
 import os.path
-
 import requests
 
 # import celery configuration
@@ -26,10 +26,19 @@ class Docker(object):
     @staticmethod
     @app.task(name='ipynbsrv.wui.tools.create_container')
     def create_container(host, name, image, cmd, ports=None, volumes=None, env=None, detach=True):
-        # TODO: build request, choose host
-        return str("[POST] http://" + host + ":8080/container")
-        return self.client.create_container(name=name, image=image, command=cmd, ports=ports,
-                                            volumes=volumes, environment=env, detach=detach)
+        try:
+            return r = requests.post(
+                url="http://%s:8080/containers" % host,
+                data=json.dumps({
+                    "name": name,
+                    "image": image,
+                    "command": cmd
+                })
+            ).content
+            print('Response HTTP Status Code : {status_code}'.format(status_code=r.status_code))
+            print('Response HTTP Response Body : {content}'.format(content=r.content))
+        except requests.exceptions.RequestException as e:
+            print('HTTP Request failed')
 
     @staticmethod
     @app.task(name='ipynbsrv.wui.tools.remove_container')
