@@ -33,6 +33,12 @@ class Backend(models.Model):
     arguments = models.CharField(blank=True, null=True, max_length=255,
                                  help_text='Optional arguments to pass to the __init__ method of the class. Format: arg1=value,arg2=value')
 
+    def __str__(self):
+        return smart_unicode(self.module + '.' + self.klass + ("(%s)" % self.arguments))
+
+    def __unicode__(self):
+        return self.__str__()
+
 
 class Server(models.Model):
     '''
@@ -56,6 +62,12 @@ class Server(models.Model):
     '''
     def is_container_host(self):
         return self.container_backend is not None
+
+    def __str__(self):
+        return smart_unicode(self.name)
+
+    def __unicode__(self):
+        return self.__str__()
 
 
 CONTAINER_CLONE_SUFFIX = '_clone'
