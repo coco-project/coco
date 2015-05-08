@@ -30,7 +30,7 @@ class Backend(models.Model):
     kind = models.CharField(max_length=1, choices=BACKEND_KINDS, default=CONTAINER_BACKEND, help_text='The kind of contract this backend fulfills.')
     module = models.CharField(max_length=255, help_text='The full absolute module path.')
     klass = models.TextField(max_length=255, help_text='The class\' name under which it can be located within the module.')
-    arguments = models.CharField(blank=True, null=True,
+    arguments = models.CharField(blank=True, null=True, max_length='255',
                                  help_text='Optional arguments to pass to the __init__ method of the class. Format: arg1=value,arg2=value')
 
 
