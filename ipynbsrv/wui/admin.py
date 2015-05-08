@@ -1,5 +1,23 @@
 from django.contrib import admin
-from ipynbsrv.wui.models import Container, Image, PortMapping, Share, Tag
+from ipynbsrv.wui.models import Backend, Container, Image, PortMapping, Server, Share, Tag
+
+
+class BackendAdmin(admin.ModelAdmin):
+    '''
+    Django admin definition for the Backend model.
+    '''
+    list_display = ['kind', 'module', 'klass']
+    list_filter = ['kind', 'module', 'klass']
+    search_fields = ['kind', 'module', 'klass', 'arguments']
+
+
+class ServerAdmin(admin.ModelAdmin):
+    '''
+    Django admin definition for the Server model.
+    '''
+    list_display = ['name', 'hostname', 'internal_ip']
+    list_filter = ['container_backend']
+    search_fields = ['name', 'hostname', 'internal_ip', 'external_ip', 'container_backend']
 
 
 class ContainerAdmin(admin.ModelAdmin):
@@ -54,6 +72,9 @@ class TagAdmin(admin.ModelAdmin):
     list_display = ['label']
     search_fields = ['label']
 
+
+admin.site.register(Backend, BackendAdmin)
+admin.site.register(Server, ServerAdmin)
 
 admin.site.register(Container, ContainerAdmin)
 admin.site.register(Image, ImageAdmin)

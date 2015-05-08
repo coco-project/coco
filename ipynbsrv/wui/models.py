@@ -5,7 +5,57 @@ from django.utils.encoding import smart_unicode
 from ldapdb.models import fields
 from ipynbsrv.wui.signals.signals import *
 from random import randint
-from tools import Host
+
+
+class Backend(models.Model):
+    '''
+    The backend model is used to store references to concrete backend implementations (as per ipynbsrv-contract package).
+
+    Attn: The module/class needs to be installed manually. There's no magic involved for this.
+    '''
+
+    '''
+    String to identify a backend of kind 'container backend'.
+    '''
+    CONTAINER_BACKEND = 'container_backend'
+
+    '''
+    List of pluggable backends.
+    '''
+    BACKEND_KINDS = [
+        (CONTAINER_BACKEND, 'Container backend')
+    ]
+
+    id = models.AutoField(primary_key=True)
+    kind = models.CharField(max_length=1, choices=BACKEND_KINDS, default=CONTAINER_BACKEND, help_text='The kind of contract this backend fulfills.')
+    module = models.CharField(max_length=255, help_text='The full absolute module path.')
+    klass = models.TextField(max_length=255, help_text='The class\' name under which it can be located within the module.')
+    arguments = models.CharField(blank=True, null=True,
+                                 help_text='Optional arguments to pass to the __init__ method of the class. Format: arg1=value,arg2=value')
+
+
+class Server(models.Model):
+    '''
+    TODO: brief summary
+    '''
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(unique=True, max_length=255, help_text='The human-friendly name of this server.')
+    hostname = models.CharField(unique=True, max_length=255)
+    internal_ip = models.GenericIPAddressField(unique=True, protocol='IPv4', help_text='The IPv4 address of the internal ovsbr0 interface.')
+    external_ip = models.GenericIPAddressField(unique=True, protocol='IPv4', help_text='The external IPv4 address of this server.')
+
+    '''
+    A reference to the backend to use as a container backend on this server.
+    If this field is other than 'None', the server is considered a container host.
+    '''
+    container_backend = models.ForeignKey(Backend, blank=True, null=True, default=None)
+
+    '''
+    Checks if this server is configured as a container host (has a container_backend set).
+    '''
+    def is_container_host(self):
+        return self.container_backend is not None
 
 
 CONTAINER_CLONE_SUFFIX = '_clone'
@@ -145,21 +195,6 @@ class Image(models.Model):
 
     class Meta:
         unique_together = ('name', 'owner')
-
-
-class Server(models.Model):
-    id = models.AutoField(primary_key=True)
-    hostname = models.CharField(name='hostname', null=False, max_length=255, unique=True)
-    bridge_ip = models.CharField(name='bridge_ip', null=False, max_length=15, unique=True)
-
-    def info(self):
-        return Host.host_info(self.hostname)
-
-    def status(self):
-        return Host.host_status(self.hostname)
-
-    def service(self, service):
-        return Host.host_status(self.hostname, service)
 
 
 class Container(models.Model):
