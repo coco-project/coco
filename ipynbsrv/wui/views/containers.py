@@ -85,6 +85,7 @@ def create(request):
             if image.owner == request.user or image.is_public:
 
                 # choose container host
+                # TODO: make generic (let user decide which algorithm to choose)
                 s = SimpleContainerHostSelectionService.get_server(len.Server.objects.all())
                 srv = Server.objects.all()[s]
 

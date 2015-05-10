@@ -1,5 +1,4 @@
 import os.path
-from ipynbsrv.backends.container_backends import *
 
 # import celery configuration
 from ipynbsrv.celery import app

@@ -9,3 +9,7 @@ docker-py==0.7.1
 # apt-get install python-psycopg2
 # psycopg2
 celery==3.1.18
+
+ipynbsrv.contract
+ipynbsrv.common
+ipynbsrv.backends
