@@ -5,6 +5,7 @@ from django.utils.encoding import smart_unicode
 from ldapdb.models import fields
 from ipynbsrv.wui.signals.signals import *
 from random import randint
+from ipynbsrv.common.utils import ClassLoader
 
 
 class Backend(models.Model):
@@ -68,6 +69,13 @@ class Server(models.Model):
 
     def __unicode__(self):
         return self.__str__()
+
+    def get_container_backend_instance(self, port=8080):
+        # TODO: error if no container backend defined
+        b = self.container_backend
+        if b.kind == 'container_backend':
+            return ClassLoader(module=b.module, klass=b.klass, args="url=http://{0}:{1}".format(self.external_ip, self.port))
+
 
 
 CONTAINER_CLONE_SUFFIX = '_clone'
