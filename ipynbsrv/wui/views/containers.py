@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.shortcuts import redirect, render
-from ipynbsrv.common.services.container_host_selection import SimpleContainerHostSelectionService
+from ipynbsrv.common.services.container_host_selection import PrimitiveContainerHostSelectionService
 from ipynbsrv.wui.auth.checks import login_allowed
 from ipynbsrv.wui.models import Container, Image, PortMapping, Server
 from random import randint
@@ -86,7 +86,7 @@ def create(request):
 
                 # choose container host
                 # TODO: make generic (let user decide which algorithm to choose)
-                s = SimpleContainerHostSelectionService.get_server(len.Server.objects.all())
+                s = PrimitiveContainerHostSelectionService.get_server(len.Server.objects.all())
                 srv = Server.objects.all()[s]
 
                 # TODO: distinct docker_id
