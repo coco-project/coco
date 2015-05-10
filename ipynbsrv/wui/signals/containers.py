@@ -3,12 +3,9 @@ import json
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from ipynbsrv.wui.models import Container, Image, PortMapping
+from ipynbsrv.wui.models import Container, Image, PortMapping, Server
 from ipynbsrv.wui.signals.signals import *
-from ipynbsrv.wui.tools import Docker
-
-
-docker = Docker()
+from ipynbsrv.wui.tasks import ContainerTask
 
 
 @receiver(container_commited)
@@ -19,7 +16,11 @@ def commit_on_host(sender, container, image, **kwargs):
     if settings.DEBUG:
         print "commit_on_host receiver fired"
     if container is not None and image is not None:
-        docker.commit(container.docker_id, image.get_full_name())
+        ContainerTask.commit.delay(
+            container.host.get_container_backend_instance,
+            container.docker_id,
+            image.get_full_name()
+            )
 
 
 @receiver(container_created)
@@ -54,7 +55,8 @@ def create_on_host(sender, container, **kwargs):
             os.path.join('/data/', 'shares')
         ]
 
-        ret = docker.create_container(
+        ret = ContainerTask.create_container.delay(
+            container_backend=container.host.get_container_backend_instance(),
             host=container.host, name=container.get_full_name(), image=container.image.get_full_name(),
             cmd=container.image.cmd.replace('{{PORT}}', str(port_mapping.external)),
             ports=ports, volumes=volumes
@@ -73,10 +75,14 @@ def delete_on_host(sender, container, **kwargs):
         print "delete_on_host receiver fired"
     if container is not None:
         try:
-            docker.remove_container(container.docker_id)
+            ContainerTask.remove_container.delay(
+                container.get_container_backend_instance(),
+                container.docker_id
+                )
         except:
             pass  # TODO: does not exist. what to do?
         if container.image.is_clone:
+            # TODO: start task
             container.image.delete()
 
 
@@ -89,7 +95,9 @@ def restart_on_host(sender, container, **kwargs):
         print "restart_on_host receiver fired"
     if container is not None:
         try:
-            docker.restart(container.docker_id)
+            ContainerTask.restart.delay(
+                container.get_container_backend_instance(),
+                container.docker_id)
         except:
             pass  # TODO: does not exist. what to do?
 
@@ -132,7 +140,11 @@ def start_on_host(sender, container, **kwargs):
         links = [
             ('ipynbsrv.ldap', 'ipynbsrv.ldap')
         ]
-        docker.start(host=container.host, container=container.docker_id, port_binds=ports, volume_binds=volumes, links=links)
+
+        ContainerTask.start_container.delay(
+            container.get_container_backend_instance()
+            )
+        # DockerTask.start.delay(host=container.host, container=container.docker_id, port_binds=ports, volume_binds=volumes, links=links)
 
 
 @receiver(container_stopped)
@@ -144,7 +156,10 @@ def stop_on_host(sender, container, **kwargs):
         print "stop_on_host receiver fired"
     if container is not None:
         try:
-            docker.stop(containercontainer.docker_id)
+            ContainerTask.stop.delay(
+                container.get_container_backend_instance(),
+                containercontainer.docker_id
+                )
         except:
             pass  # TODO: does not exist. what to do?
 

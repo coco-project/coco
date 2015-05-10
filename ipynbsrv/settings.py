@@ -151,4 +151,4 @@ SHARE_GROUP_PREFIX = 'share_'
 SHARE_GROUPS_OFFSET = 9999
 
 # define all classes with tasks
-CELERY_IMPORTS = ('ipynbsrv.wui.tools')
+CELERY_IMPORTS = ('ipynbsrv.wui.tasks')

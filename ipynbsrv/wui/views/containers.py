@@ -2,8 +2,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.shortcuts import redirect, render
+from ipynbsrv.common.services.container_host_selection import SimpleContainerHostSelectionService
 from ipynbsrv.wui.auth.checks import login_allowed
-from ipynbsrv.wui.models import Container, Image, PortMapping
+from ipynbsrv.wui.models import Container, Image, PortMapping, Server
 from random import randint
 
 
@@ -82,7 +83,13 @@ def create(request):
         if image.exists():
             image = image.first()
             if image.owner == request.user or image.is_public:
-                container = Container(docker_id=randint(0, 1000), name=name, description=description, image=image,
+
+                # choose container host
+                s = SimpleContainerHostSelectionService.get_server(len.Server.objects.all())
+                srv = Server.objects.all()[s]
+
+                # TODO: distinct docker_id
+                container = Container(docker_id=randint(0, 1000), host=srv.id, name=name, description=description, image=image,
                                       owner=request.user, running=False, clone_of=None)
                 container.save()
                 container.start()

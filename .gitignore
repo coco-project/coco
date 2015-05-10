@@ -1,6 +1,9 @@
 # shell
 .bash_history
 
+# pip
+.cache
+
 # IntelliJ
 .idea
 

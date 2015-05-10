@@ -12,7 +12,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ipynbsrv.settings')
 
 # rabbitmq docker container has to be linked as 'rabbit'
 app = Celery('ipynbsrv',
-             broker='amqp://guest:guest@rabbit',
+             broker='amqp://guest:guest@172.17.0.2',
              backend='rpc',)
 
 # Using a string here means the worker will not have to

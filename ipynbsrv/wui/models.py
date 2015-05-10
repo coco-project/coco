@@ -29,8 +29,8 @@ class Backend(models.Model):
 
     id = models.AutoField(primary_key=True)
     kind = models.CharField(choices=BACKEND_KINDS, default=CONTAINER_BACKEND, max_length=17, help_text='The kind of contract this backend fulfills.')
-    module = models.CharField(max_length=255, help_text='The full absolute module path.')
-    klass = models.CharField(max_length=255, help_text='The class\' name under which it can be located within the module.')
+    module = models.CharField(max_length=255, help_text='The full absolute module path. (i.e. ipynbsrv.backends.container_backends)')
+    klass = models.CharField(max_length=255, help_text='The class\' name under which it can be located within the module. (i.e. Docker or HttpRemote')
     arguments = models.CharField(blank=True, null=True, max_length=255,
                                  help_text='Optional arguments to pass to the __init__ method of the class. Format: arg1=value,arg2=value')
 
