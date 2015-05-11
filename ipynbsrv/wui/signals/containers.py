@@ -16,7 +16,7 @@ def commit_on_host(sender, container, image, **kwargs):
     if settings.DEBUG:
         print "commit_on_host receiver fired"
     if container is not None and image is not None:
-        ContainerTask.commit.delay(
+        ContainerTask.commit(
             container.host.get_container_backend_instance,
             container.docker_id,
             image.get_full_name()
@@ -55,7 +55,7 @@ def create_on_host(sender, container, **kwargs):
             os.path.join('/data/', 'shares')
         ]
 
-        ret = ContainerTask.create_container.delay(
+        ret = ContainerTask.create_container(
             container_backend=container.host.get_container_backend_instance(),
             host=container.host, name=container.get_full_name(), image=container.image.get_full_name(),
             cmd=container.image.cmd.replace('{{PORT}}', str(port_mapping.external)),
@@ -75,14 +75,14 @@ def delete_on_host(sender, container, **kwargs):
         print "delete_on_host receiver fired"
     if container is not None:
         try:
-            ContainerTask.remove_container.delay(
+            ContainerTask.remove_container(
                 container.get_container_backend_instance(),
                 container.docker_id
                 )
         except:
             pass  # TODO: does not exist. what to do?
         if container.image.is_clone:
-            # TODO: start task
+            # TODO: start tasks
             container.image.delete()
 
 
@@ -95,7 +95,7 @@ def restart_on_host(sender, container, **kwargs):
         print "restart_on_host receiver fired"
     if container is not None:
         try:
-            ContainerTask.restart.delay(
+            ContainerTask.restart(
                 container.get_container_backend_instance(),
                 container.docker_id)
         except:
@@ -141,10 +141,10 @@ def start_on_host(sender, container, **kwargs):
             ('ipynbsrv.ldap', 'ipynbsrv.ldap')
         ]
 
-        ContainerTask.start_container.delay(
+        ContainerTask.start_container(
             container.get_container_backend_instance()
             )
-        # DockerTask.start.delay(host=container.host, container=container.docker_id, port_binds=ports, volume_binds=volumes, links=links)
+        # DockerTask.start(host=container.host, container=container.docker_id, port_binds=ports, volume_binds=volumes, links=links)
 
 
 @receiver(container_stopped)
@@ -156,7 +156,7 @@ def stop_on_host(sender, container, **kwargs):
         print "stop_on_host receiver fired"
     if container is not None:
         try:
-            ContainerTask.stop.delay(
+            ContainerTask.stop(
                 container.get_container_backend_instance(),
                 containercontainer.docker_id
                 )
