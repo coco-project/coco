@@ -77,7 +77,7 @@ DATABASES = {
     },
     'ldap': {
         'ENGINE': 'ldapdb.backends.ldap',
-        'NAME': 'ldap://ipynbsrv.ldap/',
+        'NAME': 'ldap://localhost/',
         'USER': 'cn=admin,dc=ipynbsrv,dc=ldap',
         'PASSWORD': '123456',
     }

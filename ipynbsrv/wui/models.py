@@ -19,12 +19,14 @@ class Backend(models.Model):
     String to identify a backend of kind 'container backend'.
     '''
     CONTAINER_BACKEND = 'container_backend'
+    USERGROUP_BACKEND = 'usergroup_backend'
 
     '''
     List of pluggable backends.
     '''
     BACKEND_KINDS = [
-        (CONTAINER_BACKEND, 'Container backend')
+        (CONTAINER_BACKEND, 'Container backend'),
+        (USERGROUP_BACKEND, 'User / Group backend')
     ]
 
     id = models.AutoField(primary_key=True)
@@ -220,6 +222,7 @@ class Image(models.Model):
 class Container(models.Model):
     id = models.AutoField(primary_key=True)
     host = models.ForeignKey(Server)
+    #TODO: rename
     docker_id = models.CharField(unique=True, max_length=64)
     name = models.CharField(null=False, max_length=75)
     description = models.TextField(null=True, blank=True)
