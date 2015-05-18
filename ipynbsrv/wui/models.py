@@ -19,14 +19,12 @@ class Backend(models.Model):
     String to identify a backend of kind 'container backend'.
     '''
     CONTAINER_BACKEND = 'container_backend'
-    USERGROUP_BACKEND = 'usergroup_backend'
 
     '''
     List of pluggable backends.
     '''
     BACKEND_KINDS = [
         (CONTAINER_BACKEND, 'Container backend'),
-        (USERGROUP_BACKEND, 'User / Group backend')
     ]
 
     id = models.AutoField(primary_key=True)
