@@ -15,9 +15,9 @@ class ContainerAdmin(admin.ModelAdmin):
     '''
     Django admin definition for the Container model.
     '''
-    list_display = ['name', 'description', 'owner', 'running']
-    list_filter = ['name', 'image', 'owner', 'running']
-    search_fields = ['docker_id', 'name', 'description', 'running']
+    list_display = ['name', 'description', 'owner', 'is_running']
+    list_filter = ['name', 'image', 'owner']
+    search_fields = ['docker_id', 'name', 'description']
 
 
 class ImageAdmin(admin.ModelAdmin):
@@ -25,7 +25,7 @@ class ImageAdmin(admin.ModelAdmin):
     Django admin definition for the container Images model.
     '''
     list_display = ['name', 'description', 'owner', 'is_public']
-    list_filter = ['owner', 'is_public', 'is_clone']
+    list_filter = ['owner', 'is_public']
     search_fields = ['docker_id', 'name', 'description', 'cmd']
 
 
