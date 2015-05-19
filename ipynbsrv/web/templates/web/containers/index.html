@@ -1,0 +1,31 @@
+{% extends 'web/base.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        {% include "web/snippets/messages.html" with messages=messages only %}
+
+        <h1>Containers</h1>
+        <form role="form">
+            <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-container" {% if not images %}disabled{% endif %}>Create new</button>
+        </form>
+
+        {% include 'web/snippets/container_grid.html' with containers=containers csrf_token=csrf_token only %}
+        {% include 'web/containers/modal_create.html' with images=images csrf_token=csrf_token only %}
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+{% comment 'Would be better placed in snippets/container_grid.html' %}{% endcomment %}
+<script src="{% static 'bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js' %}"></script>
+<script>
+$(function () {
+    $('[data-toggle="confirmation"]').confirmation({
+        popout: true
+    });
+});
+</script>
+{% endblock %}

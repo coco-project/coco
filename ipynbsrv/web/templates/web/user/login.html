@@ -1,0 +1,65 @@
+{% extends 'web/base_generic.html' %}
+
+{% load settings %}
+{% load widget_tweaks %}
+
+{% block css %}
+<style>
+body {
+    background-color: #3465a4;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12 col-sm-offset-3 col-sm-6 col-md-offset-4 col-md-4 js-form-login">
+            <form action="{% url 'accounts_login' %}" method="POST" class="form-login" role="form">
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    Your username and password didn't match. Please try again.
+                </div>
+                {% endif %}
+
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ form.username.label_tag }}
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                        {% render_field form.username class+="form-control" placeholder=form.username.label required="" %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form.password.label_tag }}
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                        {% render_field form.password class+="form-control" placeholder=form.password.label required="" %}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+            <p class="login-footnote">An overview of all published notebooks is available under the public listing section <a href="{% settings 'URL_PUBLIC' %}"><strong>here</strong></a>.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+function centerLoginForm () {
+    var height  = $(window).height();
+    var fheight = form.height();
+    form.css('padding-top', (height - fheight) / 2);
+}
+
+$(function () {
+    form = $('.js-form-login');
+    centerLoginForm();
+});
+
+$(window).resize(function () {
+    centerLoginForm();
+});
+</script>
+{% endblock %}

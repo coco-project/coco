@@ -1,0 +1,89 @@
+{% extends 'web/base.html' %}
+
+{% load staticfiles %}
+
+{% block external_css %}
+<link rel="stylesheet" href="{% static 'bower_components/datatables/media/css/jquery.dataTables.min.css' %}">
+<link rel="stylesheet" href="{% static 'bower_components/datatables-plugins-bootstrap3/dist/css/datatables-plugins-bootstrap3.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        {% include 'web/snippets/messages.html' with messages=messages only %}
+
+        <h1>Images</h1>
+        <form role="form">
+            <button id="modal-create-image_button" type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-image" {% if not containers %}disabled{% endif %}>Create new</button>
+        </form>
+
+        {% if images %}
+        <div class="row shares-table">
+            <div class="col-xs-12">
+                <table class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th width="25%">Name</th>
+                            <th width="55%">Description</th>
+                            <th width="10%" style="text-align: center">Public</th>
+                            <th width="10%" style="text-align: right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for img in images %}
+                        <tr>
+                            <td>{{ img.get_full_name }}</td>
+                            <td>{{ img.description }}</td>
+                            <td style="text-align: center">
+                                <input type="checkbox" data-sort="1"{% if img.is_public %} checked{% endif %}{% if img.owner != request.user %} disabled{% endif %}>
+                            </td>
+                            <td>
+                                {% if img.owner == request.user %}
+                                <form action="{% url 'image_delete' %}" method="POST" class="pull-right" role="form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="id" value="{{ img.id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete this image?" data-toggle="confirmation" data-placement="left">
+                                        <i class="glyphicon glyphicon-remove"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+            <div class="alert alert-info">You do not have access to any images yet.</div>
+        {% endif %}
+
+        {% include 'web/images/modal_create.html' with containers=containers selected=selected share=share csrf_token=csrf_token only %}
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'bower_components/datatables/media/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'bower_components/datatables-plugins-bootstrap3/dist/js/datatables-plugins-bootstrap3.min.js' %}"></script>
+<script src="{% static 'bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js' %}"></script>
+<script>
+$(function () {
+    {% if selected %}
+        $('#modal-create-image_button').click();
+    {% endif %}
+
+    $('[data-toggle="confirmation"]').confirmation({
+        popout: true
+    });
+
+    $('.js-table-smart').dataTable({
+        columnDefs: [{
+            aTargets: [ 3 ],
+            bSearchable: false,
+            bSortable: false
+        }]
+    });
+});
+</script>
+{% endblock %}

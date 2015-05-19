@@ -1,0 +1,35 @@
+{% extends 'web/base.html' %}
+
+{% load staticfiles %}
+
+{% block title %} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        {% include 'web/snippets/messages.html' with messages=messages only %}
+
+        <h1>Dashboard</h1>
+        <div class="dashboard-box">
+            <blockquote>
+                <p>Welcome back {{ user.get_username }}!</p>
+            </blockquote>
+        </div>
+
+        <h2>Running containers</h2>
+        {% include 'web/snippets/container_grid.html' with containers=containers csrf_token=csrf_token only %}
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+{% comment 'Would be better placed in snippets/container_grid.html' %}{% endcomment %}
+<script src="{% static 'bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js' %}"></script>
+<script>
+$(function () {
+    $('[data-toggle="confirmation"]').confirmation({
+        popout: true
+    });
+});
+</script>
+{% endblock %}

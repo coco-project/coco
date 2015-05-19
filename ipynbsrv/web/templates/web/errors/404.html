@@ -1,0 +1,30 @@
+{% extends 'web/base_generic.html' %}
+
+{% block body %}
+<div class="container js-jumbotron">
+    <div class="jumbotron">
+      <h1>404 - Not found</h1>
+      <p>Ohhh no...the requested page doesn't exist...</p>
+      <p><a class="btn btn-primary btn-lg" href="{% url 'dashboard' %}" role="button">Back home</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+function centerJumbotron () {
+    var height  = $(window).height();
+    var fheight = jumbotron.height();
+    jumbotron.css('padding-top', (height - fheight) / 2);
+}
+
+$(function () {
+    jumbotron = $('.js-jumbotron');
+    centerJumbotron();
+});
+
+$(window).resize(function () {
+    centerJumbotron();
+});
+</script>
+{% endblock %}

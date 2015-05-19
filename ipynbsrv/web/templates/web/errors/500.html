@@ -1,0 +1,30 @@
+{% extends 'web/base_generic.html' %}
+
+{% block body %}
+<div class="container js-jumbotron">
+    <div class="jumbotron">
+      <h1>500 - Internal Server Error</h1>
+      <p>Ohhh no...something went terribly wrong...</p>
+      <p><a class="btn btn-primary btn-lg" href="{% url 'dashboard' %}" role="button">Back home</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+function centerJumbotron () {
+    var height  = $(window).height();
+    var fheight = jumbotron.height();
+    jumbotron.css('padding-top', (height - fheight) / 2);
+}
+
+$(function () {
+    jumbotron = $('.js-jumbotron');
+    centerJumbotron();
+});
+
+$(window).resize(function () {
+    centerJumbotron();
+});
+</script>
+{% endblock %}
