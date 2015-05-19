@@ -176,9 +176,11 @@ class Image(models.Model):
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
     owner = models.ForeignKey('User')
-    snashot_of = models.ForeignKey('Container', blank=True, null=True,
+    snapshot_of = models.ForeignKey('Container', blank=True, null=True,
                                    help_text='If not None, the container for which this image was created as a snapshot.')
 
+    is_public = models.BooleanField(default=False)
+    
     def get_full_name(self):
         # TODO: specification
         return '%s/%s' % (self.owner.get_username(), self.name)
@@ -187,7 +189,7 @@ class Image(models.Model):
     Returns true if this image is a container snapshot.
     '''
     def is_snapshot(self):
-        return self.snashot_of is not None
+        return self.snapshot_of is not None
 
     def __str__(self):
         return smart_unicode(self.get_full_name())
