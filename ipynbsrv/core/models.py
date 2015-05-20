@@ -66,7 +66,7 @@ class Container(models.Model):
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
     server = models.ForeignKey('Server', help_text='The server on which this container is/will be located.')
-    owner = models.ForeignKey('User')
+    owner = models.ForeignKey(User)
     # TODO: can this be solved more generically
     image = models.ForeignKey('Image', blank=True, null=True, help_text='The image from which this container was bootstrapped.')
     # TODO: status? better place in cache because it can easily change and we'd have to sync
@@ -175,12 +175,13 @@ class Image(models.Model):
     backend_pk = models.CharField(unique=True, max_length=255, help_text='The primary key the backend uses to identify this image.')
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
-    owner = models.ForeignKey('User')
+    owner = models.ForeignKey(User)
     snapshot_of = models.ForeignKey('Container', blank=True, null=True,
+                                   related_name='snapshot_of',
                                    help_text='If not None, the container for which this image was created as a snapshot.')
 
     is_public = models.BooleanField(default=False)
-    
+
     def get_full_name(self):
         # TODO: specification
         return '%s/%s' % (self.owner.get_username(), self.name)
@@ -254,6 +255,18 @@ class Server(models.Model):
         return self.__str__()
 
 
+class PortMapping(models.Model):
+    container = models.ForeignKey(Container)
+    internal = models.PositiveIntegerField(null=False, max_length=6)
+    external = models.PositiveIntegerField(unique=True, max_length=6)
+
+    def __str__(self):
+        return smart_unicode("{0} ({1} -> {2})".format(self.container.__str__, self.external, self.internal))
+
+    def __unicode__(self):
+        return self.__str__()
+
+
 class Share(models.Model):
     '''
     TODO: brief summary
@@ -263,8 +276,8 @@ class Share(models.Model):
     name = models.CharField(unique=True, max_length=75)
     description = models.TextField(null=True, blank=True)
     tags = models.ManyToManyField('Tag', null=True, blank=True)
-    owner = models.ForeignKey('User')
-    group = models.ForeignKey('Group', unique=True)
+    owner = models.ForeignKey(User)
+    group = models.ForeignKey(Group, unique=True)
 
     '''
     Adds the user as a member to this group.
@@ -327,7 +340,7 @@ class Tag(models.Model):
     '''
 
     id = models.AutoField(primary_key=True)
-    label = models.CharField(primary_key=True, max_length=75)
+    label = models.CharField(max_length=75)
 
     def __str__(self):
         return smart_unicode(self.label)
@@ -357,6 +370,31 @@ class LdapGroup(ldapdb.models.Model):
 
     def __str__(self):
         return smart_unicode(self.name)
+
+    def __unicode__(self):
+        return self.__str__()
+
+
+class IpynbUser(models.Model):
+    user = models.OneToOneField(User)
+    identifier = fields.CharField(unique=True, help_text='Unique identifier in usergroup backend')
+    home_directory = fields.CharField(unique=True, help_text='Home directory of the user to store data')
+    additional_data = fields.CharField(help_text='Here you can add any additional information that may be needed for your Usergroup Backend')
+
+    def __str__(self):
+        return smart_unicode(self.identifier)
+
+    def __unicode__(self):
+        return self.__str__()
+
+
+class IpynbGroup(models.Model):
+    group = models.OneToOneField(Group)
+    identifier = fields.CharField(unique=True, help_text='Unique identifier in usergroup backend')
+    additional_data = fields.CharField(help_text='Here you can add any additional information that may be needed for your Usergroup Backend')
+
+    def __str__(self):
+        return smart_unicode(self.identifier)
 
     def __unicode__(self):
         return self.__str__()

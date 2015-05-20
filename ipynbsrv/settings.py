@@ -47,7 +47,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
+    #'django.middleware.security.SecurityMiddleware',
 )
 
 ROOT_URLCONF = 'ipynbsrv.urls'
@@ -122,7 +122,12 @@ MESSAGE_TAGS = {
 LOGIN_URL = '/accounts/login'
 LOGIN_REDIRECT_URL = '/accounts/flag'
 
+
+VARS_MODULE_PATH = 'ipynbsrv.conf.config'
+
+
 # LDAP Authentication
+# TODO: deprecated?
 import ldap
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
 
