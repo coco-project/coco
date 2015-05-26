@@ -19,21 +19,7 @@ def create_user_directories(sender, user, **kwargs):
         print "create_user_directories receiver fired"
     if user is not None:
         username = user.get_username()
-        ldap_user = LdapUser.objects.filter(pk=username)
-        if ldap_user.exists():
-            ldap_user = ldap_user.first()
-            # create the user's home directory
-            path = os.path.join(settings.HOME_ROOT, username)
-            Filesystem.ensure_directory(path)
-            # set owner and permissions
-            os.chown(path, ldap_user.id, ldap_user.group_id)
-            os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
-            # create the user's public directory
-            path = os.path.join(settings.PUBLIC_ROOT, username)
-            Filesystem.ensure_directory(path)
-            # set owner and permissions
-            os.chown(path, ldap_user.id, ldap_user.group_id)
-            os.chmod(path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+        # TODO
 
 
 @receiver(user_deleted)
@@ -45,15 +31,7 @@ def remove_user_directories(sender, user, **kwargs):
         print "remove_user_directories receiver fired"
     if user is not None:
         username = user.get_username()
-        ldap_user = LdapUser.objects.filter(pk=username)
-        if ldap_user.exists():
-            ldap_user = ldap_user.first()
-            # delete the user's home directory
-            path = os.path.join(settings.HOME_ROOT, username)
-            shutil.rmtree(path)
-            # delete the user's public directory
-            path = os.path.join(settings.PUBLIC_ROOT, username)
-            shutil.rmtree(path)
+        # TODO
 
 
 @receiver(user_modified)
@@ -80,7 +58,12 @@ def user_modified_handler(sender, user, fields, **kwargs):
                 group_member_removed.send(sender=sender, group=group, users=[user], kwargs=kwargs)
 
 
-# ###############################################
+'''
+
+    Calling custom signals
+
+'''
+
 
 @receiver(m2m_changed, sender=User.groups.through)
 def m2m_changed_handler(sender, instance, **kwargs):
