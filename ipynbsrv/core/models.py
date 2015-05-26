@@ -2,10 +2,7 @@ from django.db import models
 from django.utils.encoding import smart_unicode
 from ipynbsrv.common.utils import ClassLoader
 from ipynbsrv.contract.backends import ContainerBackend, SuspendableContainerBackend
-# LEGACY
-import ldapdb.models
 from django.contrib.auth.models import Group, User
-from ldapdb.models import fields
 
 
 class Backend(models.Model):
@@ -349,37 +346,11 @@ class Tag(models.Model):
         return self.__str__()
 
 
-# LEGACY IPYNBSRV
-class LdapGroup(ldapdb.models.Model):
-    # LDAP meta-data
-    base_dn = "ou=groups,dc=ipynbsrv,dc=ldap"  # TODO: get from settings
-    object_classes = ['posixGroup']
-
-    id = fields.IntegerField(db_column='gidNumber', unique=True)
-    name = fields.CharField(db_column='cn', primary_key=True, max_length=200)
-    members = fields.ListField(db_column='memberUid')
-
-    def get_members(self):
-        members = []
-        for member in self.members:
-            members.append(LdapUser.objects.get(pk=member))
-        return members
-
-    def is_member(self, user):
-        return user in self.get_members()
-
-    def __str__(self):
-        return smart_unicode(self.name)
-
-    def __unicode__(self):
-        return self.__str__()
-
-
 class IpynbUser(models.Model):
     user = models.OneToOneField(User)
-    identifier = fields.CharField(unique=True, help_text='Unique identifier in usergroup backend')
-    home_directory = fields.CharField(unique=True, help_text='Home directory of the user to store data')
-    additional_data = fields.CharField(help_text='Here you can add any additional information that may be needed for your Usergroup Backend')
+    identifier = models.CharField(max_length=75, unique=True, help_text='Unique identifier in usergroup backend')
+    home_directory = models.CharField(max_length=255, unique=True, help_text='Home directory of the user to store data')
+    additional_data = models.CharField(max_length=255, help_text='Here you can add any additional information that may be needed for your Usergroup Backend')
 
     def __str__(self):
         return smart_unicode(self.identifier)
@@ -390,49 +361,11 @@ class IpynbUser(models.Model):
 
 class IpynbGroup(models.Model):
     group = models.OneToOneField(Group)
-    identifier = fields.CharField(unique=True, help_text='Unique identifier in usergroup backend')
-    additional_data = fields.CharField(help_text='Here you can add any additional information that may be needed for your Usergroup Backend')
+    identifier = models.CharField(max_length=75, unique=True, help_text='Unique identifier in usergroup backend')
+    additional_data = models.CharField(max_length=255, help_text='Here you can add any additional information that may be needed for your Usergroup Backend')
 
     def __str__(self):
         return smart_unicode(self.identifier)
-
-    def __unicode__(self):
-        return self.__str__()
-
-
-class LdapUser(ldapdb.models.Model):
-    # LDAP meta-data
-    base_dn = "ou=users,dc=ipynbsrv,dc=ldap"
-    object_classes = ['inetOrgPerson', 'posixAccount']
-
-    # inetOrgPerson
-    cn = fields.CharField(db_column='cn', unique=True)
-    sn = fields.CharField(db_column='sn', unique=True)
-    id = fields.IntegerField(db_column='uidNumber', unique=True)
-    username = fields.CharField(db_column='uid', primary_key=True, max_length=200)
-    password = fields.CharField(db_column='userPassword')
-    group_id = fields.IntegerField(db_column='gidNumber')
-    home_directory = fields.CharField(db_column='homeDirectory', unique=True)
-
-    @staticmethod
-    def for_user(user):
-        return LdapUser.objects.get(pk=user.username)
-
-    def get_groups(self):
-        groups = []
-        for group in LdapGroup.objects.all():
-            if group.is_member(self):
-                groups.append(group)
-        return groups
-
-    def get_primary_group(self):
-        return LdapGroup.objects.get(pk=self.pk)
-
-    def get_username(self):
-        return self.username
-
-    def __str__(self):
-        return smart_unicode(self.username)
 
     def __unicode__(self):
         return self.__str__()
