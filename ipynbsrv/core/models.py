@@ -31,7 +31,7 @@ class Backend(models.Model):
     module = models.CharField(max_length=255, help_text='The full absolute module path. (i.e. ipynbsrv.backends.container_backends)')
     klass = models.CharField(max_length=255, help_text='The class\' name under which it can be located within the module. (i.e. Docker or HttpRemote')
     arguments = models.CharField(blank=True, null=True, max_length=255,
-                                 help_text='Optional arguments to pass to the __init__ method of the class. Format: arg1=value,arg2=value')
+                                 help_text='Optional arguments to pass to the __init__ method of the class. Format: {"arg1": "value", "arg2": "value" }')
 
     '''
     Returns an instance of the backend with either the default arguments
@@ -169,13 +169,14 @@ class Image(models.Model):
     '''
 
     id = models.AutoField(primary_key=True)
-    backend_pk = models.CharField(unique=True, max_length=255, help_text='The primary key the backend uses to identify this image.')
+    backend_pk = models.CharField(unique=True, max_length=255,
+                                  help_text='The primary key the backend uses to identify this image.')
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
     owner = models.ForeignKey(User)
     snapshot_of = models.ForeignKey('Container', blank=True, null=True,
-                                   related_name='snapshot_of',
-                                   help_text='If not None, the container for which this image was created as a snapshot.')
+                                    related_name='snapshot_of',
+                                    help_text='If not None, the container for which this image was created as a snapshot.')
 
     is_public = models.BooleanField(default=False)
 
@@ -283,7 +284,7 @@ class Share(models.Model):
     '''
     def add_member(self, user):
         if self.user_is_member(user):
-            return false
+            return False
         raise NotImplementedError
 
     '''
