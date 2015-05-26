@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.shortcuts import redirect, render
-from ipynbsrv.common.services.container_host_selection import PrimitiveContainerHostSelectionService
+from ipynbsrv.conf import conf
 from ipynbsrv.core.auth import login_allowed
 from ipynbsrv.core.models import Container, Image, PortMapping, Server
 from random import randint
