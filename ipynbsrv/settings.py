@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'ifnav_templatetag',
     'widget_tweaks',
+    'django_admin_conf_vars',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -47,7 +48,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'django.middleware.security.SecurityMiddleware',
+    # 'django.middleware.security.SecurityMiddleware',
 )
 
 ROOT_URLCONF = 'ipynbsrv.urls'
@@ -85,17 +86,8 @@ DATABASES = {
         'PASSWORD': '123456',
         'HOST': 'ipynbsrv.postgresql',
         'PORT': '5432'
-    },
-    # LEGACY FROM IPYNBSRV. REFACTOR
-    'ldap': {
-        'ENGINE': 'ldapdb.backends.ldap',
-        'NAME': 'ldap://ipynbsrv.ldap/',
-        'USER': 'cn=admin,dc=ipynbsrv,dc=ldap',
-        'PASSWORD': '123456',
     }
 }
-DATABASE_ROUTERS = ['ldapdb.router.Router']
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -123,27 +115,10 @@ LOGIN_URL = '/accounts/login'
 LOGIN_REDIRECT_URL = '/accounts/flag'
 
 
-VARS_MODULE_PATH = 'ipynbsrv.conf.config'
+VARS_MODULE_PATH = 'ipynbsrv.conf.conf'
 
-
-# LDAP Authentication
-# TODO: deprecated?
-import ldap
-from django_auth_ldap.config import LDAPSearch, PosixGroupType
-
-AUTH_LDAP_SERVER_URI = DATABASES['ldap']['NAME']
-AUTH_LDAP_BIND_DN = DATABASES['ldap']['USER']
-AUTH_LDAP_BIND_PASSWORD = DATABASES['ldap']['PASSWORD']
-
-AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=ipynbsrv,dc=ldap", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
-AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,dc=ipynbsrv,dc=ldap", ldap.SCOPE_SUBTREE, "(objectClass=posixGroup)")
-AUTH_LDAP_GROUP_TYPE = PosixGroupType()
-
-AUTH_LDAP_USER_ATTR_MAP = {}
-AUTH_LDAP_ALWAYS_UPDATE_USER = True
-AUTH_LDAP_CACHE_GROUPS = False
 
 AUTHENTICATION_BACKENDS = (
-    'django_auth_ldap.backend.LDAPBackend',
+    'ipynbsrv.backends.authentication_backends.LdapAuthentication',
     'django.contrib.auth.backends.ModelBackend',
 )
