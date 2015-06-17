@@ -14,7 +14,7 @@ def dashboard(request):
     '''
     Dashboard view listing the running containers.
     '''
-    containers = Container.objects.filter(owner=request.user).filter(running=True)
+    containers = Container.objects.filter(owner=request.user)
     for container in containers:
         port_mappings = PortMapping.objects.filter(container=container)
         container.port_mappings = port_mappings.filter(~Q(internal=container.image.proxied_port))
