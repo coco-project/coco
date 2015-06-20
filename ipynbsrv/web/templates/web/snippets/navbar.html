@@ -1,4 +1,3 @@
-{% load ifnav %}
 {% load settings %}
 
 <nav class="navbar navbar-static-top ipynbsrv-navbar" role="navigation">
@@ -10,35 +9,35 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{% url 'dashboard' %}">ipynbsrv</a>
+            <a class="navbar-brand" href="/">ipynbsrv</a>
         </div>
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li{% ifnav '^/$' %} class="active"{% endifnav %}><a href="{% url 'dashboard' %}">Dashboard</a></li>
-                <li{% ifnav '^/containers/' %} class="active"{% endifnav %}><a href="{% url 'containers' %}">Containers</a></li>
-                <li{% ifnav '^/images/' %} class="active"{% endifnav %}><a href="{% url 'images' %}">Images</a></li>
-                <li{% ifnav '^/share' %} class="active"{% endifnav %}><a href="{% url 'shares' %}">Shares</a></li>
+                <li><a href="/">Dashboard</a></li>
+                <li><a href="/containers">Containers</a></li>
+                <li><a href="/images">Images</a></li>
+                <li><a href="/shares">Shares</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li class="hidden-xs"><a href="{% settings 'URL_DOCS' %}user-guide/" data-tooltip data-placement="bottom" title="User Guide" target="_blank">
+                <li class="hidden-xs"><a href="" data-tooltip data-placement="bottom" title="User Guide" target="_blank">
                     <i class="glyphicon glyphicon-question-sign" aria-hidden="true"></i>
                 </a></li>
-                <li class="hidden-xs"><a href="{% settings 'URL_PUBLIC' %}{{ user.get_username }}/" data-tooltip data-placement="bottom" title="My publications" target="_blank">
+                <li class="hidden-xs"><a href="" data-tooltip data-placement="bottom" title="My publications" target="_blank">
                     <i class="glyphicon glyphicon-globe" aria-hidden="true"></i>
                 </a></li>
-                <li class="hidden-xs"><a href="{% url 'accounts_unflag' %}" data-tooltip data-placement="bottom" title="Logout">
+                <li class="hidden-xs"><a href="" data-tooltip data-placement="bottom" title="Logout">
                     <i class="glyphicon glyphicon-log-out" aria-hidden="true"></i>
                 </a></li>
 
                 <li class="hidden-sm hidden-md hidden-lg">
-                    <a href="{% settings 'URL_DOCS'' %}user-guide/" title="User Guide" target="_blank">Use Guide</a>
+                    <a href="" title="User Guide" target="_blank">Use Guide</a>
                 </li>
                 <li class="hidden-sm hidden-md hidden-lg">
-                    <a href="{% settings 'URL_PUBLIC' %}{{ user.get_username }}/" title="My publications" target="_blank">My publications</a>
+                    <a href="" title="My publications" target="_blank">My publications</a>
                 </li>
                 <li class="hidden-sm hidden-md hidden-lg">
-                    <a href="{% url 'accounts_unflag' %}" title="Logout">Logout</a>
+                    <a href="" title="Logout">Logout</a>
                 </li>
             </ul>
         </div>
