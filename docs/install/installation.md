@@ -185,7 +185,7 @@ $ apt-get -y install libpam-ldap
 
 When prompted, enter:
 
-    LDAP server: ldap://ipynbsrv.ldap/
+    LDAP server: ldap://ipynbsrv_ldap/
     Distinguished name: dc=ipynbsrv,dc=ldap
     3, No, No
 
@@ -397,7 +397,7 @@ Because we are using `LESS` to produce `CSS` and `bower` to manage external depe
 cd ipynbsrv/wui/static/
 bower install  # installs external dependencies
 mkdir css
-lessc --compress less/main.less css/main.css  # compile LESS to CSS
+lessc less/main.less css/main.css  # compile LESS to CSS
 cd ~/www
 ```
 

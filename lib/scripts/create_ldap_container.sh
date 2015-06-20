@@ -12,19 +12,18 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-CT_NAME="ipynbsrv.ldap"
+CT_NAME="ipynbsrv_ldap"
 
 echo "------------------------------------------------------------"
 echo "Pulling the LDAP server image..."
 echo "------------------------------------------------------------"
 sleep 2
 
-docker pull nickstenning/slapd
+docker pull nickstenning/slapd:latest
 
 echo "------------------------------------------------------------"
 echo "Please define the LDAP server password now..."
 echo "------------------------------------------------------------"
-sleep 2
 
 read -p "New password: " PASSWORD
 
@@ -47,12 +46,12 @@ echo "Entering the container. Finish by issueing these commands inside:"
 echo "------------------------------------------------------------"
 
 echo "$ apt-get update && apt-get -y install ldap-utils wget"
-echo "$ wget https://git.rackster.ch/fhnw/ipynbsrv/raw/develop/confs/slapd/init.ldif"
+echo "$ wget https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/lib/confs/slapd/init.ldif"
 echo "$ ldapadd -h localhost -p 389 -c -x -D cn=admin,dc=ipynbsrv,dc=ldap -W -f init.ldif"
 echo "$ rm init.ldif && exit"
 sleep 5
 
-docker-bash ipynbsrv.ldap
+docker-bash ipynbsrv_ldap
 
 echo "------------------------------------------------------------"
 echo "All done!"

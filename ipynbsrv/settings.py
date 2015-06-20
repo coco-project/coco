@@ -72,7 +72,7 @@ DATABASES = {
         'NAME': 'ipynbsrv',
         'USER': 'ipynbsrv',
         'PASSWORD': '123456',
-        'HOST': 'ipynbsrv.postgresql',
+        'HOST': 'ipynbsrv_postgresql',
         'PORT': '5432'
     },
     'ldap': {
