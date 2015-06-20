@@ -139,7 +139,7 @@ def index(request):
     return render(request, 'web/containers/index.html', {
         'title': "Containers",
         'containers': containers,
-        'images': Image.objects.filter((Q(owner=request.user) | Q(is_public=True)) & Q(is_clone=False))
+        'images': Image.objects.filter((Q(owner=request.user) | Q(is_public=True)))
     })
 
 

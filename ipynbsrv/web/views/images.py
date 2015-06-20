@@ -36,7 +36,7 @@ def index(request):
     return render(request, 'web/images/index.html', {
         'title': "Images",
         'containers': Container.objects.filter(owner=request.user),
-        'images': Image.objects.filter((Q(owner=request.user) | Q(is_public=True)) & Q(is_clone=False)),
+        'images': Image.objects.filter((Q(owner=request.user) | Q(is_public=True))),
         # meta information for the create modal
         'selected': Container.objects.filter(pk=int(request.GET.get('ct', -1))).first(),
         'share': 'share' in request.GET
