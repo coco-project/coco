@@ -12,5 +12,5 @@ def login_allowed(user):
     if not user.username:
         return False
     else:
-        l = global_vars._get_user_group_backend()
+        l = global_vars._get_user_backend()
         return l.user_exists(user.username)
