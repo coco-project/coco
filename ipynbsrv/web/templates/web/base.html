@@ -1,0 +1,9 @@
+{% extends 'web/base_generic.html' %}
+
+{% block body %}
+{% include 'web/snippets/navbar.html' %}
+
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+{% endblock %}
