@@ -1,7 +1,7 @@
-'''
+"""
 Settings storing the paths (relative to STORAGE_DIR_BASE) under which (user) directories should be created.
-'''
-STORAGE_DIR_HOME = 'home/'
+"""
+STORAGE_DIR_HOME = 'homes/'
 STORAGE_DIR_PUBLIC = 'public/'
 STORAGE_DIR_SHARES = 'shares/'
 

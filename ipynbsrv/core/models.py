@@ -458,3 +458,7 @@ class IpynbGroup(models.Model):
         :inherit.
         """
         return self.__str__()
+
+
+# make sure out signal receivers are loaded
+from ipynbsrv.core.signals import shares, users

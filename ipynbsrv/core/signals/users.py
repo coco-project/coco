@@ -25,7 +25,7 @@ def create_user_directories(sender, user, **kwargs):
             # public directory
             storage_backend.mk_dir(public_dir)
             storage_backend.set_dir_owner(public_dir, username)
-            storage_backend.set_dir_group(home_dir, username)
+            storage_backend.set_dir_group(public_dir, username)
             storage_backend.set_dir_mode(public_dir, 0755)
         except StorageBackendError as ex:
             # TODO: error handling
