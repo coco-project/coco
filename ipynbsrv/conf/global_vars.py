@@ -6,7 +6,6 @@ Global variables and functions returning the instance of the storage backend to 
 '''
 _STORAGE_BACKEND = None
 
-
 def _get_storage_backend():
     global _STORAGE_BACKEND
     if _STORAGE_BACKEND is None:
