@@ -27,6 +27,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = (
+    'ipynbsrv.conf',
     'ipynbsrv.core',
     'ipynbsrv.web',
     'django.contrib.admin',
@@ -35,7 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'ifnav_templatetag',
+    # 'ifnav_templatetag',
     'widget_tweaks',
     'django_admin_conf_vars',
 )

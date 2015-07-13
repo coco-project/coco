@@ -1,13 +1,12 @@
-django==1.8.1
+django==1.8.3
 # http://stackoverflow.com/questions/6857680/django-auth-ldap-no-module-named-ldap
 # apt-get install python-dev libldap2-dev libsasl2-dev libssl-dev
-django-auth-ldap
-django-ifnav-templatetag==1.1
-django-ldapdb==0.3.2
+# django-auth-ldap
+# django-ifnav-templatetag==1.1
+# django-ldapdb==0.3.2
 django-widget-tweaks==1.3
-docker-py==0.7.1
-ipynbsrv-backends
-ipynbsrv-common
-ipynbsrv-contract
+ipynbsrv-backends==0.0.1
+ipynbsrv-common==0.0.1
+ipynbsrv-contract==0.0.1
 # apt-get install python-psycopg2
 # psycopg2
