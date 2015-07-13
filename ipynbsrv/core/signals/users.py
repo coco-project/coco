@@ -9,9 +9,9 @@ from ipynbsrv.core.signals.signals import user_created, user_deleted, user_modif
 
 @receiver(user_created)
 def create_user_directories(sender, user, **kwargs):
-    '''
+    """
     Every user needs his home and public directories, so we create them here.
-    '''
+    """
     if user is not None:
         username = user.get_username()
         home_dir = settings.STORAGE_DIR_HOME + username
@@ -34,9 +34,9 @@ def create_user_directories(sender, user, **kwargs):
 
 @receiver(user_deleted)
 def remove_user_directories(sender, user, **kwargs):
-    '''
-    As soon as a user is deleted we can safely remove his home and public directory.
-    '''
+    """
+    When a user is deleted we can safely remove his home and public directory.
+    """
     if user is not None:
         username = user.get_username()
         home_dir = settings.STORAGE_DIR_HOME + username
@@ -73,11 +73,11 @@ def remove_user_directories(sender, user, **kwargs):
 #                 group_member_removed.send(sender=sender, group=group, users=[user], kwargs=kwargs)
 #
 #
-# '''
+# """
 #
 #     Calling custom signals
 #
-# '''
+# """
 #
 #
 # @receiver(m2m_changed, sender=User.groups.through)
@@ -88,13 +88,21 @@ def remove_user_directories(sender, user, **kwargs):
 #             user_modified.send(sender=sender, user=instance, fields=['groups'], kwargs=kwargs)
 #
 #
+
+
 @receiver(post_delete, sender=User)
 def post_delete_handler(sender, instance, **kwargs):
+    """
+    Method to map Django post_delete model signals to custom ones.
+    """
     user_deleted.send(sender=sender, user=instance, kwargs=kwargs)
 
 
 @receiver(post_save, sender=User)
 def post_save_handler(sender, instance, **kwargs):
+    """
+    Method to map Django post_save model signals to custom ones.
+    """
     if 'created' in kwargs and kwargs['created']:
         user_created.send(sender=sender, user=instance, kwargs=kwargs)
     else:

@@ -9,9 +9,9 @@ from ipynbsrv.core.signals.signals import share_created, share_modified, share_d
 
 @receiver(share_created)
 def create_share_directory(sender, share, **kwargs):
-    '''
+    """
     Signal receiver that creates the filesystem directory for a created share.
-    '''
+    """
     if share is not None:
         share_dir = settings.STORAGE_DIR_SHARES + share.name
         try:
@@ -26,9 +26,9 @@ def create_share_directory(sender, share, **kwargs):
 
 @receiver(share_deleted)
 def delete_share_directory(sender, share, **kwargs):
-    '''
+    """
     Signal receiver that deletes the filesystem directory for a removed share.
-    '''
+    """
     if share is not None:
         share_dir = settings.STORAGE_DIR_SHARES + share.name
         try:
@@ -48,11 +48,17 @@ def delete_share_directory(sender, share, **kwargs):
 
 @receiver(post_delete, sender=Share)
 def post_delete_handler(sender, instance, **kwargs):
+    """
+    Method to map Django post_delete model signals to custom ones.
+    """
     share_deleted.send(sender=sender, share=instance, kwargs=kwargs)
 
 
 @receiver(post_save, sender=Share)
 def post_save_handler(sender, instance, **kwargs):
+    """
+    Method to map Django post_save model signals to custom ones.
+    """
     if 'created' in kwargs and kwargs['created']:
         share_created.send(sender, share=instance, kwargs=kwargs)
     else:
