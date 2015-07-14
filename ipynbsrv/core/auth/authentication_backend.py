@@ -20,7 +20,7 @@ class IpynbsrvAuthentication(object):
         try:
             print("------------------------------")
             print("authenticate")
-            print("connect {0}@{1} mit Passwort {2}".format(username, user_be.server, password))
+            print("connect {0}@{1} mit Passwort".format(username, user_be.server))
 
             # open connection
             user_be.connect({
