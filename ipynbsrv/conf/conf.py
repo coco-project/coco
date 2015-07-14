@@ -39,10 +39,3 @@ Global variable storing the instance of the server selection algorithm to use.
 '''
 config.set('SERVER_SELECTION_ALGORITHM_CLASS', default='ipynbsrv.core.algorithms.server_selection.RoundRobin',
            editable=True, description='The full class path of the server selection algorithm class to use.')
-
-
-'''
-Global variable storing the last used uid for internal ldap users
-'''
-config.set('LAST_INTERNAL_LDAP_USER_ID', default=2500,
-           editable=False, description='The last unix user id used to store in the internal ldap.')
