@@ -19,20 +19,20 @@ STORAGE_BACKEND = _get_storage_backend()
 
 
 '''
-Global variables and functions returning the instance of the group backend to use.
+Global variables and functions returning the instance of the internal ldap.
 '''
-_GROUP_BACKEND = None
+_INTERNAL_LDAP = None
 
 
-def _get_group_backend():
-    global _GROUP_BACKEND
-    if _GROUP_BACKEND is None:
-        module, klass = ClassLoader.split(config.GROUP_BACKEND_CLASS)
-        cl = ClassLoader(module, klass, config.GROUP_BACKEND_ARGS)
-        _GROUP_BACKEND = cl.get_instance()
-    return _GROUP_BACKEND
+def _get_internal_ldap():
+    global _INTERNAL_LDAP
+    if _INTERNAL_LDAP is None:
+        module, klass = ClassLoader.split('ipynbsrv.backends.usergroup_backends.LdapBackend')
+        cl = ClassLoader(module, klass, config.INTERNAL_LDAP_ARGS)
+        _INTERNAL_LDAP = cl.get_instance()
+    return _INTERNAL_LDAP
 
-GROUP_BACKEND = _get_group_backend()
+INTERNAL_LDAP = _get_internal_ldap()
 
 
 '''

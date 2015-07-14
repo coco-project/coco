@@ -15,21 +15,16 @@ config.set('STORAGE_BASE_DIR', default='/srv/ipynbsrv/data/shares', editable=Fal
 
 
 '''
-Global variable storing the full class path of the group backend to use.
+Global variable storing the arguments for the internal ldap backend
 '''
-config.set('GROUP_BACKEND_CLASS', default='ipynbsrv.backends.usergroup_backends.LdapGroupBackend', editable=False,
-           description='The full class path of the group backend to use.')
+config.set('INTERNAL_LDAP_ARGS', default='{ "readonly" : False, "server": "localhost" , "user": "cn=admin,dc=ipynbsrv,dc=ldap" , "pw": "1234" }', editable=True,
+           description='The arguments needed to instantiate the internal ldap backend. Please provide in json format (i.e. { "arg1": "val1", "arg2": "val2" }')
 
-'''
-Global variable storing the arguments for the group backend
-'''
-config.set('GROUP_BACKEND_ARGS', default='{ "readonly" : False, "server": "localhost" , "user": "cn=admin,dc=ipynbsrv,dc=ldap" , "pw": "1234" }', editable=True,
-           description='The arguments needed to instantiate the provided group backend class. Please provide in json format (i.e. { "arg1": "val1", "arg2": "val2" }')
 
 '''
 Global variable storing the full class path of the user backend to use.
 '''
-config.set('USER_BACKEND_CLASS', default='ipynbsrv.backends.usergroup_backends.LdapUserBackend', editable=True,
+config.set('USER_BACKEND_CLASS', default='ipynbsrv.backends.usergroup_backends.LdapBackend', editable=True,
            description='The full class path of the user backend to use.')
 
 '''
@@ -44,3 +39,10 @@ Global variable storing the instance of the server selection algorithm to use.
 '''
 config.set('SERVER_SELECTION_ALGORITHM_CLASS', default='ipynbsrv.core.algorithms.server_selection.RoundRobin',
            editable=True, description='The full class path of the server selection algorithm class to use.')
+
+
+'''
+Global variable storing the last used uid for internal ldap users
+'''
+config.set('LAST_INTERNAL_LDAP_USER_ID', default=2500,
+           editable=False, description='The last unix user id used to store in the internal ldap.')
