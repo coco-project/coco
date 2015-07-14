@@ -32,3 +32,9 @@ STORAGE_DIR_PUBLIC = 'public/'
 Setting storing the path (relative to STORAGE_DIR_BASE) under which shared directories should be stored.
 '''
 STORAGE_DIR_SHARES = 'shares/'
+
+
+'''
+Setting storing the unix user ID offset to be added to internal ldap users
+'''
+UNIX_USER_OFFSET = 2500

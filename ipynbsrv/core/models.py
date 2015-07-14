@@ -255,8 +255,8 @@ class Server(models.Model):
 
 class PortMapping(models.Model):
     container = models.ForeignKey(Container)
-    internal = models.PositiveIntegerField(null=False, max_length=6)
-    external = models.PositiveIntegerField(unique=True, max_length=6)
+    internal = models.PositiveIntegerField(null=False)
+    external = models.PositiveIntegerField(unique=True)
 
     def __str__(self):
         return smart_unicode("{0} ({1} -> {2})".format(self.container.__str__, self.external, self.internal))
@@ -273,8 +273,9 @@ class Share(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=75)
     description = models.TextField(null=True, blank=True)
-    tags = models.ManyToManyField('Tag', null=True, blank=True)
+    tags = models.ManyToManyField('Tag', blank=True)
     owner = models.ForeignKey(User)
+    # TODO: use OneToOneField
     group = models.ForeignKey(Group, unique=True)
 
     '''

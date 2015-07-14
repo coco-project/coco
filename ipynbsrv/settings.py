@@ -101,7 +101,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 STATIC_URL = '/static/'
-
+STATIC_ROOT = 'static'
 
 # Messages
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-MESSAGE_TAGS
@@ -119,6 +119,6 @@ VARS_MODULE_PATH = 'ipynbsrv.conf.conf'
 
 
 AUTHENTICATION_BACKENDS = (
-    'ipynbsrv.backends.authentication_backends.LdapAuthentication',
+    'ipynbsrv.core.auth.authentication_backend.IpynbsrvAuthentication',
     'django.contrib.auth.backends.ModelBackend',
 )

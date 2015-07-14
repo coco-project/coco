@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.shortcuts import render, redirect
-from ipynbsrv.core.auth import login_allowed
+from ipynbsrv.core.auth.auth import login_allowed
 from ipynbsrv.core.models import Container, Image
 
 

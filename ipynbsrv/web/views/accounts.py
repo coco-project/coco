@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-from ipynbsrv.core.auth import login_allowed
+from ipynbsrv.core.auth.auth import login_allowed
 from ipynbsrv.web import settings
 
 
