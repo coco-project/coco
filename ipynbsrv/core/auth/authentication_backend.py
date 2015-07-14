@@ -45,8 +45,6 @@ class IpynbsrvAuthentication(object):
                         "uidNumber": str(settings.UNIX_USER_OFFSET + last_django_id)
                     }
 
-                    print("user_creation_fields: {}".format(user_creation_fields))
-
                     try:
                         print("-->try to get user from internal ldap")
                         internal_user_data = internal_ldap.get_user(username)
