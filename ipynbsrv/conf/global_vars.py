@@ -1,9 +1,10 @@
 from django_admin_conf_vars.global_vars import config
 from ipynbsrv.common.utils import ClassLoader
 
-'''
+
+"""
 Global variables and functions returning the instance of the storage backend to use.
-'''
+"""
 _STORAGE_BACKEND = None
 
 
