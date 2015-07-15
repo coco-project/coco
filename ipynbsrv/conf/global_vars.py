@@ -53,9 +53,9 @@ def _get_user_backend():
 USER_BACKEND = _get_user_backend()
 
 
-'''
+"""
 Global variables and functions returning the instance of the usergroup backend to use.
-'''
+"""
 _SERVER_SELECTION_ALGORITHM = None
 
 
