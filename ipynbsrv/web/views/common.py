@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.http.response import HttpResponse
 from django.shortcuts import render
-from ipynbsrv.core.auth.auth import login_allowed
+from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import Container, PortMapping
 from ipynbsrv.web import settings
 

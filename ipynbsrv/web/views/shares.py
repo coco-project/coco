@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import redirect, render
-from ipynbsrv.core.auth.auth import login_allowed
+from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import Share, Tag
 
 

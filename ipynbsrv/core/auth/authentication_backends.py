@@ -1,19 +1,25 @@
-from ipynbsrv.conf import global_vars
-from ipynbsrv.core.models import IpynbUser
-from ipynbsrv.core import settings
-from ipynbsrv.contract.errors import UserNotFoundError
-from django.contrib.auth.models import User
 from django_admin_conf_vars.global_vars import config
+from django.contrib.auth.models import User
+from ipynbsrv.conf import global_vars
+from ipynbsrv.contract.errors import UserNotFoundError
+from ipynbsrv.core.models import IpynbUser
 
 
 # TODO: make dynamic
-class IpynbsrvAuthentication(object):
-    def authenticate(self, username=None, password=None):
+class BackendProxyAuthentication(object):
 
+    """
+    TODO: write doc.
+    """
+
+    def authenticate(self, username=None, password=None):
+        """
+        TODO: write doc.
+        """
         # 1. check login credentials with user backend
-        user_be = global_vars._get_user_backend()
-        internal_ldap = global_vars._get_internal_ldap()
-        
+        user_be = global_vars.USER_BACKEND
+        internal_ldap = global_vars.INTERNAL_LDAP
+
         try:
             print("connect {0}@{1} mit Passwort {2}".format(username, user_be.server, password))
 
@@ -103,6 +109,9 @@ class IpynbsrvAuthentication(object):
         print "LDAP Authentication successful!"
 
     def get_user(self, user_id):
+        """
+        :inherit.
+        """
         # return ipynbuser for given id
         try:
             print("get user {}".format(user_id))
