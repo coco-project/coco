@@ -2,8 +2,8 @@ from django_admin_conf_vars.global_vars import config
 from django.contrib.auth.models import User
 from ipynbsrv.conf import global_vars
 from ipynbsrv.contract.errors import GroupNotFoundError, UserNotFoundError
-from ipynbsrv.core.models import IpynbUser
 from ipynbsrv.core import settings
+from ipynbsrv.core.models import BackendUser
 
 
 class BackendProxyAuthentication(object):
@@ -39,8 +39,8 @@ class BackendProxyAuthentication(object):
                 try:
                     user_data = user_be.get_user(username)
                     last_django_id = 0
-                    if IpynbUser.objects.count() > 0:
-                        last_django_id = IpynbUser.objects.latest('id').id
+                    if BackendUser.objects.count() > 0:
+                        last_django_id = BackendUser.objects.latest('id').id
 
                     uidNumber = settings.USER_ID_OFFSET + last_django_id
 
@@ -106,25 +106,25 @@ class BackendProxyAuthentication(object):
 
                 # 3. update django user
                 try:
-                    ipynbuser = IpynbUser.objects.get(identifier=username)
-                    print("ipynbuser exists {0}".format(ipynbuser.identifier))
-                    ipynbuser.user.username = username
-                    ipynbuser.user.save()
-                except IpynbUser.DoesNotExist:
+                    backend_user = BackendUser.objects.get(backend_pk=username)
+                    print("backend_user exists {0}".format(backend_user.backend_pk))
+                    backend_user.user.username = username
+                    backend_user.user.save()
+                except backend_user.DoesNotExist:
                     # Create a new user. Note that we can set password
                     # to anything, because it won't be checked;
                     try:
-                        print("ipynbuser does not exist {0}".format(username))
+                        print("backend_user does not exist {0}".format(username))
                         user_data = internal_ldap.get_user(username)
-                        ipynbuser = IpynbUser(identifier=username, home_directory=user_data['homeDirectory'][0])
-                        print("ipynbuser obj: {0}".format(ipynbuser))
+                        backend_user = BackendUser(backend_user=username)
+                        print("backend_user obj: {0}".format(backend_user))
                         user = User(username=username)
                         user.is_staff = False
                         user.is_superuser = False
                         print("user obj: {0}".format(user))
                         user.save()
-                        ipynbuser.user = User.objects.get(username=username)
-                        ipynbuser.save()
+                        backend_user.user = User.objects.get(username=username)
+                        backend_user.save()
                     except Exception as e:
                         print("not able to create ipynbuser")
                         print(e)
@@ -156,7 +156,7 @@ class BackendProxyAuthentication(object):
             # check if user exists on Ldap
             l = global_vars.INTERNAL_LDAP
             #l = global_vars._get_user_backend()
-            l.get_user(u.ipynbuser.identifier)
+            l.get_user(u.backenduser.identifier)
             print("user found {}".format(u))
             print("------------------------------")
             return u

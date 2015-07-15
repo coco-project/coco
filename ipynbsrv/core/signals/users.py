@@ -1,9 +1,9 @@
-from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_delete, post_save
 from ipynbsrv.conf.global_vars import STORAGE_BACKEND as storage_backend
 from ipynbsrv.contract.errors import StorageBackendError
 from ipynbsrv.core import settings
+from ipynbsrv.core.models import BackendUser
 from ipynbsrv.core.signals.signals import user_created, user_deleted, user_modified
 
 
@@ -90,7 +90,7 @@ def remove_user_directories(sender, user, **kwargs):
 #
 
 
-@receiver(post_delete, sender=User)
+@receiver(post_delete, sender=BackendUser)
 def post_delete_handler(sender, instance, **kwargs):
     """
     Method to map Django post_delete model signals to custom ones.
@@ -98,7 +98,7 @@ def post_delete_handler(sender, instance, **kwargs):
     user_deleted.send(sender=sender, user=instance, kwargs=kwargs)
 
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=BackendUser)
 def post_save_handler(sender, instance, **kwargs):
     """
     Method to map Django post_save model signals to custom ones.

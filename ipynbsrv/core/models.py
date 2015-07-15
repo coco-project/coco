@@ -58,6 +58,50 @@ class Backend(models.Model):
         unique_together = ('module', 'klass', 'arguments')
 
 
+class BackendGroup(models.Model):
+
+    """
+    TODO: brief summary.
+    """
+
+    group = models.OneToOneField(Group)
+    backend_pk = models.CharField(max_length=75, unique=True, help_text='Unique identifier used by the group backend for this group')
+
+    def __str__(self):
+        """
+        :inherit.
+        """
+        return smart_unicode(self.group.__str__())
+
+    def __unicode__(self):
+        """
+        :inherit.
+        """
+        return self.__str__()
+
+
+class BackendUser(models.Model):
+
+    """
+    TODO: brief summary.
+    """
+
+    user = models.OneToOneField(User)
+    backend_pk = models.CharField(max_length=75, unique=True, help_text='Unique identifier for this user used by the user backend')
+
+    def __str__(self):
+        """
+        :inherit.
+        """
+        return smart_unicode(self.user.__str__())
+
+    def __unicode__(self):
+        """
+        :inherit.
+        """
+        return self.__str__()
+
+
 class Container(models.Model):
 
     """
@@ -405,53 +449,6 @@ class Tag(models.Model):
         :inherit.
         """
         return smart_unicode(self.label)
-
-    def __unicode__(self):
-        """
-        :inherit.
-        """
-        return self.__str__()
-
-
-class IpynbUser(models.Model):
-
-    """
-    TODO: brief summary.
-    """
-
-    user = models.OneToOneField(User)
-    identifier = models.CharField(max_length=75, unique=True, help_text='Unique identifier in usergroup backend')
-    home_directory = models.CharField(max_length=255, unique=True, help_text='Home directory of the user to store data')
-    additional_data = models.CharField(max_length=255, help_text='Here you can add any additional information that may be needed for your Usergroup Backend')
-
-    def __str__(self):
-        """
-        :inherit.
-        """
-        return smart_unicode(self.identifier)
-
-    def __unicode__(self):
-        """
-        :inherit.
-        """
-        return self.__str__()
-
-
-class IpynbGroup(models.Model):
-
-    """
-    TODO: brief summary.
-    """
-
-    group = models.OneToOneField(Group)
-    identifier = models.CharField(max_length=75, unique=True, help_text='Unique identifier in usergroup backend')
-    additional_data = models.CharField(max_length=255, help_text='Here you can add any additional information that may be needed for your Usergroup Backend')
-
-    def __str__(self):
-        """
-        :inherit.
-        """
-        return smart_unicode(self.identifier)
 
     def __unicode__(self):
         """
