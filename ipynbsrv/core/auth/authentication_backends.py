@@ -1,8 +1,10 @@
 from django_admin_conf_vars.global_vars import config
 from django.contrib.auth.models import User
 from ipynbsrv.conf import global_vars
-from ipynbsrv.contract.errors import UserNotFoundError
+from ipynbsrv.contract.errors import GroupNotFoundError, UserNotFoundError
 from ipynbsrv.core.models import IpynbUser
+from ipynbsrv.core import settings
+
 
 class BackendProxyAuthentication(object):
 
@@ -40,15 +42,18 @@ class BackendProxyAuthentication(object):
                     if IpynbUser.objects.count() > 0:
                         last_django_id = IpynbUser.objects.latest('id').id
 
+                    uidNumber = settings.USER_ID_OFFSET + last_django_id
+
                     user_creation_fields = {
                         "username": str(username),
                         "password": str(password),
-                        "uidNumber": str(settings.UNIX_USER_OFFSET + last_django_id)
+                        "uidNumber": str(uidNumber)
                     }
 
+                    # create user
                     try:
                         print("-->try to get user from internal ldap")
-                        internal_user_data = internal_ldap.get_user(username)
+                        internal_ldap.get_user(username)
                         # update the stored password
                         # TODO: no plaintext! use md5 or similar
                         internal_ldap.set_user_password(str(username), str(password))
@@ -61,6 +66,30 @@ class BackendProxyAuthentication(object):
                             internal_ldap.create_user(user_creation_fields)
                         except Exception as e:
                             print("error creating internal ldap user")
+                            print(e)
+                            raise(e)
+                    except Exception as e:
+                        print("some other error")
+                        print(e)
+                        raise(e)
+
+                    # create group
+                    try:
+                        print("-->try to get group from internal ldap")
+                        internal_ldap.get_group(username)
+                    except GroupNotFoundError as e:
+                        # if the user is not already in the internal ldap, create it
+                        # save linux user id using an offset
+                        print("group not found on internal ldap")
+                        try:
+                            group_creation_fields = {
+                                "groupname": str(username),
+                                "memberUid": str(username),
+                                "gidNumber": str(uidNumber)
+                            }
+                            internal_ldap.create_group(group_creation_fields)
+                        except Exception as e:
+                            print("error creating internal ldap group")
                             print(e)
                             raise(e)
                     except Exception as e:

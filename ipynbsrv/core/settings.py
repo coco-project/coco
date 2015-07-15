@@ -7,6 +7,11 @@ STORAGE_DIR_SHARES = 'shares/'
 
 
 '''
-Setting storing the unix user ID offset to be added to internal ldap users
+Setting storing the user ID offset to be added to internal ldap users
 '''
-UNIX_USER_OFFSET = 2500
+USER_ID_OFFSET = 2500
+
+'''
+Setting storing the group ID offset to be added to internal ldap users
+'''
+GROUP_ID_OFFSET = 2500
