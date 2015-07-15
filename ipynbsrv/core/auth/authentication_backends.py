@@ -51,13 +51,15 @@ class BackendProxyAuthentication(object):
                 return None
         except AuthenticationError:
             # check if username exists on user backend
-            # if not, delete zombie accounts on internal ldap & django
-            self.delete_user_completely(username)
+            # if not, delete zombie accounts on internal ldap & django           
+            try:
+                global_vars.USER_BACKEND.get_user(username)
+            except UserNotFoundError:
+                self.delete_user_completely(username)
 
         except ConnectionError:
             # server not available 
             return None
-
 
     def get_user(self, user_id):
 
@@ -85,10 +87,9 @@ class BackendProxyAuthentication(object):
         TODO: delete shares & containers
         """
         try:
-            global_vars.USER_BACKEND.get_user(username)
-        except UserNotFoundError:
+            # delete user on internal ldap server
             global_vars.INTERNAL_LDAP.delete_user(username)
-        try:
+
             # search for BackendUser objects, to not mistakenly delete regular django superusers
             u = BackendUser.objects.get(backend_pk=username)
             u.user.delete()
