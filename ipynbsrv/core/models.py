@@ -458,4 +458,3 @@ class Tag(models.Model):
 
 
 # make sure our signal receivers are loaded
-from ipynbsrv.core.signals import shares, users
