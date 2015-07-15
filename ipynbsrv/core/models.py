@@ -460,5 +460,5 @@ class IpynbGroup(models.Model):
         return self.__str__()
 
 
-# make sure out signal receivers are loaded
+# make sure our signal receivers are loaded
 from ipynbsrv.core.signals import shares, users
