@@ -89,7 +89,9 @@ class BackendProxyAuthentication(object):
         except UserNotFoundError:
             global_vars.INTERNAL_LDAP.delete_user(username)
         try:
-            u = User.objects.get(username=username)
+            # search for BackendUser objects, to not mistakenly delete regular django superusers
+            u = BackendUser.objects.get(backend_pk=username)
+            u.user.delete()
             u.delete()
         except:
             pass
