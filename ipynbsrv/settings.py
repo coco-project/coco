@@ -119,6 +119,6 @@ VARS_MODULE_PATH = 'ipynbsrv.conf.conf'
 
 
 AUTHENTICATION_BACKENDS = (
-    'ipynbsrv.core.auth.authentication_backend.IpynbsrvAuthentication',
+    'ipynbsrv.core.auth.authentication_backends.BackendProxyAuthentication',
     'django.contrib.auth.backends.ModelBackend',
 )
