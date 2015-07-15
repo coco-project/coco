@@ -14,15 +14,8 @@ config.set('STORAGE_BASE_DIR', default='/srv/ipynbsrv/data', editable=False,
 """
 Global variable storing the arguments for the internal ldap backend
 """
-config.set('INTERNAL_LDAP_ARGS', default='{ "readonly" : False, "server": "localhost" , "user": "cn=admin,dc=ipynbsrv,dc=ldap" , "pw": "1234" }', editable=True,
+config.set('INTERNAL_LDAP_ARGS', default='{ "readonly" : False, "server": "ipynbsrv_ldap" , "user": "cn=admin,dc=ipynbsrv,dc=ldap" , "pw": "123456" }', editable=True,
            description='The arguments needed to instantiate the internal ldap backend. Please provide in json format (i.e. { "arg1": "val1", "arg2": "val2" }')
-
-
-"""
-Global variable storing the last used uid for internal ldap users
-"""
-config.set('LAST_INTERNAL_LDAP_USER_ID', default=2500,
-           editable=False, description='The last unix user id used to store in the internal ldap.')
 
 
 """

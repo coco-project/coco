@@ -47,7 +47,9 @@ class BackendProxyAuthentication(object):
                     user_creation_fields = {
                         "username": str(username),
                         "password": str(password),
-                        "uidNumber": str(uidNumber)                    }
+                        "uidNumber": str(uidNumber),
+                        "homeDirectory": str('/home/'.format(username)),
+                    }
 
                     # create user
                     try:
