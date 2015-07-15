@@ -48,7 +48,7 @@ class BackendProxyAuthentication(object):
                         "username": str(username),
                         "password": str(password),
                         "uidNumber": str(uidNumber),
-                        "homeDirectory": str('/home/'.format(username)),
+                        "homeDirectory": str('/home/'+ username),
                     }
 
                     # create user
@@ -115,8 +115,7 @@ class BackendProxyAuthentication(object):
                     # to anything, because it won't be checked;
                     try:
                         print("ipynbuser does not exist {0}".format(username))
-                        user_data = user_be.get_user(username)
-                        print("ldap lookup: {0}".format(user_data))
+                        user_data = internal_ldap.get_user(username)
                         ipynbuser = IpynbUser(identifier=username, home_directory=user_data['homeDirectory'][0])
                         print("ipynbuser obj: {0}".format(ipynbuser))
                         user = User(username=username)
