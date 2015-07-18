@@ -38,11 +38,12 @@ config.set('USER_BACKEND_CLASS',
            description='The full class path of the user backend to use.')
 
 config.set('USER_BACKEND_ARGS',
-           default='{ "readonly" : False, "server": "localhost" , "user": "cn=admin,dc=ipynbsrv,dc=ldap" , "pw": "1234" }', editable=True,
+           default='{"server": "ipynbsrv_ldap", "base_dn": "dc=ipynbsrv,dc=ldap", "users_ou": "users", "groups_ou": "groups"}',
+           editable=True,
            description='The arguments needed to instantiate the provided user backend class. Please provide in json format (i.e. { "arg1": "val1", "arg2": "val2" }')
 
 config.set('USER_BACKEND_CONNECT_CREDENTIALS',
-           default='{"username": "%username%", password: "%password"}',
+           default='{"dn": "cn=admin,dc=ipynbsrv,dc=ldap", password: "123456"}',
            editable=True,
            description='The credentials used to establish a connection to the user backend. Use %username% and %password% for the credentials of the currently authenticating user.')
 

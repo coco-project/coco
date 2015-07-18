@@ -48,6 +48,7 @@ class BackendProxyAuthentication(object):
                 username = user.backenduser.backend_pk
 
         try:
+            internal_ldap.connect(json.loads(config.INTERNAL_LDAP_CONNECT_CREDENTIALS))
             user_backend.connect(json.loads(
                 self.get_interpolated_connect_credentials(username, password)
             ))
@@ -67,11 +68,12 @@ class BackendProxyAuthentication(object):
                 # TODO: does it remove his groups?
                 user.delete()
         except ConnectionError as ex:
-            logger.error("User backend connection error.")
+            logger.error("Backend connection error.")
             logger.exception(ex)
             return None
         finally:  # close backend connection
             try:
+                internal_ldap.disconnect()
                 user_backend.disconnect()
             except:
                 pass
