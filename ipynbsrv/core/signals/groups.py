@@ -19,6 +19,7 @@ def delete_group_on_internal_ldap(sender, group, **kwargs):
         internal_ldap = get_internal_ldap_connected()
         try:
             internal_ldap.delete_group(group.backend_pk)
+            group.django_group.delete()
         except GroupNotFoundError:
             pass  # already deleted
         finally:

@@ -19,10 +19,28 @@ class Backend(models.Model):
     CONTAINER_BACKEND = 'container_backend'
 
     """
+    String to identify a backend of kind 'group backend'.
+    """
+    GROUP_BACKEND = 'group_backend'
+
+    """
+    String to identify a backend of kind 'storage backend'.
+    """
+    STORAGE_BACKEND = 'storage_backend'
+
+    """
+    String to identify a backend of kind 'user backend'.
+    """
+    USER_BACKEND = 'user_backend'
+
+    """
     List of pluggable backends.
     """
     BACKEND_KINDS = [
         (CONTAINER_BACKEND, 'Container backend'),
+        (GROUP_BACKEND, 'Group backend'),
+        (STORAGE_BACKEND, 'Storage backend'),
+        (USER_BACKEND, 'User backend'),
     ]
 
     id = models.AutoField(primary_key=True)
@@ -69,13 +87,13 @@ class BackendGroup(models.Model):
     """
 
     backend_pk = models.CharField(max_length=150, unique=True, help_text='Unique identifier for this group used by the backend.')
-    group = models.OneToOneField(Group, related_name='backend_group', help_text='The regular Django group this backend group is associated with.')
+    django_group = models.OneToOneField(Group, related_name='backend_group', help_text='The regular Django group this backend group is associated with.')
 
     def __str__(self):
         """
         :inherit.
         """
-        return smart_unicode(self.group.__str__())
+        return smart_unicode(self.djangp_group.__str__())
 
     def __unicode__(self):
         """
@@ -95,14 +113,14 @@ class BackendUser(models.Model):
     """
 
     backend_pk = models.CharField(max_length=150, unique=True, help_text='Unique identifier for this user used by the backend.')
-    group = models.OneToOneField('BackendGroup', related_name='user', help_text='The primary backend group this user belongs to.')
-    user = models.OneToOneField(User, related_name='backend_user', help_text='The regular Django user this backend user is associated with.')
+    django_user = models.OneToOneField(User, related_name='backend_user', help_text='The regular Django user this backend user is associated with.')
+    primary_group = models.OneToOneField('BackendGroup', related_name='primary_user', help_text='The primary backend group this user belongs to.')
 
     def __str__(self):
         """
         :inherit.
         """
-        return smart_unicode(self.user.__str__())
+        return smart_unicode(self.django_user.__str__())
 
     def __unicode__(self):
         """
@@ -323,7 +341,6 @@ class Server(models.Model):
         Get the container_backend_args value with placeholders/variables replaced with their actual value.
         """
         if self.container_backend_args:
-            # TODO: line breaks
             return self.container_backend_args.replace('%name%', self.name).replace('%hostname%', self.hostname).replace('%internal_ip%', self.internal_ip).replace('%external_ip%', self.external_ip)
         return None
 

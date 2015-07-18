@@ -18,7 +18,7 @@ def create_user_directories(sender, user, **kwargs):
     Every user needs his home and public directories, so we create them here.
     """
     if user is not None:
-        username = user.user.get_username()
+        username = user.django_user.get_username()
         # home directory
         home_dir = settings.STORAGE_DIR_HOME + username
         if not storage_backend.dir_exists(home_dir):
@@ -39,7 +39,7 @@ def create_user_directories(sender, user, **kwargs):
             try:
                 storage_backend.mk_dir(public_dir)
                 storage_backend.set_dir_owner(public_dir, user.backend_pk)
-                # storage_backend.set_dir_group(public_dir, user.backend_pk)
+                storage_backend.set_dir_group(public_dir, user.backend_pk)
                 storage_backend.set_dir_mode(public_dir, 0755)
             except StorageBackendError as ex:
                 raise ex
@@ -58,7 +58,8 @@ def delete_user_on_internal_ldap(sender, user, **kwargs):
         internal_ldap = get_internal_ldap_connected()
         try:
             internal_ldap.delete_user(user.backend_pk)
-            user.group.delete()
+            user.django_user.delete()
+            user.primary_group.delete()
         except UserNotFoundError:
             pass  # already deleted
         finally:
@@ -74,7 +75,7 @@ def remove_user_directories(sender, user, **kwargs):
     When a user is deleted we can safely remove his home and public directory.
     """
     if user is not None:
-        username = user.user.get_username()
+        username = user.django_user.get_username()
         # home directory
         home_dir = settings.STORAGE_DIR_HOME + username
         if storage_backend.dir_exists(home_dir):

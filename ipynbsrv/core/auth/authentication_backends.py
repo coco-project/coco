@@ -51,10 +51,13 @@ class BackendProxyAuthentication(object):
             else:  # new user
                 uid = self.generate_internal_uid()
                 # create internal LDAP records
+                # TODO: actions on external resources/backends should be placed
+                # in signals? The following two statements as well...
                 ldap_group = internal_ldap.create_group({
                     'groupname': username,
                     'gidNumber': uid
                 })
+                print ldap_group
                 ldap_user = internal_ldap.create_user({
                     'username': username,
                     'password': make_password(password),
@@ -80,7 +83,7 @@ class BackendProxyAuthentication(object):
             logger.error("Backend connection error.")
             logger.exception(ex)
             return None
-        finally:  # close backend connection
+        finally:
             try:
                 internal_ldap.disconnect()
                 user_backend.disconnect()
@@ -94,7 +97,7 @@ class BackendProxyAuthentication(object):
         """
         group = Group(name=groupname)
         group.save()
-        backend_group = BackendGroup(backend_pk=backend_pk, group=group)
+        backend_group = BackendGroup(backend_pk=backend_pk, django_group=group)
         backend_group.save()
         return group
 
@@ -105,7 +108,7 @@ class BackendProxyAuthentication(object):
         """
         user = User(username=username)
         user.save()
-        backend_user = BackendUser(backend_pk=backend_pk, group=group, user=user)
+        backend_user = BackendUser(backend_pk=backend_pk, django_user=user, primary_group=group)
         backend_user.save()
         return user
 
