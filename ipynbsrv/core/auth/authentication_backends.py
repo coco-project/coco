@@ -107,6 +107,7 @@ class BackendProxyAuthentication(object):
             'username': username,
             'password': make_password(password),
             'uidNumber': uidNumber,
+            'gidNumber': uidNumber,
             'homeDirectory': '/home/' + username
         })
 
