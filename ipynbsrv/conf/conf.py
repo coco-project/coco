@@ -43,7 +43,7 @@ config.set('USER_BACKEND_ARGS',
            description='The arguments needed to instantiate the provided user backend class. Please provide in json format (i.e. { "arg1": "val1", "arg2": "val2" }')
 
 config.set('USER_BACKEND_CONNECT_CREDENTIALS',
-           default='{"dn": "cn=admin,dc=ipynbsrv,dc=ldap", password: "123456"}',
+           default='{"dn": "cn=admin,dc=ipynbsrv,dc=ldap", "password": "123456"}',
            editable=True,
            description='The credentials used to establish a connection to the user backend. Use %username% and %password% for the credentials of the currently authenticating user.')
 
