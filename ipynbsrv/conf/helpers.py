@@ -17,7 +17,7 @@ def get_user_backend_connected(username=None, password=None):
     return user_backend
 
 
-def get_interpolated_user_backend_connect_credentials(self, username, password):
+def get_interpolated_user_backend_connect_credentials(username, password):
     """
     Return the interpolated credentials to connect to the user backend.
     """
