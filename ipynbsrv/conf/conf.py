@@ -19,7 +19,7 @@ config.set('STORAGE_BASE_DIR',
 Global variable storing the arguments for the internal ldap backend
 """
 config.set('INTERNAL_LDAP_ARGS',
-           default='{"server": "ipynbsrv_ldap", "base_dn": "dc=ipynbsrv,dc=ldap", "users_ou": "users", "groups_ou": "groups"}',
+           default='{"server": "ipynbsrv_ldap", "base_dn": "dc=ipynbsrv,dc=ldap", "users_dn": "ou=users", "groups_dn": "ou=groups"}',
            editable=True,
            description='The arguments needed to instantiate the internal LDAP backend. Please provide in JSON format (i.e. { "arg1": "val1", "arg2": "val2" }')
 
@@ -38,7 +38,7 @@ config.set('USER_BACKEND_CLASS',
            description='The full class path of the user backend to use.')
 
 config.set('USER_BACKEND_ARGS',
-           default='{"server": "ipynbsrv_ldap", "base_dn": "dc=ipynbsrv,dc=ldap", "users_ou": "users", "groups_ou": "groups"}',
+           default='{"server": "ipynbsrv_ldap", "base_dn": "dc=ipynbsrv,dc=ldap", "users_dn": "ou=users"}',
            editable=True,
            description='The arguments needed to instantiate the provided user backend class. Please provide in json format (i.e. { "arg1": "val1", "arg2": "val2" }')
 
