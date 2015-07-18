@@ -53,8 +53,12 @@ class BackendProxyAuthentication(object):
                 return user
             else:  # new user
                 uid = self.generate_internal_uid()
+                # create internal LDAP user/group
                 ldap_user = self.create_internal_ldap_user(username, password, uid)
-                self.create_internal_ldap_group(username, uid)
+                ldap_group = self.create_internal_ldap_group(username, uid)
+                # add user to created group
+                internal_ldap.add_group_member(ldap_group.get(GroupBackend.FIELD_PK), ldap_user.get(UserBackend.FIELD_PK))
+                # return the logged in Django user
                 return self.create_django_user(username, ldap_user.get(UserBackend.FIELD_PK))
         except AuthenticationError:
             return None
@@ -92,8 +96,7 @@ class BackendProxyAuthentication(object):
         """
         return internal_ldap.create_group({
             'groupname': name,
-            'gidNumber': gidNumber,
-            'memberUid': name
+            'gidNumber': gidNumber
         })
 
     def create_internal_ldap_user(self, username, password, uidNumber):
