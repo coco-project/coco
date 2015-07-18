@@ -8,6 +8,6 @@ def login_allowed(user):
     We do not want to allow non-UserBackend users to access the application
     (because we need the LDAP entry for the shares etc.) so we check that here.
     """
-    if user is None:
+    if user is None or user.get_username() is None:
         return False
     return BackendUser.objects.filter(user=user).exists()
