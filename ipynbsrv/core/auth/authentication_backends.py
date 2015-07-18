@@ -41,11 +41,11 @@ class BackendProxyAuthentication(object):
         user = None
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
-            if user.backenduser is None:
+            if not BackendUser.objects.filter(user=user).exists():
                 # TODO: raise PermissionDenied?
                 return None  # not allowed, Django only user
             else:
-                username = user.backenduser.backend_pk
+                username = BackendUser.objects.filter(user=user).first().backend_pk
 
         try:
             internal_ldap.connect(json.loads(config.INTERNAL_LDAP_CONNECT_CREDENTIALS))
