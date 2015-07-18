@@ -31,7 +31,7 @@ config.set('INTERNAL_LDAP_ARGS',
 config.set('INTERNAL_LDAP_CONNECT_CREDENTIALS',
            default='{"dn": "cn=admin,dc=ipynbsrv,dc=ldap", "password": "123456"}',
            editable=True,
-           description='The credentials used to establish a connection to the user backend. Use %username% and %password% for the credentials of the currently authenticating user.')
+           description='The credentials used to establish a connection to the user backend.')
 
 
 """
@@ -50,7 +50,7 @@ config.set('USER_BACKEND_ARGS',
 config.set('USER_BACKEND_CONNECT_CREDENTIALS',
            default='{"dn": "cn=admin,dc=ipynbsrv,dc=ldap", "password": "123456"}',
            editable=True,
-           description='The credentials used to establish a connection to the user backend. Use %username% and %password% for the credentials of the currently authenticating user.')
+           description='The credentials used to establish a connection to the user backend.')
 
 
 """

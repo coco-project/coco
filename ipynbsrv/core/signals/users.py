@@ -58,6 +58,7 @@ def delete_user_on_internal_ldap(sender, user, **kwargs):
         internal_ldap = get_internal_ldap_connected()
         try:
             internal_ldap.delete_user(user.backend_pk)
+            user.group.delete()
         except UserNotFoundError:
             pass  # already deleted
         finally:

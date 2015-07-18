@@ -33,7 +33,7 @@ def post_delete_handler(sender, instance, **kwargs):
     """
     Method to map Django post_delete model signals to custom ones.
     """
-    group_deleted.send(sender=sender, user=instance, kwargs=kwargs)
+    group_deleted.send(sender=sender, group=instance, kwargs=kwargs)
 
 
 @receiver(post_save, sender=BackendGroup)
@@ -42,6 +42,6 @@ def post_save_handler(sender, instance, **kwargs):
     Method to map Django post_save model signals to custom ones.
     """
     if 'created' in kwargs and kwargs['created']:
-        group_created.send(sender=sender, user=instance, kwargs=kwargs)
+        group_created.send(sender=sender, group=instance, kwargs=kwargs)
     else:
-        group_modified.send(sender=sender, user=instance, fields=kwargs['update_fields'], kwargs=kwargs)
+        group_modified.send(sender=sender, group=instance, fields=kwargs['update_fields'], kwargs=kwargs)

@@ -17,22 +17,13 @@ def get_user_backend():
     return _USER_BACKEND.get_instance()
 
 
-def get_user_backend_connected(username=None, password=None):
+def get_user_backend_connected():
     """
     Return the user backend instance with already called `connect` method.
     """
     backend = get_user_backend()
-    backend.connect(json.loads(
-        get_interpolated_user_backend_connect_credentials(username, password)
-    ))
+    backend.connect(json.loads(config.USER_BACKEND_CONNECT_CREDENTIALS))
     return backend
-
-
-def get_interpolated_user_backend_connect_credentials(username, password):
-    """
-    Return the interpolated credentials to connect to the user backend.
-    """
-    return config.USER_BACKEND_CONNECT_CREDENTIALS.replace('%username%', username).replace('%password%', password)
 
 
 """

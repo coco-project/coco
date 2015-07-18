@@ -61,11 +61,15 @@ class Backend(models.Model):
 class BackendGroup(models.Model):
 
     """
-    TODO: brief summary.
+    The BackendGroup model is used to represent external backend groups.
+
+    It is used to create Django records for internal LDAP server groups to we can work
+    with them like with any other Django objects, without having to worry about the fact
+    that there's a server behind.
     """
 
-    group = models.OneToOneField(Group)
-    backend_pk = models.CharField(max_length=75, unique=True, help_text='Unique identifier used by the group backend for this group')
+    backend_pk = models.CharField(max_length=150, unique=True, help_text='Unique identifier for this group used by the backend.')
+    group = models.OneToOneField(Group, related_name='backend_group', help_text='The regular Django group this backend group is associated with.')
 
     def __str__(self):
         """
@@ -83,11 +87,16 @@ class BackendGroup(models.Model):
 class BackendUser(models.Model):
 
     """
-    TODO: brief summary.
+    The BackendUser model is used to represent external backend users.
+
+    It is used to create Django records for internal LDAP server users to we can work
+    with them like with any other Django objects, without having to worry about the fact
+    that there's a server behind.
     """
 
-    user = models.OneToOneField(User)
-    backend_pk = models.CharField(max_length=75, unique=True, help_text='Unique identifier for this user used by the user backend')
+    backend_pk = models.CharField(max_length=150, unique=True, help_text='Unique identifier for this user used by the backend.')
+    group = models.OneToOneField('BackendGroup', related_name='user', help_text='The primary backend group this user belongs to.')
+    user = models.OneToOneField(User, related_name='backend_user', help_text='The regular Django user this backend user is associated with.')
 
     def __str__(self):
         """

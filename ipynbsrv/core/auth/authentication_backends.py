@@ -11,7 +11,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# TODO: internal LDAP connect/disconnect
 class BackendProxyAuthentication(object):
 
     """
@@ -37,17 +36,14 @@ class BackendProxyAuthentication(object):
         user = None
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
-            if not BackendUser.objects.filter(user=user).exists():
-                # TODO: raise PermissionDenied?
+            if not hasattr(user, 'backend_user'):
                 return None  # not allowed, Django only user
             else:
-                username = BackendUser.objects.filter(user=user).first().backend_pk
+                username = user.backend_user.backend_pk
 
-        internal_ldap = None
-        user_backend = None
+        internal_ldap = get_internal_ldap_connected()
+        user_backend = get_user_backend_connected()
         try:
-            internal_ldap = get_internal_ldap_connected()
-            user_backend = get_user_backend_connected(username, password)
             user_backend.auth_user(username, password)
             if user is not None:  # existing user
                 internal_ldap.set_user_credential(username, make_password(password))
@@ -55,6 +51,10 @@ class BackendProxyAuthentication(object):
             else:  # new user
                 uid = self.generate_internal_uid()
                 # create internal LDAP records
+                ldap_group = internal_ldap.create_group({
+                    'groupname': username,
+                    'gidNumber': uid
+                })
                 ldap_user = internal_ldap.create_user({
                     'username': username,
                     'password': make_password(password),
@@ -62,16 +62,13 @@ class BackendProxyAuthentication(object):
                     'gidNumber': uid,
                     'homeDirectory': '/home/' + username
                 })
-                ldap_group = internal_ldap.create_group({
-                    'groupname': username,
-                    'gidNumber': uid
-                })
                 # add user to group
                 internal_ldap.add_group_member(ldap_group.get(GroupBackend.FIELD_PK), ldap_user.get(UserBackend.FIELD_PK))
                 # create Django records
-                user = self.create_django_user(username, ldap_user.get(UserBackend.FIELD_PK))
-                group = self.create_django_group(user, ldap_group.get(GroupBackend.FIELD_PK))
+                group = self.create_django_group(username, ldap_group.get(GroupBackend.FIELD_PK))
+                user = self.create_django_user(username, ldap_user.get(UserBackend.FIELD_PK), group.backend_group)
                 # add user to group
+                user.backend_user.save()
                 group.user_set.add(user)
                 return user
         except AuthenticationError:
@@ -79,7 +76,6 @@ class BackendProxyAuthentication(object):
         except UserNotFoundError:
             if user is not None:  # exists locally but not on backend
                 user.delete()
-                # TODO: remove group as well
         except ConnectionError as ex:
             logger.error("Backend connection error.")
             logger.exception(ex)
@@ -102,14 +98,14 @@ class BackendProxyAuthentication(object):
         backend_group.save()
         return group
 
-    def create_django_user(self, username, backend_pk):
+    def create_django_user(self, username, backend_pk, group):
         """
         Create a django user (`ipynbsrv.core.models.BackendUser`) for `username`.
         This is needed to allow a more simple user management directly in Django.
         """
         user = User(username=username)
         user.save()
-        backend_user = BackendUser(backend_pk=backend_pk, user=user)
+        backend_user = BackendUser(backend_pk=backend_pk, group=group, user=user)
         backend_user.save()
         return user
 
