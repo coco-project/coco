@@ -10,4 +10,8 @@ def login_allowed(user):
     """
     if user is None or user.get_username() is None:
         return False
-    return BackendUser.objects.filter(user=user).exists()
+    try:
+        # FIXME: try/except because it raises some strange error
+        return BackendUser.objects.filter(user=user).exists()
+    except:
+        return False

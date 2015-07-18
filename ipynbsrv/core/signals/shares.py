@@ -1,10 +1,13 @@
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from ipynbsrv.conf.global_vars import STORAGE_BACKEND as storage_backend
+from ipynbsrv.conf.helpers import get_storage_backend
 from ipynbsrv.contract.errors import StorageBackendError
 from ipynbsrv.core import settings
 from ipynbsrv.core.models import Share
 from ipynbsrv.core.signals.signals import share_created, share_modified, share_deleted
+
+
+storage_backend = get_storage_backend()
 
 
 @receiver(share_created)

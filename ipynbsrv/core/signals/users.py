@@ -1,6 +1,6 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_delete, post_save
-from ipynbsrv.conf import global_vars
+from ipynbsrv.conf.helpers import get_storage_backend
 from ipynbsrv.contract.errors import StorageBackendError
 from ipynbsrv.core import settings
 from ipynbsrv.core.models import BackendUser
@@ -8,9 +8,8 @@ from ipynbsrv.core.signals.signals import user_created, user_deleted, user_modif
 import logging
 
 
-internal_ldap = global_vars.INTERNAL_LDAP
 logger = logging.getLogger(__name__)
-storage_backend = global_vars.STORAGE_BACKEND
+storage_backend = get_storage_backend()
 
 
 @receiver(user_created)
@@ -50,32 +49,6 @@ def create_user_directories(sender, user, **kwargs):
                 raise ex
         else:
             logger.warn("Public directory for user %s already exists." % username)
-
-
-@receiver(user_deleted)
-def remove_internal_ldap_user(sender, user, **kwargs):
-    """
-    Upon user deletion, we need to cleanup the internal LDAP server.
-    """
-    if user is not None:
-        # LDAP group
-        if internal_ldap.group_exists(user.group.backend_pk):
-            try:
-                internal_ldap.delete_group(user.group.backend_pk)
-            except Exception as ex:
-                # TODO: error handling
-                raise ex
-        else:
-            logger.warn("Internal LDAP group %s does not exist." % user.group)
-        # LDAP user
-        if internal_ldap.user_exists(user.backend_pk):
-            try:
-                internal_ldap.delete_user(user.backend_pk)
-            except Exception as ex:
-                # TODO: error handling
-                raise ex
-        else:
-            logger.warn("Internal LDAP user %s does not exist." % user.get_username())
 
 
 @receiver(user_deleted)

@@ -1,7 +1,7 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from ipynbsrv.conf.helpers import *
-from ipynbsrv.contract.backends import UserBackend
+from ipynbsrv.contract.backends import GroupBackend, UserBackend
 from ipynbsrv.contract.errors import *
 from ipynbsrv.core import settings
 from ipynbsrv.core.models import BackendUser
@@ -122,3 +122,12 @@ class BackendProxyAuthentication(object):
         if BackendUser.objects.count() > 0:
             last_django_id = BackendUser.objects.latest('id').id
         return settings.USER_ID_OFFSET + last_django_id
+
+    def get_user(self, user_id):
+        """
+        :inherit
+        """
+        try:
+            return User.objects.get(pk=user_id)
+        except Exception:
+            return None
