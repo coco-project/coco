@@ -4,28 +4,47 @@ from django_admin_conf_vars.global_vars import config
 """
 Storage backend related configuration options.
 """
-config.set('STORAGE_BACKEND_CLASS', default='ipynbsrv.backends.storage_backends.LocalFileSystem',
-           editable=False, description='The full class path of the storage backend to use.')
+config.set('STORAGE_BACKEND_CLASS',
+           default='ipynbsrv.backends.storage_backends.LocalFileSystem',
+           editable=False,
+           description='The full class path of the storage backend to use.')
 
-config.set('STORAGE_BASE_DIR', default='/srv/ipynbsrv/data', editable=False,
+config.set('STORAGE_BASE_DIR',
+           default='/srv/ipynbsrv/data',
+           editable=False,
            description='The base directory/path in which the storage backend should work.')
 
 
 """
 Global variable storing the arguments for the internal ldap backend
 """
-config.set('INTERNAL_LDAP_ARGS', default='{ "readonly" : False, "server": "ipynbsrv_ldap" , "user": "cn=admin,dc=ipynbsrv,dc=ldap" , "pw": "123456" }', editable=True,
-           description='The arguments needed to instantiate the internal ldap backend. Please provide in json format (i.e. { "arg1": "val1", "arg2": "val2" }')
+config.set('INTERNAL_LDAP_ARGS',
+           default='{"server": "ipynbsrv_ldap", "base_dn": "dc=ipynbsrv,dc=ldap", "users_ou": "users", "groups_ou": "groups"}',
+           editable=True,
+           description='The arguments needed to instantiate the internal LDAP backend. Please provide in JSON format (i.e. { "arg1": "val1", "arg2": "val2" }')
+
+config.set('INTERNAL_LDAP_CONNECT_CREDENTIALS',
+           default='{"dn": "cn=admin,dc=ipynbsrv,dc=ldap", password: "123456"}',
+           editable=True,
+           description='The credentials used to establish a connection to the user backend. Use %username% and %password% for the credentials of the currently authenticating user.')
 
 
 """
 User backend related configuration options.
 """
-config.set('USER_BACKEND_CLASS', default='ipynbsrv.backends.usergroup_backends.LdapBackend', editable=True,
+config.set('USER_BACKEND_CLASS',
+           default='ipynbsrv.backends.usergroup_backends.LdapBackend',
+           editable=True,
            description='The full class path of the user backend to use.')
 
-config.set('USER_BACKEND_ARGS', default='{ "readonly" : False, "server": "localhost" , "user": "cn=admin,dc=ipynbsrv,dc=ldap" , "pw": "1234" }', editable=True,
+config.set('USER_BACKEND_ARGS',
+           default='{ "readonly" : False, "server": "localhost" , "user": "cn=admin,dc=ipynbsrv,dc=ldap" , "pw": "1234" }', editable=True,
            description='The arguments needed to instantiate the provided user backend class. Please provide in json format (i.e. { "arg1": "val1", "arg2": "val2" }')
+
+config.set('USER_BACKEND_CONNECT_CREDENTIALS',
+           default='{"username": "%username%", password: "%password"}',
+           editable=True,
+           description='The credentials used to establish a connection to the user backend. Use %username% and %password% for the credentials of the currently authenticating user.')
 
 
 """
