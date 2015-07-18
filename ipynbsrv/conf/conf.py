@@ -24,7 +24,7 @@ config.set('INTERNAL_LDAP_ARGS',
            description='The arguments needed to instantiate the internal LDAP backend. Please provide in JSON format (i.e. { "arg1": "val1", "arg2": "val2" }')
 
 config.set('INTERNAL_LDAP_CONNECT_CREDENTIALS',
-           default='{"dn": "cn=admin,dc=ipynbsrv,dc=ldap", password: "123456"}',
+           default='{"dn": "cn=admin,dc=ipynbsrv,dc=ldap", "password": "123456"}',
            editable=True,
            description='The credentials used to establish a connection to the user backend. Use %username% and %password% for the credentials of the currently authenticating user.')
 

@@ -1,18 +1,15 @@
-from django_admin_conf_vars.global_vars import config
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
-from ipynbsrv.conf import global_vars
+from ipynbsrv.conf.helpers import *
 from ipynbsrv.contract.backends import UserBackend
 from ipynbsrv.contract.errors import *
 from ipynbsrv.core import settings
 from ipynbsrv.core.models import BackendUser
-import json
 import logging
 
 
-internal_ldap = global_vars.INTERNAL_LDAP
+internal_ldap = get_internal_ldap_connected()
 logger = logging.getLogger(__name__)
-user_backend = global_vars.USER_BACKEND
 
 
 # TODO: internal LDAP connect/disconnect
@@ -47,11 +44,9 @@ class BackendProxyAuthentication(object):
             else:
                 username = BackendUser.objects.filter(user=user).first().backend_pk
 
+        user_backend = None
         try:
-            internal_ldap.connect(json.loads(config.INTERNAL_LDAP_CONNECT_CREDENTIALS))
-            user_backend.connect(json.loads(
-                self.get_interpolated_connect_credentials(username, password)
-            ))
+            user_backend = get_user_backend_connected(username, password)
             user_backend.auth_user(username, password)
             if user is not None:  # existing user
                 internal_ldap.set_user_password(username, make_password(password))
@@ -123,9 +118,3 @@ class BackendProxyAuthentication(object):
         if BackendUser.objects.count() > 0:
             last_django_id = BackendUser.objects.latest('id').id
         return settings.USER_ID_OFFSET + last_django_id
-
-    def get_interpolated_connect_credentials(self, username, password):
-        """
-        Return the interpolated credentials to connect to the user backend.
-        """
-        return config.USER_BACKEND_CONNECT_CREDENTIALS.replace('%username%', username).replace('%password%', password)
