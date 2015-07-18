@@ -43,8 +43,8 @@ can synchronize the actions/modifications with the LDAP server in the handlers.
 """
 group_created = Signal(providing_args=['group'])
 group_deleted = Signal(providing_args=['group'])
-group_member_added = Signal(providing_args=['group', 'users'])
-group_member_removed = Signal(providing_args=['group', 'users'])
+# group_member_added = Signal(providing_args=['group', 'users'])
+# group_member_removed = Signal(providing_args=['group', 'users'])
 group_modified = Signal(providing_args=['group', 'fields'])
 
 

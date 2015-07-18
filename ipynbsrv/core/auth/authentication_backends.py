@@ -1,14 +1,13 @@
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from ipynbsrv.conf.helpers import *
 from ipynbsrv.contract.backends import GroupBackend, UserBackend
 from ipynbsrv.contract.errors import *
 from ipynbsrv.core import settings
-from ipynbsrv.core.models import BackendUser
+from ipynbsrv.core.models import BackendGroup, BackendUser
 import logging
 
 
-internal_ldap = get_internal_ldap_connected()
 logger = logging.getLogger(__name__)
 
 
@@ -44,28 +43,43 @@ class BackendProxyAuthentication(object):
             else:
                 username = BackendUser.objects.filter(user=user).first().backend_pk
 
+        internal_ldap = None
         user_backend = None
         try:
+            internal_ldap = get_internal_ldap_connected()
             user_backend = get_user_backend_connected(username, password)
             user_backend.auth_user(username, password)
             if user is not None:  # existing user
-                internal_ldap.set_user_password(username, make_password(password))
+                internal_ldap.set_user_credential(username, make_password(password))
                 return user
             else:  # new user
                 uid = self.generate_internal_uid()
-                # create internal LDAP user/group
-                ldap_user = self.create_internal_ldap_user(username, password, uid)
-                ldap_group = self.create_internal_ldap_group(username, uid)
-                # add user to created group
+                # create internal LDAP records
+                ldap_user = internal_ldap.create_user({
+                    'username': username,
+                    'password': make_password(password),
+                    'uidNumber': uid,
+                    'gidNumber': uid,
+                    'homeDirectory': '/home/' + username
+                })
+                ldap_group = internal_ldap.create_group({
+                    'groupname': username,
+                    'gidNumber': uid
+                })
+                # add user to group
                 internal_ldap.add_group_member(ldap_group.get(GroupBackend.FIELD_PK), ldap_user.get(UserBackend.FIELD_PK))
-                # return the logged in Django user
-                return self.create_django_user(username, ldap_user.get(UserBackend.FIELD_PK))
+                # create Django records
+                user = self.create_django_user(username, ldap_user.get(UserBackend.FIELD_PK))
+                group = self.create_django_group(user, ldap_group.get(GroupBackend.FIELD_PK))
+                # add user to group
+                group.user_set.add(user)
+                return user
         except AuthenticationError:
             return None
         except UserNotFoundError:
             if user is not None:  # exists locally but not on backend
-                # TODO: does it remove his groups?
                 user.delete()
+                # TODO: remove group as well
         except ConnectionError as ex:
             logger.error("Backend connection error.")
             logger.exception(ex)
@@ -77,6 +91,17 @@ class BackendProxyAuthentication(object):
             except:
                 pass
 
+    def create_django_group(self, groupname, backend_pk):
+        """
+        Create a django group (`ipynbsrv.core.models.BackendGroup`) for `username`.
+        This is needed to allow a more simple group management directly in Django.
+        """
+        group = Group(name=groupname)
+        group.save()
+        backend_group = BackendGroup(backend_pk=backend_pk, group=group)
+        backend_group.save()
+        return group
+
     def create_django_user(self, username, backend_pk):
         """
         Create a django user (`ipynbsrv.core.models.BackendUser`) for `username`.
@@ -87,32 +112,6 @@ class BackendProxyAuthentication(object):
         backend_user = BackendUser(backend_pk=backend_pk, user=user)
         backend_user.save()
         return user
-
-    def create_internal_ldap_group(self, name, gidNumber):
-        """
-        Create a private LDAP group for `username`.
-
-        Attn: Exceptions are passed through (are handled in authenticate).
-        """
-        return internal_ldap.create_group({
-            'groupname': name,
-            'gidNumber': gidNumber
-        })
-
-    def create_internal_ldap_user(self, username, password, uidNumber):
-        """
-        Create a copy of `username` on the internal LDAP server.
-        This is necessary to be able to grant access rights on the filesystem to the user.
-
-        Attn: Exceptions are passed through (are handled in authenticate).
-        """
-        return internal_ldap.create_user({
-            'username': username,
-            'password': make_password(password),
-            'uidNumber': uidNumber,
-            'gidNumber': uidNumber,
-            'homeDirectory': '/home/' + username
-        })
 
     def generate_internal_uid(self):
         """
