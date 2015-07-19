@@ -1,11 +1,12 @@
+from django.contrib.auth.models import Group, User
 from django.dispatch import receiver
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import m2m_changed, post_delete, post_save
 from ipynbsrv.conf.helpers import *
 from ipynbsrv.contract.backends import UserBackend
 from ipynbsrv.contract.errors import *
 from ipynbsrv.core import settings
 from ipynbsrv.core.models import BackendUser
-from ipynbsrv.core.signals.signals import user_created, user_deleted, user_modified
+from ipynbsrv.core.signals.signals import *
 import logging
 
 
@@ -131,6 +132,42 @@ def remove_public_directory(sender, user, **kwargs):
                 raise ex
         else:
             logger.warn("Public directory for user %s doesn't exist." % user.django_user.get_username())
+
+
+@receiver(user_modified)
+def user_modified_handler(sender, user, fields, **kwargs):
+    """
+    Helper method to break modifications into smaller pieces.
+    """
+    kwargs = kwargs.get('kwargs')
+    if fields is not None and 'groups' in fields:
+        # get the group objects
+        groups = []
+        if kwargs.get('pk_set') is not None:
+            for group_pk in kwargs.get('pk_set'):
+                group = Group.objects.get(pk=group_pk)
+                if hasattr(group, 'backend_group'):
+                    groups.append(group.backend_group)
+        # trigger the signals
+        action = kwargs.get('action')
+        if action == 'post_add':
+            for group in groups:
+                group_member_added.send(sender=sender, group=group, user=user, kwargs=kwargs)
+        elif action == 'pre_clear':
+            for group in user.django_user.groups.all():
+                if hasattr(group, 'backend_group'):
+                    group_member_removed.send(sender=sender, group=group.backend_group, user=user, kwargs=kwargs)
+        elif action == 'post_remove':
+            for group in groups:
+                group_member_removed.send(sender=sender, group=group, user=user, kwargs=kwargs)
+
+
+@receiver(m2m_changed, sender=User.groups.through)
+def m2m_changed_handler(sender, instance, **kwargs):
+    if isinstance(instance, User) and hasattr(instance, 'backend_user'):
+        action = kwargs.get('action')
+        if action == 'post_add' or action == 'pre_clear' or action == 'post_remove':
+            user_modified.send(sender=sender, user=instance.backend_user, fields=['groups'], kwargs=kwargs)
 
 
 @receiver(post_delete, sender=BackendUser)

@@ -54,7 +54,6 @@ class BackendProxyAuthentication(object):
                 user = self.create_users(username, uid, group.backend_group)
                 # add user to group
                 group.user_set.add(user)
-                internal_ldap.add_group_member(group.backend_group.backend_pk, user.backend_user.backend_pk)  # FIXME: handle in signals
                 return user
         except AuthenticationError:
             return None
