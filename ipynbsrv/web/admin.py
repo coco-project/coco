@@ -5,8 +5,8 @@ from ipynbsrv.core.models import *
 
 
 class BackendAdmin(admin.ModelAdmin):
-    list_display = ['kind', 'module', 'klass', 'arguments']
-    list_filter = ['kind', 'module', 'klass']
+    list_display = ['module', 'klass', 'arguments']
+    list_filter = ['kind']
     search_fields = ['kind', 'module', 'klass', 'arguments']
 
 
@@ -23,9 +23,21 @@ class BackendUserInline(admin.StackedInline):
 
 
 class ContainerAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description', 'owner', 'is_running']
-    list_filter = ['name', 'image', 'owner']
-    search_fields = ['docker_id', 'name', 'description']
+    list_display = ['name', 'description', 'owner']
+    list_filter = ['image', 'owner', 'server']
+    search_fields = ['backend_pk', 'name', 'description']
+
+
+class ContainerImageAdmin(admin.ModelAdmin):
+    list_display = ['name', 'description']
+    list_filter = ['owner', 'is_public']
+    search_fields = ['backend_pk', 'name', 'description']
+
+
+class ContainerSnapshotAdmin(admin.ModelAdmin):
+    list_display = ['name', 'description']
+    list_filter = ['container']
+    search_fields = ['backend_pk', 'name', 'description']
 
 
 class GroupAdmin(GroupAdmin):
@@ -39,9 +51,9 @@ class ImageAdmin(admin.ModelAdmin):
 
 
 class ServerAdmin(admin.ModelAdmin):
-    list_display = ['name', 'hostname', 'internal_ip']
+    list_display = ['name', 'hostname', 'internal_ip', 'external_ip']
     list_filter = ['container_backend']
-    search_fields = ['name', 'hostname', 'internal_ip', 'external_ip', 'container_backend']
+    search_fields = ['name', 'hostname', 'internal_ip', 'external_ip', 'container_backend', 'container_backend_args']
 
 
 class ShareAdmin(admin.ModelAdmin):
@@ -61,9 +73,10 @@ class UserAdmin(UserAdmin):
 
 admin.site.register(Backend, BackendAdmin)
 admin.site.register(Container, ContainerAdmin)
+admin.site.register(ContainerImage, ContainerImageAdmin)
+admin.site.register(ContainerSnapshot, ContainerSnapshotAdmin)
 admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
-admin.site.register(Image, ImageAdmin)
 admin.site.register(Server, ServerAdmin)
 admin.site.register(Share, ShareAdmin)
 admin.site.register(Tag, TagAdmin)

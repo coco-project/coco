@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.encoding import smart_unicode
 from ipynbsrv.common.utils import ClassLoader
 from ipynbsrv.contract.backends import ContainerBackend, SuspendableContainerBackend
+from ipynbsrv.core import settings
 
 
 class Backend(models.Model):
@@ -44,8 +45,7 @@ class Backend(models.Model):
     ]
 
     id = models.AutoField(primary_key=True)
-    kind = models.CharField(choices=BACKEND_KINDS, default=CONTAINER_BACKEND, max_length=17,
-                            help_text='The kind of contract this backend fulfills.')
+    kind = models.CharField(choices=BACKEND_KINDS, default=CONTAINER_BACKEND, max_length=17, help_text='The kind of contract this backend fulfills.')
     module = models.CharField(max_length=255, help_text='The full absolute module path. (i.e. ipynbsrv.backends.container_backends)')
     klass = models.CharField(max_length=255, help_text='The class\' name under which it can be located within the module. (i.e. Docker or HttpRemote')
     arguments = models.CharField(blank=True, null=True, max_length=255,
@@ -81,9 +81,8 @@ class BackendGroup(models.Model):
     """
     The BackendGroup model is used to represent external backend groups.
 
-    It is used to create Django records for internal LDAP server groups to we can work
-    with them like with any other Django objects, without having to worry about the fact
-    that there's a server behind.
+    It is used to create Django records for internal LDAP server groups so we can work
+    with them like with any other Django objects, without having to worry about the fact that there's a server behind.
     """
 
     backend_id = models.PositiveIntegerField(unique=True, help_text='The ID for this group used internally by the backend.')
@@ -108,9 +107,8 @@ class BackendUser(models.Model):
     """
     The BackendUser model is used to represent external backend users.
 
-    It is used to create Django records for internal LDAP server users to we can work
-    with them like with any other Django objects, without having to worry about the fact
-    that there's a server behind.
+    It is used to create Django records for internal LDAP server users so we can work
+    with them like with any other Django objects, without having to worry about the fact that there's a server behind.
     """
 
     backend_id = models.PositiveIntegerField(unique=True, help_text='The ID for this user used internally by the backend.')
@@ -134,7 +132,7 @@ class BackendUser(models.Model):
 class Container(models.Model):
 
     """
-    TODO: brief summary.
+    The Container model is used to represent external container_backend instances.
     """
 
     id = models.AutoField(primary_key=True)
@@ -142,29 +140,26 @@ class Container(models.Model):
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
     server = models.ForeignKey('Server', help_text='The server on which this container is/will be located.')
-    owner = models.ForeignKey(User)
-    # TODO: can this be solved more generically
-    image = models.ForeignKey('Image', blank=True, null=True, help_text='The image from which this container was bootstrapped.')
-    # TODO: status? better place in cache because it can easily change and we'd have to sync
+    owner = models.ForeignKey('BackendUser')
+    # ImageBasedContainerBackend
+    image = models.ForeignKey('ContainerImage', blank=True, null=True, help_text='The image from which this container was bootstrapped.')
+    # CloneableContainerBackend
     clone_of = models.ForeignKey('self', blank=True, null=True)
 
     def clone(self):
         """
-        TODO: write doc.
         """
-        raise NotImplementedError
+        self.server.get_container_backend_instance().clone_container(self.backend_pk, {})
 
     def create_snapshot(self, *args):
         """
-        TODO: write doc.
         """
-        raise NotImplementedError
+        self.server.get_container_backend_instance().create_container_snapshot(self.backend_pk, {})
 
-    def delete_snapshot(self, *args):
+    def delete_snapshot(self, snapshot, *args):
         """
-        TODO: write doc.
         """
-        raise NotImplemented
+        self.server.get_container_backend_instance().delete_container_snapshot(self.backend_pk, snapshot.backend_pk)
 
     def get_server_backend_representation(self):
         """
@@ -178,12 +173,17 @@ class Container(models.Model):
         """
         return Container.objects.filter(clone_of=self)
 
-    def get_full_name(self):
+    def get_backend_name(self):
         """
-        Get the full name (as it is named on the server's container backend) of this container.
+        Return the name of this container how it is named on the backend.
         """
-        # TODO: write specification
-        return '%s_%s' % (self.owner.get_username(), self.name)
+        return "%s%i_%s" % (settings.CONTAINER_NAME_PREFIX, self.owner.backend_id, self.name)
+
+    def get_friendly_name(self):
+        """
+        Return the humen-friendly name of this container.
+        """
+        return "%s-%s" % (self.owner.django_user.get_username(), self.name)
 
     def has_clones(self):
         """
@@ -225,9 +225,8 @@ class Container(models.Model):
 
     def start(self, *args):
         """
-        TODO: write doc.
         """
-        raise NotImplementedError
+        self.server.get_container_backend_instance().start_container(self.backend_pk, {})
 
     def stop(self):
         """
@@ -245,7 +244,7 @@ class Container(models.Model):
         """
         :inherit.
         """
-        return smart_unicode(self.get_full_name())
+        return smart_unicode(self.get_friendly_name())
 
     def __unicode__(self):
         """
@@ -260,23 +259,63 @@ class Container(models.Model):
         )
 
 
-class Image(models.Model):
+class ContainerImage(models.Model):
 
     """
-    TODO: brief summary.
+    Model to reference container_backend images/templates which can be used to bootstrap containers.
     """
 
     id = models.AutoField(primary_key=True)
-    backend_pk = models.CharField(unique=True, max_length=255,
-                                  help_text='The primary key the backend uses to identify this image.')
+    backend_pk = models.CharField(unique=True, max_length=255, help_text='The primary key the backend uses to identify this image.')
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
+    # TODO: document placeholders
+    command = models.CharField(max_length=255, blank=True, null=True, help_text='The command to execute inside the container upon start.')
     owner = models.ForeignKey(User)
-    snapshot_of = models.ForeignKey('Container', blank=True, null=True,
-                                    related_name='snapshot_of',
-                                    help_text='If not None, the container for which this image was created as a snapshot.')
-
     is_public = models.BooleanField(default=False)
+
+    def get_backend_name(self):
+        """
+        Return the name of this image how it is named on the backend.
+        """
+        return "%s%i/%s" % (settings.CONTAINER_IMAGE_NAME_PREFIX, self.owner.backend_id, self.name)
+
+    def get_friendly_name(self):
+        """
+        Return the humen-friendly name of this container.
+        """
+        if hasattr(self.owner, 'backend_user'):
+            return "%s/%s" % (self.owner.get_username(), self.name)
+        else:
+            return self.name
+
+    def __str__(self):
+        """
+        :inherit.
+        """
+        return smart_unicode(self.get_friendly_name())
+
+    def __unicode__(self):
+        """
+        :inherit.
+        """
+        return self.__str__()
+
+    class Meta:
+        unique_together = ('name', 'owner')
+
+
+class ContainerSnapshot(models.Model):
+
+    """
+    Model to reference container_backend snapshots of container instances.
+    """
+
+    id = models.AutoField(primary_key=True)
+    backend_pk = models.CharField(unique=True, max_length=255, help_text='The primary key the backend uses to identify this snapshot.')
+    name = models.CharField(max_length=75)
+    description = models.TextField(blank=True, null=True)
+    container = models.ForeignKey('Container')
 
     def get_full_name(self):
         """
@@ -285,11 +324,10 @@ class Image(models.Model):
         # TODO: specification
         return '%s/%s' % (self.owner.get_username(), self.name)
 
-    def is_snapshot(self):
+    def restore(self):
         """
-        Return true if this image is a container snapshot.
         """
-        return self.snapshot_of is not None
+        pass
 
     def __str__(self):
         """
@@ -304,7 +342,7 @@ class Image(models.Model):
         return self.__str__()
 
     class Meta:
-        unique_together = ('name', 'owner')
+        unique_together = ('name', 'container')
 
 
 class Server(models.Model):
@@ -330,13 +368,13 @@ class Server(models.Model):
     container_backend_args = models.CharField(max_length=255, blank=True, null=True,
                                               help_text="""Optional arguments to pass to the backend\'s get_instance method.
                                               Available placeholders: all model fields in the form: %field_name%, e.g. %hostname%.
-                                              Format: arg1=value,arg2=value""")
+                                              Format: {'arg1': \"value\", 'arg2': \"value\"}""")
 
-    def get_container_backend_instance(self):
+    def get_container_backend(self):
         """
         Get an instance of the container backend this server is using.
         """
-        return self.backend.get_instance(self._get_interpolated_container_backend_args())
+        return self.container_backend.get_instance(self._get_interpolated_container_backend_args())
 
     def _get_interpolated_container_backend_args(self):
         """
@@ -486,4 +524,5 @@ class Tag(models.Model):
 
 
 # make sure our signal receivers are loaded
-from ipynbsrv.core.signals import groups, users
+from ipynbsrv.core.signals import containers, \
+    container_images, groups, users

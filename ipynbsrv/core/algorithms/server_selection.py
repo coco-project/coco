@@ -6,8 +6,6 @@ class ServerSelectionAlgorithm(object):
     """
     Instances of server selection algorithms are used to decide on which server
     a container should be created.
-
-    TODO: move into contract package?
     """
 
     def choose_server(self, servers):

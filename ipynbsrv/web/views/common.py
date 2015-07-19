@@ -14,14 +14,14 @@ def dashboard(request):
     '''
     Dashboard view listing the running containers.
     '''
-    containers = Container.objects.filter(owner=request.user)
+    containers = Container.objects.filter(owner=request.user.backend_user)
     for container in containers:
         port_mappings = PortMapping.objects.filter(container=container)
         container.port_mappings = port_mappings.filter(~Q(internal=container.image.proxied_port))
         container.workspace_port = port_mappings.filter(internal=container.image.proxied_port).first().external
 
     return render(request, 'web/dashboard.html', {
-        'title':  "Dashboard",
+        'title': "Dashboard",
         'containers': containers
     })
 
