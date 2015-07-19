@@ -1,19 +1,42 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_delete, post_save
 from ipynbsrv.conf.helpers import *
+from ipynbsrv.contract.backends import GroupBackend
 from ipynbsrv.contract.errors import *
 from ipynbsrv.core.models import BackendGroup
 from ipynbsrv.core.signals.signals import group_created, group_deleted, group_modified
-import logging
 
 
-logger = logging.getLogger(__name__)
+@receiver(group_created)
+def create_on_internal_ldap(sender, group, **kwargs):
+    """
+    BackendGroups are used to represent external backends (e.g. LDAP) groups.
+
+    If such a group is created, we should therefor create the group on the backend.
+    """
+    if group is not None:
+        internal_ldap = get_internal_ldap_connected()
+        try:
+            created = internal_ldap.create_group({
+                'groupname': group.backend_pk,
+                'gidNumber': group.backend_id
+            })
+            # FIXME: this is the first time we really know the ID/PK given by the backend.
+            # all other operations having used to old ones might not be valid anymore...
+            group.backend_id = created.get(GroupBackend.FIELD_ID)
+            group.backend_pk = created.get(GroupBackend.FIELD_PK)
+            group.save()
+        finally:
+            try:
+                internal_ldap.disconnect()
+            except:
+                pass
 
 
 @receiver(group_deleted)
-def delete_group_on_internal_ldap(sender, group, **kwargs):
+def delete_on_internal_ldap(sender, group, **kwargs):
     """
-    In case the BackendGroup record is removed, we need to cleanup the internal LDAP server.
+    In case the BackendGroup record is deleted, we need to cleanup the internal LDAP server.
     """
     if group is not None:
         internal_ldap = get_internal_ldap_connected()
