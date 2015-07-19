@@ -25,7 +25,7 @@ def create_home_directory(sender, user, **kwargs):
             try:
                 storage_backend.mk_dir(home_dir)
                 storage_backend.set_dir_uid(home_dir, user.backend_id)
-                storage_backend.set_dir_gid(home_dir, user.group.backend_id)
+                storage_backend.set_dir_gid(home_dir, user.primary_group.backend_id)
                 storage_backend.set_dir_mode(home_dir, 0700)
             except StorageBackendError as ex:
                 raise ex
@@ -74,7 +74,7 @@ def create_public_directory(sender, user, **kwargs):
             try:
                 storage_backend.mk_dir(public_dir)
                 storage_backend.set_dir_uid(public_dir, user.backend_id)
-                storage_backend.set_dir_gid(public_dir, user.group.backend_id)
+                storage_backend.set_dir_gid(public_dir, user.primary_group.backend_id)
                 storage_backend.set_dir_mode(public_dir, 0755)
             except StorageBackendError as ex:
                 raise ex
