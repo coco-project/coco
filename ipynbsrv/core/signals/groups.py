@@ -1,19 +1,59 @@
+from django.contrib.auth.models import Group, User
 from django.dispatch import receiver
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import m2m_changed, post_delete, post_save
 from ipynbsrv.conf.helpers import *
+from ipynbsrv.contract.backends import GroupBackend
 from ipynbsrv.contract.errors import *
 from ipynbsrv.core.models import BackendGroup
-from ipynbsrv.core.signals.signals import group_created, group_deleted, group_modified
-import logging
+from ipynbsrv.core.signals.signals import *
 
 
-logger = logging.getLogger(__name__)
+@receiver(group_member_added)
+def add_member_to_internal_ldap_group(sender, group, user, **kwargs):
+    """
+    When ever a member is added to a group we need to sync the LDAP group.
+    """
+    if group is not None and user is not None:
+        internal_ldap = get_internal_ldap_connected()
+        try:
+            internal_ldap.add_group_member(group.backend_pk, user.backend_pk)
+        finally:
+            try:
+                internal_ldap.disconnect()
+            except:
+                pass
+
+
+@receiver(group_created)
+def create_on_internal_ldap(sender, group, **kwargs):
+    """
+    BackendGroups are used to represent external backends (e.g. LDAP) groups.
+
+    If such a group is created, we should therefor create the group on the backend.
+    """
+    if group is not None:
+        internal_ldap = get_internal_ldap_connected()
+        try:
+            created = internal_ldap.create_group({
+                'groupname': group.backend_pk,
+                'gidNumber': group.backend_id
+            })
+            # FIXME: this is the first time we really know the ID/PK given by the backend.
+            # all other operations having used to old ones might not be valid anymore...
+            group.backend_id = created.get(GroupBackend.FIELD_ID)
+            group.backend_pk = created.get(GroupBackend.FIELD_PK)
+            group.save()
+        finally:
+            try:
+                internal_ldap.disconnect()
+            except:
+                pass
 
 
 @receiver(group_deleted)
-def delete_group_on_internal_ldap(sender, group, **kwargs):
+def delete_on_internal_ldap(sender, group, **kwargs):
     """
-    In case the BackendGroup record is removed, we need to cleanup the internal LDAP server.
+    In case the BackendGroup record is deleted, we need to cleanup the internal LDAP server.
     """
     if group is not None:
         internal_ldap = get_internal_ldap_connected()
@@ -27,6 +67,50 @@ def delete_group_on_internal_ldap(sender, group, **kwargs):
                 internal_ldap.disconnect()
             except:
                 pass
+
+
+@receiver(group_member_removed)
+def remove_member_from_internal_ldap_group(sender, group, user, **kwargs):
+    """
+    When ever a member is removed to a group we need to sync the LDAP group.
+    """
+    if group is not None and user is not None:
+        internal_ldap = get_internal_ldap_connected()
+        try:
+            internal_ldap.remove_group_member(group.backend_pk, user.backend_pk)
+        finally:
+            try:
+                internal_ldap.disconnect()
+            except:
+                pass
+
+
+@receiver(group_modified)
+def group_modified_handler(sender, group, fields, **kwargs):
+    kwargs = kwargs.get('kwargs')  # not sure why this is needed
+    if fields is not None and 'user_set' in fields:
+        # get the user objects
+        users = []
+        if kwargs.get('pk_set') is not None:
+            for user_pk in kwargs.get('pk_set'):
+                user = User.objects.get(pk=user_pk)
+                if hasattr(user, 'backend_user'):
+                    users.append(user.backend_user)
+        # trigger the signals
+        action = kwargs.get('action')
+        if action == 'post_add':
+            for user in users:
+                group_member_added.send(sender=sender, group=group, user=user, kwargs=kwargs)
+        elif action == 'post_remove':
+            group_member_removed.send(sender=sender, group=group, users=users, kwargs=kwargs)
+
+
+@receiver(m2m_changed, sender=User.groups.through)
+def m2m_changed_handler(sender, instance, **kwargs):
+    if isinstance(instance, Group) and hasattr(instance, 'backend_group'):
+        action = kwargs.get('action')
+        if action == 'post_add' or action == 'post_remove':
+            group_modified.send(sender=sender, group=instance.backend_group, fields=['user_set'], kwargs=kwargs)
 
 
 @receiver(post_delete, sender=BackendGroup)

@@ -86,14 +86,15 @@ class BackendGroup(models.Model):
     that there's a server behind.
     """
 
-    backend_pk = models.CharField(max_length=150, unique=True, help_text='Unique identifier for this group used by the backend.')
+    backend_id = models.PositiveIntegerField(unique=True, help_text='The ID for this group used internally by the backend.')
+    backend_pk = models.CharField(unique=True, max_length=150, help_text='Unique identifier for this group used by the backend.')
     django_group = models.OneToOneField(Group, related_name='backend_group', help_text='The regular Django group this backend group is associated with.')
 
     def __str__(self):
         """
         :inherit.
         """
-        return smart_unicode(self.djangp_group.__str__())
+        return smart_unicode(self.django_group.__str__())
 
     def __unicode__(self):
         """
@@ -112,6 +113,7 @@ class BackendUser(models.Model):
     that there's a server behind.
     """
 
+    backend_id = models.PositiveIntegerField(unique=True, help_text='The ID for this user used internally by the backend.')
     backend_pk = models.CharField(max_length=150, unique=True, help_text='Unique identifier for this user used by the backend.')
     django_user = models.OneToOneField(User, related_name='backend_user', help_text='The regular Django user this backend user is associated with.')
     primary_group = models.OneToOneField('BackendGroup', related_name='primary_user', help_text='The primary backend group this user belongs to.')
