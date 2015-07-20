@@ -50,6 +50,21 @@ class ShareAdmin(admin.ModelAdmin):
     search_fields = ['name', 'description', 'owner', 'group']
 
 
+class NotificationReceiversInline(admin.StackedInline):
+    model = NotificationReceivers
+
+
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['date', 'sender', 'message']
+    list_filter = ['date', 'sender']
+    search_fields = ['sender', 'message']
+    inlines = (NotificationReceiversInline, )
+
+
+class NotificationLogAdmin(admin.ModelAdmin):
+    list_display = ['notification', 'user', 'read']
+
+
 class TagAdmin(admin.ModelAdmin):
     list_display = ['label']
     search_fields = ['label']
@@ -59,6 +74,8 @@ class UserAdmin(UserAdmin):
     inlines = (BackendUserInline, )
 
 
+admin.site.register(NotificationLog, NotificationLogAdmin)
+admin.site.register(Notification, NotificationAdmin)
 admin.site.register(Backend, BackendAdmin)
 admin.site.register(Container, ContainerAdmin)
 admin.site.unregister(Group)
