@@ -1,7 +1,6 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group, User
 from ipynbsrv.conf.helpers import *
-from ipynbsrv.contract.backends import GroupBackend, UserBackend
 from ipynbsrv.contract.errors import *
 from ipynbsrv.core import settings
 from ipynbsrv.core.models import BackendGroup, BackendUser
@@ -21,14 +20,7 @@ class BackendProxyAuthentication(object):
 
     def authenticate(self, username=None, password=None):
         """
-        :param username
-        :param password
-
-        :return User object     if login credentials are valid
-                None            if login credentials are invalid
-
-        :raise  PermissionDenied    to immediately cancel authentication,
-                                    no other AuthenticationBackend will be checked after this
+        :inherit.
         """
         # check if the user already exists in our system
         # if so, use the defined backend_pk for validating the credentials on the backend
@@ -73,27 +65,36 @@ class BackendProxyAuthentication(object):
 
     def create_user_groups(self, name, gid):
         """
-        Creates the Django groups for the logging-in user.
+        Create the Django groups for the logging-in user.
 
         :param name: The name of the group to create.
         :param gid: The group's ID (on the backend).
         """
         group = Group(name=name)
         group.save()
-        backend_group = BackendGroup(backend_id=gid, backend_pk=name, django_group=group)
+        backend_group = BackendGroup(
+            backend_id=gid,
+            backend_pk=name,
+            django_group=group
+        )
         backend_group.save()
         return group
 
     def create_users(self, username, uid, primary_group):
         """
-        Creates the Django users for the logging-in user.
+        Create the Django users for the logging-in user.
 
         :param username: The user's username.
         :param primary_group: The user's primary group.
         """
         user = User(username=username)
         user.save()
-        backend_user = BackendUser(backend_id=uid, backend_pk=username, django_user=user, primary_group=primary_group)
+        backend_user = BackendUser(
+            backend_id=uid,
+            backend_pk=username,
+            django_user=user,
+            primary_group=primary_group
+        )
         backend_user.save()
         return user
 
@@ -110,7 +111,7 @@ class BackendProxyAuthentication(object):
 
     def get_user(self, user_id):
         """
-        :inherit
+        :inherit.
         """
         try:
             return User.objects.get(pk=user_id)

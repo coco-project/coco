@@ -4,6 +4,7 @@ from django.utils.encoding import smart_unicode
 from ipynbsrv.common.utils import ClassLoader
 from ipynbsrv.contract.backends import ContainerBackend, SuspendableContainerBackend
 from ipynbsrv.core import settings
+import re
 
 
 class Backend(models.Model):
@@ -45,11 +46,27 @@ class Backend(models.Model):
     ]
 
     id = models.AutoField(primary_key=True)
-    kind = models.CharField(choices=BACKEND_KINDS, default=CONTAINER_BACKEND, max_length=17, help_text='The kind of contract this backend fulfills.')
-    module = models.CharField(max_length=255, help_text='The full absolute module path. (i.e. ipynbsrv.backends.container_backends)')
-    klass = models.CharField(max_length=255, help_text='The class\' name under which it can be located within the module. (i.e. Docker or HttpRemote')
-    arguments = models.CharField(blank=True, null=True, max_length=255,
-                                 help_text='Optional arguments to pass to the __init__ method of the class. Format: {"arg1": "value", "arg2": "value" }')
+    kind = models.CharField(
+        choices=BACKEND_KINDS,
+        default=CONTAINER_BACKEND,
+        max_length=17,
+        help_text='The kind of contract this backend fulfills.'
+    )
+    module = models.CharField(
+        max_length=255,
+        help_text='The full absolute module path (i.e. ipynbsrv.backends.container_backends).'
+    )
+    klass = models.CharField(
+        max_length=255,
+        help_text='The class\' name under which it can be located within the module (i.e. Docker or HttpRemote).'
+    )
+    arguments = models.CharField(
+        blank=True,
+        null=True,
+        max_length=255,
+        help_text="""Optional arguments to pass to the __init__ method of the class.
+            Format: {"arg1": "value", "arg2": "value" }"""
+    )
 
     def get_instance(self, arguments=None):
         """
@@ -82,12 +99,25 @@ class BackendGroup(models.Model):
     The BackendGroup model is used to represent external backend groups.
 
     It is used to create Django records for internal LDAP server groups so we can work
-    with them like with any other Django objects, without having to worry about the fact that there's a server behind.
+    with them like with any other Django objects, without having to worry about the fact
+    that there's a server behind.
     """
 
-    backend_id = models.PositiveIntegerField(unique=True, help_text='The ID for this group used internally by the backend.')
-    backend_pk = models.CharField(unique=True, max_length=150, help_text='Unique identifier for this group used by the backend.')
-    django_group = models.OneToOneField(Group, related_name='backend_group', help_text='The regular Django group this backend group is associated with.')
+    id = models.AutoField(primary_key=True)
+    backend_id = models.PositiveIntegerField(
+        unique=True,
+        help_text='The ID for this group used internally by the backend.'
+    )
+    backend_pk = models.CharField(
+        unique=True,
+        max_length=255,
+        help_text='Unique identifier for this group used by the backend.'
+    )
+    django_group = models.OneToOneField(
+        Group,
+        related_name='backend_group',
+        help_text='The regular Django group this backend group is associated with.'
+    )
 
     def __str__(self):
         """
@@ -108,13 +138,29 @@ class BackendUser(models.Model):
     The BackendUser model is used to represent external backend users.
 
     It is used to create Django records for internal LDAP server users so we can work
-    with them like with any other Django objects, without having to worry about the fact that there's a server behind.
+    with them like with any other Django objects, without having to worry about the fact
+    that there's a server behind.
     """
 
-    backend_id = models.PositiveIntegerField(unique=True, help_text='The ID for this user used internally by the backend.')
-    backend_pk = models.CharField(max_length=150, unique=True, help_text='Unique identifier for this user used by the backend.')
-    django_user = models.OneToOneField(User, related_name='backend_user', help_text='The regular Django user this backend user is associated with.')
-    primary_group = models.OneToOneField('BackendGroup', related_name='primary_user', help_text='The primary backend group this user belongs to.')
+    id = models.AutoField(primary_key=True)
+    backend_id = models.PositiveIntegerField(
+        unique=True,
+        help_text='The ID for this user used internally by the backend.')
+    backend_pk = models.CharField(
+        unique=True,
+        max_length=255,
+        help_text='Unique identifier for this user used by the backend.'
+    )
+    django_user = models.OneToOneField(
+        User,
+        related_name='backend_user',
+        help_text='The regular Django user this backend user is associated with.'
+    )
+    primary_group = models.OneToOneField(
+        'BackendGroup',
+        related_name='primary_user',
+        help_text='The primary backend group this user belongs to.'
+    )
 
     def __str__(self):
         """
@@ -136,36 +182,56 @@ class Container(models.Model):
     """
 
     id = models.AutoField(primary_key=True)
-    backend_pk = models.CharField(max_length=255, help_text='The primary key the backend uses to identify this container.')
+    backend_pk = models.CharField(
+        max_length=255,
+        help_text='The primary key the backend uses to identify this container.'
+    )
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
-    server = models.ForeignKey('Server', help_text='The server on which this container is/will be located.')
+    server = models.ForeignKey(
+        'Server',
+        help_text='The server on which this container is/will be located.'
+    )
     owner = models.ForeignKey('BackendUser')
     # ImageBasedContainerBackend
-    image = models.ForeignKey('ContainerImage', blank=True, null=True, help_text='The image from which this container was bootstrapped.')
+    image = models.ForeignKey(
+        'ContainerImage',
+        blank=True,
+        null=True,
+        help_text='The image from which this container was bootstrapped.'
+    )
     # CloneableContainerBackend
     clone_of = models.ForeignKey('self', blank=True, null=True)
 
     def clone(self):
         """
+        TODO: write doc.
         """
-        self.server.get_container_backend_instance().clone_container(self.backend_pk, {})
+        self.server.get_container_backend().clone_container(self.backend_pk, {})
 
-    def create_snapshot(self, *args):
+    def create_snapshot(self, name, description):
         """
-        """
-        self.server.get_container_backend_instance().create_container_snapshot(self.backend_pk, {})
+        Create a snapshot of the current container state.
 
-    def delete_snapshot(self, snapshot, *args):
+        :param name: The snapshot's name.
+        :param description: The snapshot's description.
         """
-        """
-        self.server.get_container_backend_instance().delete_container_snapshot(self.backend_pk, snapshot.backend_pk)
+        snapshot = ContainerSnapshot(
+            backend_pk=0,
+            name=name,
+            description=description,
+            container=self
+        )
+        snapshot.save()
+        from ipynbsrv.core.signals.signals import container_snapshot_created
+        container_snapshot_created.send(sender=self, snapshot=snapshot)
+        return snapshot
 
     def get_server_backend_representation(self):
         """
         Get the representation of this container as returned by the server's container backend instance.
         """
-        return self.server.get_container_backend_instance().get_container(self.backend_pk)
+        return self.server.get_container_backend().get_container(self.backend_pk)
 
     def get_clones(self):
         """
@@ -183,7 +249,7 @@ class Container(models.Model):
         """
         Return the humen-friendly name of this container.
         """
-        return "%s-%s" % (self.owner.django_user.get_username(), self.name)
+        return self.owner.django_user.get_username() + '_' + self.name
 
     def has_clones(self):
         """
@@ -200,45 +266,58 @@ class Container(models.Model):
     def is_running(self):
         """
         Return true if the container is running, false otherwise.
+
+        TODO: store in cache?
         """
-        container = self.get_server_backend_representation()
-        return ContainerBackend.STATUS_RUNNING == container.get(ContainerBackend.FIELD_STATUS)
+        ct = self.get_server_backend_representation()
+        return ct.get(ContainerBackend.CONTAINER_KEY_STATUS) \
+            == ContainerBackend.CONTAINER_STATUS_RUNNING
 
     def is_suspended(self):
         """
         Return true if the container is suspended, false otherwise.
+
+        TODO: store in cache?
         """
-        container = self.get_server_backend_representation()
-        return SuspendableContainerBackend.STATUS_SUSPENDED == container.get(ContainerBackend.FIELD_STATUS)
+        ct = self.get_server_backend_representation()
+        return ct.get(ContainerBackend.CONTAINER_KEY_STATUS) \
+            == SuspendableContainerBackend.CONTAINER_STATUS_SUSPENDED
 
     def restart(self):
         """
         Restart the container.
         """
-        self.server.get_container_backend_instance().restart_container(self.backend_pk)
+        from ipynbsrv.core.signals.signals import container_restarted
+        container_restarted.send(sender=self, container=self)
 
     def resume(self):
         """
         Resume the container.
         """
-        self.server.get_container_backend_instance().resume_container(self.backend_pk)
+        from ipynbsrv.core.signals.signals import container_resumed
+        container_resumed.send(sender=self, container=self)
 
     def start(self, *args):
         """
+        Start the container.
         """
-        self.server.get_container_backend_instance().start_container(self.backend_pk, {})
+        from ipynbsrv.core.signals.signals import container_started
+        container_started.send(sender=self, container=self)
 
     def stop(self):
         """
         Stop the container.
         """
-        self.server.get_container_backend_instance().stop_container(self.backend_pk)
+        from ipynbsrv.core.signals.signals import container_stopped
+        container_stopped.send(sender=self, container=self)
 
     def suspend(self):
         """
         Suspend the container.
         """
-        self.server.get_container_backend_instance().suspend_container(self.backend_pk)
+        if self.is_running() and not self.is_suspended():
+            from ipynbsrv.core.signals.signals import container_suspended
+            container_suspended.send(sender=self, container=self)
 
     def __str__(self):
         """
@@ -266,11 +345,20 @@ class ContainerImage(models.Model):
     """
 
     id = models.AutoField(primary_key=True)
-    backend_pk = models.CharField(unique=True, max_length=255, help_text='The primary key the backend uses to identify this image.')
+    backend_pk = models.CharField(
+        unique=True,
+        max_length=255,
+        help_text='The primary key the backend uses to identify this image.'
+    )
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
     # TODO: document placeholders
-    command = models.CharField(max_length=255, blank=True, null=True, help_text='The command to execute inside the container upon start.')
+    command = models.CharField(
+        blank=True,
+        null=True,
+        max_length=255,
+        help_text='The command to execute inside the container upon start.'
+    )
     owner = models.ForeignKey(User)
     is_public = models.BooleanField(default=False)
 
@@ -282,10 +370,10 @@ class ContainerImage(models.Model):
 
     def get_friendly_name(self):
         """
-        Return the humen-friendly name of this container.
+        Return the humen-friendly name of this image.
         """
         if hasattr(self.owner, 'backend_user'):
-            return "%s/%s" % (self.owner.get_username(), self.name)
+            return self.owner.get_username() + '/' + self.name
         else:
             return self.name
 
@@ -312,20 +400,37 @@ class ContainerSnapshot(models.Model):
     """
 
     id = models.AutoField(primary_key=True)
-    backend_pk = models.CharField(unique=True, max_length=255, help_text='The primary key the backend uses to identify this snapshot.')
+    backend_pk = models.CharField(
+        unique=True,
+        max_length=255,
+        help_text='The primary key the backend uses to identify this snapshot.'
+    )
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
     container = models.ForeignKey('Container')
 
-    def get_full_name(self):
+    def get_backend_name(self):
         """
-        TODO: write doc.
+        Return the name of this snapshot how it is named on the backend.
         """
-        # TODO: specification
-        return '%s/%s' % (self.owner.get_username(), self.name)
+        container_name = self.container.get_backend_name()
+        repository = re.sub(
+            r'^' + settings.CONTAINER_NAME_PREFIX + r'(\d+)_(.+)$',
+            settings.CONTAINER_NAME_PREFIX + r'\g<1>/\g<2>',
+            container_name
+        )
+        tag = settings.CONTAINER_SNAPSHOT_PREFIX + self.name
+        return repository + ':' + tag
+
+    def get_friendly_name(self):
+        """
+        Return the humen-friendly name of this container snapshot.
+        """
+        return self.container.get_friendly_name() + ':' + self.name
 
     def restore(self):
         """
+        TODO: write doc.
         """
         pass
 
@@ -333,7 +438,7 @@ class ContainerSnapshot(models.Model):
         """
         :inherit.
         """
-        return smart_unicode(self.get_full_name())
+        return smart_unicode(self.get_friendly_name())
 
     def __unicode__(self):
         """
@@ -348,27 +453,46 @@ class ContainerSnapshot(models.Model):
 class Server(models.Model):
 
     """
-    TODO: brief summary.
+    Django model to represent an ipynbsrv setup node.
     """
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(unique=True, max_length=255, help_text='The human-friendly name of this server.')
+    name = models.CharField(
+        unique=True,
+        max_length=255,
+        help_text='The human-friendly name of this server.'
+    )
     hostname = models.CharField(unique=True, max_length=255)
-    internal_ip = models.GenericIPAddressField(unique=True, protocol='IPv4',
-                                               help_text='The IPv4 address of the internal ovsbr0 interface.')
-    external_ip = models.GenericIPAddressField(unique=True, protocol='IPv4',
-                                               help_text='The external IPv4 address of this server.')
+    internal_ip = models.GenericIPAddressField(
+        unique=True,
+        protocol='IPv4',
+        help_text='The IPv4 address of the internal ovsbr0 interface.'
+    )
+    external_ip = models.GenericIPAddressField(
+        unique=True,
+        protocol='IPv4',
+        help_text='The external IPv4 address of this server.'
+    )
 
     """
     A reference to the backend to use as a container backend on this server.
     If this field is other than 'None', the server is considered a container host.
     """
-    container_backend = models.ForeignKey('Backend', blank=True, null=True, default=None,
-                                          limit_choices_to={'kind': Backend.CONTAINER_BACKEND})
-    container_backend_args = models.CharField(max_length=255, blank=True, null=True,
-                                              help_text="""Optional arguments to pass to the backend\'s get_instance method.
-                                              Available placeholders: all model fields in the form: %field_name%, e.g. %hostname%.
-                                              Format: {'arg1': \"value\", 'arg2': \"value\"}""")
+    container_backend = models.ForeignKey(
+        'Backend',
+        blank=True,
+        null=True,
+        default=None,
+        limit_choices_to={'kind': Backend.CONTAINER_BACKEND}
+    )
+    container_backend_args = models.CharField(
+        blank=True,
+        null=True,
+        max_length=255,
+        help_text="""Optional arguments to pass to the backend\'s get_instance method.
+            Available placeholders: all model fields in the form: %field_name%, e.g. %hostname%.
+            Format: {'arg1': \"value\", 'arg2': \"value\"}"""
+    )
 
     def get_container_backend(self):
         """
@@ -381,7 +505,11 @@ class Server(models.Model):
         Get the container_backend_args value with placeholders/variables replaced with their actual value.
         """
         if self.container_backend_args:
-            return self.container_backend_args.replace('%name%', self.name).replace('%hostname%', self.hostname).replace('%internal_ip%', self.internal_ip).replace('%external_ip%', self.external_ip)
+            return self.container_backend_args \
+                .replace('%name%', self.name) \
+                .replace('%hostname%', self.hostname) \
+                .replace('%internal_ip%', self.internal_ip) \
+                .replace('%external_ip%', self.external_ip)
         return None
 
     def is_container_host(self):
@@ -403,29 +531,6 @@ class Server(models.Model):
         return self.__str__()
 
 
-class PortMapping(models.Model):
-
-    """
-    TODO: brief summary.
-    """
-
-    container = models.ForeignKey(Container)
-    internal = models.PositiveIntegerField(null=False)
-    external = models.PositiveIntegerField(unique=True)
-
-    def __str__(self):
-        """
-        :inherit.
-        """
-        return smart_unicode("{0} ({1} -> {2})".format(self.container.__str__, self.external, self.internal))
-
-    def __unicode__(self):
-        """
-        :inherit.
-        """
-        return self.__str__()
-
-
 class Share(models.Model):
 
     """
@@ -438,7 +543,7 @@ class Share(models.Model):
     tags = models.ManyToManyField('Tag', blank=True)
     owner = models.ForeignKey(User)
     # TODO: use OneToOneField
-    group = models.ForeignKey(Group, unique=True)
+    group = models.OneToOneField(Group, related_name='share')
 
     def add_member(self, user):
         """

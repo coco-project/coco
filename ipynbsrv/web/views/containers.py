@@ -127,11 +127,6 @@ def delete(request):
 @user_passes_test(login_allowed)
 def index(request):
     containers = Container.objects.filter(owner=request.user.backend_user)
-    # for container in containers:
-    #     port_mappings = PortMapping.objects.filter(container=container)
-    #     container.port_mappings = port_mappings.filter(~Q(internal=container.image.proxied_port))
-    #     container.workspace_port = port_mappings.filter(internal=container.image.proxied_port).first().external
-
     return render(request, 'web/containers/index.html', {
         'title': "Containers",
         'containers': containers,
@@ -153,7 +148,7 @@ def restart(request):
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
         container = container.first()
-        if container.owner == request.user:
+        if container.owner == request.user.backend_user:
             container.restart()
             messages.success(request, "Container restarted successfully.")
         else:
@@ -178,7 +173,7 @@ def start(request):
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
         container = container.first()
-        if container.owner == request.user:
+        if container.owner == request.user.backend_user:
             container.start()
             messages.success(request, "Container started successfully.")
         else:
@@ -203,7 +198,7 @@ def stop(request):
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
         container = container.first()
-        if container.owner == request.user:
+        if container.owner == request.user.backend_user:
             container.stop()
             messages.success(request, "Container stopped successfully.")
         else:

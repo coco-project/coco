@@ -12,7 +12,8 @@ config.set('INTERNAL_LDAP_CLASS',
 config.set('INTERNAL_LDAP_ARGS',
            default='{"server": "ipynbsrv_ldap", "base_dn": "dc=ipynbsrv,dc=ldap", "users_dn": "ou=users", "groups_dn": "ou=groups"}',
            editable=True,
-           description='The arguments needed to instantiate the internal LDAP backend. Please provide in JSON format (i.e. { "arg1": "val1", "arg2": "val2" }).')
+           description="""The arguments needed to instantiate the internal LDAP backend.
+               Please provide in JSON format (i.e. {'arg1': "val1", 'arg2': "val2"}).""")
 
 config.set('INTERNAL_LDAP_CONNECT_CREDENTIALS',
            default='{"dn": "cn=admin,dc=ipynbsrv,dc=ldap", "password": "123456"}',
@@ -39,7 +40,8 @@ config.set('STORAGE_BACKEND_CLASS',
 config.set('STORAGE_BACKEND_ARGS',
            default='{"base_dir": "/srv/ipynbsrv/data"}',
            editable=True,
-           description='The arguments needed to instantiate the storage backend. Please provide in JSON format (i.e. { "arg1": "val1", "arg2": "val2" }).')
+           description="""The arguments needed to instantiate the storage backend.
+               Please provide in JSON format (i.e. {'arg1': "val1", 'arg2': "val2"}).""")
 
 
 """
@@ -53,7 +55,8 @@ config.set('USER_BACKEND_CLASS',
 config.set('USER_BACKEND_ARGS',
            default='{"server": "ipynbsrv_ldap", "base_dn": "dc=ipynbsrv,dc=ldap", "users_dn": "ou=users"}',
            editable=True,
-           description='The arguments needed to instantiate the provided user backend class. Please provide in json format (i.e. { "arg1": "val1", "arg2": "val2" }).')
+           description="""The arguments needed to instantiate the provided user backend class.
+               Please provide in json format (i.e. {'arg1': "val1", 'arg2': "val2"}).""")
 
 config.set('USER_BACKEND_CONNECT_CREDENTIALS',
            default='{"dn": "cn=admin,dc=ipynbsrv,dc=ldap", "password": "123456"}',

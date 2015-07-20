@@ -10,6 +10,9 @@ _INTERNAL_LDAP = None
 
 
 def get_internal_ldap():
+    """
+    Return an instance of the internal LDAP backend.
+    """
     global _INTERNAL_LDAP
     if _INTERNAL_LDAP is None:
         module, klass = ClassLoader.split(config.INTERNAL_LDAP_CLASS)
@@ -19,7 +22,7 @@ def get_internal_ldap():
 
 def get_internal_ldap_connected():
     """
-    Return the internal LDAP instance with already called `connect` method.
+    Return an internal LDAP instance with already called `connect` method.
     """
     backend = get_internal_ldap()
     backend.connect(json.loads(config.INTERNAL_LDAP_CONNECT_CREDENTIALS))
@@ -33,6 +36,9 @@ _SERVER_SELECTION_ALGORITHM = None
 
 
 def get_server_selection_algorithm():
+    """
+    Return the server selection algorithm instance that is used to pick a container host.
+    """
     global _SERVER_SELECTION_ALGORITHM
     if _SERVER_SELECTION_ALGORITHM is None:
         module, klass = ClassLoader.split(config.SERVER_SELECTION_ALGORITHM_CLASS)
@@ -48,6 +54,9 @@ _STORAGE_BACKEND = None
 
 
 def get_storage_backend():
+    """
+    Return the singleton instance of the storage backend in use.
+    """
     global _STORAGE_BACKEND
     if _STORAGE_BACKEND is None:
         module, klass = ClassLoader.split(config.STORAGE_BACKEND_CLASS)
@@ -63,6 +72,9 @@ _USER_BACKEND = None
 
 
 def get_user_backend():
+    """
+    Return an instance of the external user backend.
+    """
     global _USER_BACKEND
     if _USER_BACKEND is None:
         module, klass = ClassLoader.split(config.USER_BACKEND_CLASS)

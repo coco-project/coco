@@ -24,18 +24,35 @@ def remove_on_server(sender, image, **kwargs):
                         backend.delete_image(image)
                     except ContainerImageNotFoundError:
                         pass  # already removed
+                    except ContainerBackendError as ex:
+                        # XXX: restore?
+                        raise ex
                 else:
-                    logger.warn("Container image %s doesn't exist on server %s. Not removing it." % (image, server))
+                    logger.warn(
+                        "Container image %s doesn't exist on server %s. Not removing it."
+                        % (image, server)
+                    )
 
 
 @receiver(post_delete, sender=ContainerImage)
 def post_delete_handler(sender, instance, **kwargs):
+    """
+    Method to map Django post_delete model signals to custom ones.
+    """
     container_image_deleted.send(sender=sender, image=instance, kwargs=kwargs)
 
 
 @receiver(post_save, sender=ContainerImage)
 def post_save_handler(sender, instance, **kwargs):
+    """
+    Method to map Django post_save model signals to custom ones.
+    """
     if 'created' in kwargs and kwargs['created']:
         container_image_created.send(sender=sender, image=instance, kwargs=kwargs)
     else:
-        container_image_modified.send(sender=sender, image=instance, fields=kwargs['update_fields'], kwargs=kwargs)
+        container_image_modified.send(
+            sender=sender,
+            image=instance,
+            fields=kwargs['update_fields'],
+            kwargs=kwargs
+        )

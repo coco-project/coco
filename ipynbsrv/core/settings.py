@@ -3,6 +3,7 @@ Settings defining the prefixes to be used in backend names for container resourc
 """
 CONTAINER_NAME_PREFIX = 'ipynbsrv-'
 CONTAINER_IMAGE_NAME_PREFIX = CONTAINER_NAME_PREFIX
+CONTAINER_SNAPSHOT_PREFIX = 'snapshot_'
 
 
 """

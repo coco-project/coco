@@ -8,6 +8,7 @@ from ipynbsrv.core import settings
 from ipynbsrv.core.models import BackendUser
 from ipynbsrv.core.signals.signals import *
 import logging
+from os import path
 
 
 logger = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ def create_home_directory(sender, user, **kwargs):
     Every user needs a home directory. Create it right after user creation.
     """
     if user is not None:
-        home_dir = settings.STORAGE_DIR_HOME + user.backend_pk
+        home_dir = path.join(settings.STORAGE_DIR_HOME, user.backend_pk)
         if not storage_backend.dir_exists(home_dir):
             try:
                 storage_backend.mk_dir(home_dir)
@@ -36,7 +37,7 @@ def create_home_directory(sender, user, **kwargs):
 @receiver(user_created)
 def create_on_internal_ldap(sender, user, **kwargs):
     """
-    BackendUsers are used to represent external backends (e.g. LDAP) users.
+    BackendUser instances are used to represent external backends (e.g. LDAP) users.
 
     If such a user is created, we should therefor create the user on the backend.
     """
@@ -56,6 +57,9 @@ def create_on_internal_ldap(sender, user, **kwargs):
             user.backend_id = created.get(UserBackend.FIELD_ID)
             user.backend_pk = created.get(UserBackend.FIELD_PK)
             user.save()
+        except UserBackendError as ex:
+            user.delete()  # XXX: cleanup?
+            raise ex
         finally:
             try:
                 internal_ldap.disconnect()
@@ -69,7 +73,7 @@ def create_public_directory(sender, user, **kwargs):
     Every user needs a public directory. Create it right after user creation.
     """
     if user is not None:
-        public_dir = settings.STORAGE_DIR_PUBLIC + user.backend_pk
+        public_dir = path.join(settings.STORAGE_DIR_PUBLIC, user.backend_pk)
         if not storage_backend.dir_exists(public_dir):
             try:
                 storage_backend.mk_dir(public_dir)
@@ -95,6 +99,9 @@ def delete_on_internal_ldap(sender, user, **kwargs):
             user.primary_group.delete()
         except UserNotFoundError:
             pass  # already deleted
+        except UserBackendError as ex:
+            # XXX: recreate?
+            raise ex
         finally:
             try:
                 internal_ldap.disconnect()
@@ -108,7 +115,7 @@ def remove_home_directory(sender, user, **kwargs):
     When a user is deleted we can safely remove his home directory.
     """
     if user is not None:
-        home_dir = settings.STORAGE_DIR_HOME + user.backend_pk
+        home_dir = path.join(settings.STORAGE_DIR_HOME, user.backend_pk)
         if storage_backend.dir_exists(home_dir):
             try:
                 storage_backend.rm_dir(home_dir, recursive=True)
@@ -124,7 +131,7 @@ def remove_public_directory(sender, user, **kwargs):
     When a user is deleted we can safely remove his public directory.
     """
     if user is not None:
-        public_dir = settings.STORAGE_DIR_PUBLIC + user.backend_pk
+        public_dir = path.join(settings.STORAGE_DIR_PUBLIC, user.backend_pk)
         if storage_backend.dir_exists(public_dir):
             try:
                 storage_backend.rm_dir(public_dir, recursive=True)
@@ -156,18 +163,36 @@ def user_modified_handler(sender, user, fields, **kwargs):
         elif action == 'pre_clear':
             for group in user.django_user.groups.all():
                 if hasattr(group, 'backend_group'):
-                    group_member_removed.send(sender=sender, group=group.backend_group, user=user, kwargs=kwargs)
+                    group_member_removed.send(
+                        sender=sender,
+                        group=group.backend_group,
+                        user=user,
+                        kwargs=kwargs
+                    )
         elif action == 'post_remove':
             for group in groups:
-                group_member_removed.send(sender=sender, group=group, user=user, kwargs=kwargs)
+                group_member_removed.send(
+                    sender=sender,
+                    group=group,
+                    user=user,
+                    kwargs=kwargs
+                )
 
 
 @receiver(m2m_changed, sender=User.groups.through)
 def m2m_changed_handler(sender, instance, **kwargs):
+    """
+    Method to map Django m2m_changed model signals to custom ones.
+    """
     if isinstance(instance, User) and hasattr(instance, 'backend_user'):
         action = kwargs.get('action')
         if action == 'post_add' or action == 'pre_clear' or action == 'post_remove':
-            user_modified.send(sender=sender, user=instance.backend_user, fields=['groups'], kwargs=kwargs)
+            user_modified.send(
+                sender=sender,
+                user=instance.backend_user,
+                fields=['groups'],
+                kwargs=kwargs
+            )
 
 
 @receiver(post_delete, sender=BackendUser)
@@ -186,4 +211,9 @@ def post_save_handler(sender, instance, **kwargs):
     if 'created' in kwargs and kwargs['created']:
         user_created.send(sender=sender, user=instance, kwargs=kwargs)
     else:
-        user_modified.send(sender=sender, user=instance, fields=kwargs['update_fields'], kwargs=kwargs)
+        user_modified.send(
+            sender=sender,
+            user=instance,
+            fields=kwargs['update_fields'],
+            kwargs=kwargs
+        )
