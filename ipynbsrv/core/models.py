@@ -85,7 +85,8 @@ class BackendGroup(models.Model):
     with them like with any other Django objects, without having to worry about the fact
     that there's a server behind.
     """
-
+    
+    backend_id = models.PositiveIntegerField(unique=True, help_text='The ID for this group used internally by the backend.')
     backend_pk = models.CharField(max_length=150, unique=True, help_text='Unique identifier for this group used by the backend.')
     django_group = models.OneToOneField(Group, related_name='backend_group', help_text='The regular Django group this backend group is associated with.')
 
@@ -93,7 +94,7 @@ class BackendGroup(models.Model):
         """
         :inherit.
         """
-        return smart_unicode(self.djangp_group.__str__())
+        return smart_unicode(self.django_group.__str__())
 
     def __unicode__(self):
         """
@@ -112,6 +113,7 @@ class BackendUser(models.Model):
     that there's a server behind.
     """
 
+    backend_id = models.PositiveIntegerField(unique=True, help_text='The ID for this user used internally by the backend.')
     backend_pk = models.CharField(max_length=150, unique=True, help_text='Unique identifier for this user used by the backend.')
     django_user = models.OneToOneField(User, related_name='backend_user', help_text='The regular Django user this backend user is associated with.')
     primary_group = models.OneToOneField('BackendGroup', related_name='primary_user', help_text='The primary backend group this user belongs to.')
@@ -448,6 +450,17 @@ class Share(models.Model):
         """
         return user in self.get_members()
 
+    @classmethod
+    def for_user(self, user):
+        """
+        TODO: document
+        """
+        shares = None
+        try:
+            shares = Share.objects.filter(owner=user.id)
+        finally:
+            return shares
+
     def __str__(self):
         """
         :inherit.
@@ -481,6 +494,101 @@ class Tag(models.Model):
         :inherit.
         """
         return self.__str__()
+
+
+class Notification(models.Model):
+
+    """
+    Class that acts as a message between users and groups.
+    """
+
+    """
+    String to identify notifications for miscellaneous events.
+    """
+    MISCELLANEOUS = 'miscellaneous'
+
+    """
+    String to identify notifications for share related events.
+    """
+    SHARE = 'share'
+
+    """
+    String to identify notifications for container related events.
+    """
+    CONTAINER = 'container'
+
+    """
+    String to identify notifications for group related events.
+    """
+    GROUP = 'group'
+
+    """
+    String to identify notifications for image related events.
+    """
+    IMAGE = 'image'
+
+    """
+    List of choosable event event types.
+    """
+    EVENT_TYPES = [
+        (MISCELLANEOUS, 'Miscellaneous'),
+        (SHARE, 'Share'),
+        (CONTAINER, 'Container'),
+        (GROUP, 'Group'),
+        (IMAGE, 'Image')
+    ]
+
+    sender = models.ForeignKey(User, help_text='The user who send the notification.')
+    message = models.CharField(max_length=255, help_text='The message body.')
+    date = models.DateTimeField()
+    event_type = models.CharField(choices=EVENT_TYPES, default=MISCELLANEOUS, max_length=20)
+
+    def send(self, receiver):
+        raise NotImplementedError
+
+    def __str__(self):
+        """
+        :inherit.
+        """
+        return smart_unicode("{0}: {1}".format(self.date, self.message))
+
+    def __unicode__(self):
+        """
+        :inherit.
+        """
+        return self.__str__()
+
+
+class NotificationReceivers(models.Model):
+
+    """
+    Helper class to allow multiple receivers per Notification.
+    """
+
+    notification = models.ForeignKey(Notification)
+    receiving_group = models.ForeignKey(Group, help_text='The regular Django group that will receive this Notification.')
+
+
+class NotificationLog(models.Model):
+
+    """
+    Keep track of all the notifications per user and if they have been read yet.
+    """
+
+    notification = models.ForeignKey(Notification, help_text='The notification itself.')
+    user = models.ForeignKey(User, related_name='user', help_text='The BackendUser assigned to this NotificationLog entry.')
+    read = models.BooleanField(default=False)
+
+    @classmethod
+    def for_user(self, user):
+        """
+        TODO: document
+        """
+        notifications = None
+        try:
+            notifications = NotificationLog.objects.filter(user=user.id).order_by("-notification__date")
+        finally:
+            return notifications
 
 
 # make sure our signal receivers are loaded
