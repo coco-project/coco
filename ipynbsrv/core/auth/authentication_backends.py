@@ -68,11 +68,16 @@ class BackendProxyAuthentication(object):
                 # add user to group
                 internal_ldap.add_group_member(ldap_group.get(GroupBackend.FIELD_PK), ldap_user.get(UserBackend.FIELD_PK))
                 # create Django records
-                group = self.create_django_group(username, ldap_group.get(GroupBackend.FIELD_PK))
-                user = self.create_django_user(username, ldap_user.get(UserBackend.FIELD_PK), group.backend_group)
+                group = self.create_django_group(username, ldap_group.get(GroupBackend.FIELD_PK), uid)
+                user = self.create_django_user(username, ldap_user.get(UserBackend.FIELD_PK), uid, group.backend_group)
                 # add user to group
                 user.backend_user.save()
+                user.save()
                 group.user_set.add(user)
+                group.save()
+
+                print("{} added to {}".format(user, group))
+
                 return user
         except AuthenticationError:
             return None
@@ -90,25 +95,25 @@ class BackendProxyAuthentication(object):
             except:
                 pass
 
-    def create_django_group(self, groupname, backend_pk):
+    def create_django_group(self, groupname, backend_pk, backend_id):
         """
         Create a django group (`ipynbsrv.core.models.BackendGroup`) for `username`.
         This is needed to allow a more simple group management directly in Django.
         """
         group = Group(name=groupname)
         group.save()
-        backend_group = BackendGroup(backend_pk=backend_pk, django_group=group)
+        backend_group = BackendGroup(backend_pk=backend_pk, backend_id=backend_id, django_group=group)
         backend_group.save()
         return group
 
-    def create_django_user(self, username, backend_pk, group):
+    def create_django_user(self, username, backend_pk, backend_id, group):
         """
         Create a django user (`ipynbsrv.core.models.BackendUser`) for `username`.
         This is needed to allow a more simple user management directly in Django.
         """
         user = User(username=username)
         user.save()
-        backend_user = BackendUser(backend_pk=backend_pk, django_user=user, primary_group=group)
+        backend_user = BackendUser(backend_pk=backend_pk, django_user=user, backend_id=backend_id, primary_group=group)
         backend_user.save()
         return user
 
