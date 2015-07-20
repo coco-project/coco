@@ -1,6 +1,6 @@
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from ipynbsrv.contract.errors import ContainerImageNotFoundError
+from ipynbsrv.contract.errors import ContainerBackendError, ContainerImageNotFoundError
 from ipynbsrv.core.models import ContainerImage, Server
 from ipynbsrv.core.signals.signals import container_image_created, \
     container_image_deleted, container_image_modified
