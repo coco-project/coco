@@ -24,8 +24,8 @@ def create_user_directories(sender, user, **kwargs):
         if not storage_backend.dir_exists(home_dir):
             try:
                 storage_backend.mk_dir(home_dir)
-                storage_backend.set_dir_owner(home_dir, user.backend_pk)
-                storage_backend.set_dir_group(home_dir, user.backend_pk)
+                storage_backend.set_dir_uid(home_dir, user.backend_id)
+                storage_backend.set_dir_gid(home_dir, user.primary_group.backend_id)
                 storage_backend.set_dir_mode(home_dir, 0700)
             except StorageBackendError as ex:
                 raise ex
@@ -38,8 +38,8 @@ def create_user_directories(sender, user, **kwargs):
         if not storage_backend.dir_exists(public_dir):
             try:
                 storage_backend.mk_dir(public_dir)
-                storage_backend.set_dir_owner(public_dir, user.backend_pk)
-                storage_backend.set_dir_group(public_dir, user.backend_pk)
+                storage_backend.set_dir_uid(public_dir, user.backend_id)
+                storage_backend.set_dir_gid(public_dir, user.primary_group.backend_id)
                 storage_backend.set_dir_mode(public_dir, 0755)
             except StorageBackendError as ex:
                 raise ex
