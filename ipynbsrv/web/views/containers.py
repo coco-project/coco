@@ -92,9 +92,12 @@ def create(request):
                     image=image,
                     server=server
                 )
-                container.save()
+                try:
+                    container.save()
+                    messages.success(request, "Container created successfully.")
                 # container.start()
-                messages.success(request, "Container created successfully.")
+                except Exception:
+                    messages.error(request, "Whuups, something went wrong :(.")
             else:
                 messages.error(request, "You don't have enough permissions for the requested operation.")
         else:
@@ -118,8 +121,11 @@ def delete(request):
     if container.exists():
         container = container.first()
         if container.owner == request.user.backend_user:
-            container.delete()
-            messages.success(request, "Container deleted successfully.")
+            try:
+                container.delete()
+                messages.success(request, "Container deleted successfully.")
+            except Exception:
+                messages.error(request, "Whuups, something went wrong :(.")
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
@@ -153,8 +159,11 @@ def restart(request):
     if container.exists():
         container = container.first()
         if container.owner == request.user.backend_user:
-            container.restart()
-            messages.success(request, "Container restarted successfully.")
+            try:
+                container.restart()
+                messages.success(request, "Container restarted successfully.")
+            except Exception:
+                messages.error(request, "Whuups, something went wrong :(.")
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
@@ -178,8 +187,11 @@ def start(request):
     if container.exists():
         container = container.first()
         if container.owner == request.user.backend_user:
-            container.start()
-            messages.success(request, "Container started successfully.")
+            try:
+                container.start()
+                messages.success(request, "Container started successfully.")
+            except Exception:
+                messages.error(request, "Whuups, something went wrong :(.")
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
@@ -203,8 +215,11 @@ def stop(request):
     if container.exists():
         container = container.first()
         if container.owner == request.user.backend_user:
-            container.stop()
-            messages.success(request, "Container stopped successfully.")
+            try:
+                container.stop()
+                messages.success(request, "Container stopped successfully.")
+            except Exception:
+                messages.error(request, "Whuups, something went wrong :(.")
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
     else:

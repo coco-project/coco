@@ -6,7 +6,6 @@ from ipynbsrv.common.utils import ClassLoader
 from ipynbsrv.contract.backends import ContainerBackend, SuspendableContainerBackend
 from ipynbsrv.core import settings
 from random import randint
-import re
 
 
 class Backend(models.Model):
