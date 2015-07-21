@@ -12,6 +12,6 @@ Setting storing the user ID offset to be added to internal ldap users
 USER_ID_OFFSET = 2500
 
 '''
-Setting storing the group ID offset to be added to internal ldap users
+Setting storing the group ID offset to be added to internal ldap groups
 '''
-GROUP_ID_OFFSET = 2500
+GROUP_ID_OFFSET = 5500
