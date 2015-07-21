@@ -4,10 +4,7 @@ from collections import Iterator
 class ServerSelectionAlgorithm(object):
 
     """
-    Instances of server selection algorithms are used to decide on which server
-    a container should be created.
-
-    TODO: move into contract package?
+    Algorithm class to be used to decide on which server a container should be created.
     """
 
     def choose_server(self, servers):

@@ -2,9 +2,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.shortcuts import redirect, render
-from ipynbsrv.conf import conf
+from ipynbsrv.conf.helpers import *
 from ipynbsrv.core.auth.checks import login_allowed
-from ipynbsrv.core.models import Container, Image, PortMapping, Server
+from ipynbsrv.core.models import Container, ContainerImage, Server
 from random import randint
 
 
@@ -50,7 +50,7 @@ def commit(request):
     if container.exists():
         container = container.first()
         if container.owner == request.user:
-            if Image.objects.filter(name=img_name).filter(owner=request.user).exists():
+            if ContainerImage.objects.filter(name=img_name).filter(owner=request.user).exists():
                 messages.error(request, "An image with that name already exists.")
             else:
                 container.commit(img_name=img_name, description=description, public=(public == "on"))
@@ -76,29 +76,25 @@ def create(request):
     description = request.POST.get('description')
     image_id = int(request.POST.get('image_id'))
 
-    if Container.objects.filter(name=name).filter(owner=request.user).exists():
+    if Container.objects.filter(name=name).filter(owner=request.user.backend_user).exists():
         messages.error(request, "A container with that name already exists.")
     else:
-        image = Image.objects.filter(pk=image_id)
+        image = ContainerImage.objects.filter(pk=image_id)
         if image.exists():
             image = image.first()
             if image.owner == request.user or image.is_public:
-
-                # choose container host
-                # TODO: make generic (let user decide which algorithm to choose)
-                s = PrimitiveContainerHostSelectionService.get_server(len.Server.objects.all())
-                srv = Server.objects.all()[s]
-
-                # TODO: distinct docker_id
-                container = Container(docker_id=randint(0, 1000), host=srv.id, name=name, description=description, image=image,
-                                      owner=request.user, running=False, clone_of=None)
+                # pick a host server via the selection algorithm
+                server = get_server_selection_algorithm().choose_server(
+                    Server.objects.all().iterator()
+                )
+                container = Container(backend_pk=randint(0, 1000), name=name, description=description, server=server, owner=request.user.backend_user, image=image)
                 container.save()
-                container.start()
+                # container.start()
                 messages.success(request, "Container created successfully.")
             else:
                 messages.error(request, "You don't have enough permissions for the requested operation.")
         else:
-            messages.error(request, "Container base image does not exist.")
+            messages.error(request, "Container bootstrap image does not exist.")
 
     return redirect('containers')
 
@@ -117,7 +113,7 @@ def delete(request):
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
         container = container.first()
-        if container.owner == request.user:
+        if container.owner == request.user.backend_user:
             container.delete()
             messages.success(request, "Container deleted successfully.")
         else:
@@ -130,16 +126,11 @@ def delete(request):
 
 @user_passes_test(login_allowed)
 def index(request):
-    containers = Container.objects.filter(owner=request.user)
-    for container in containers:
-            port_mappings = PortMapping.objects.filter(container=container)
-            container.port_mappings = port_mappings.filter(~Q(internal=container.image.proxied_port))
-            container.workspace_port = port_mappings.filter(internal=container.image.proxied_port).first().external
-
+    containers = Container.objects.filter(owner=request.user.backend_user)
     return render(request, 'web/containers/index.html', {
         'title': "Containers",
         'containers': containers,
-        'images': Image.objects.filter((Q(owner=request.user) | Q(is_public=True)))
+        'images': ContainerImage.objects.filter((Q(owner=request.user) | Q(is_public=True)))
     })
 
 
@@ -157,7 +148,7 @@ def restart(request):
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
         container = container.first()
-        if container.owner == request.user:
+        if container.owner == request.user.backend_user:
             container.restart()
             messages.success(request, "Container restarted successfully.")
         else:
@@ -182,7 +173,7 @@ def start(request):
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
         container = container.first()
-        if container.owner == request.user:
+        if container.owner == request.user.backend_user:
             container.start()
             messages.success(request, "Container started successfully.")
         else:
@@ -207,7 +198,7 @@ def stop(request):
     container = Container.objects.filter(pk=ct_id)
     if container.exists():
         container = container.first()
-        if container.owner == request.user:
+        if container.owner == request.user.backend_user:
             container.stop()
             messages.success(request, "Container stopped successfully.")
         else:

@@ -32,7 +32,7 @@
                     <tbody>
                         {% for img in images %}
                         <tr>
-                            <td>{{ img.get_full_name }}</td>
+                            <td>{{ img.get_friendly_name }}</td>
                             <td>{{ img.description }}</td>
                             <td style="text-align: center">
                                 <input type="checkbox" data-sort="1"{% if img.is_public %} checked{% endif %}{% if img.owner != request.user %} disabled{% endif %}>
@@ -55,7 +55,7 @@
             </div>
         </div>
         {% else %}
-            <div class="alert alert-info">You do not have access to any images yet.</div>
+            <div class="alert alert-info">No images you can access available.</div>
         {% endif %}
 
         {% include 'web/images/modal_create.html' with containers=containers selected=selected share=share csrf_token=csrf_token only %}

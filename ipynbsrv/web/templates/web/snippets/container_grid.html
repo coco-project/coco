@@ -36,7 +36,7 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
-                        {% if ct.running %}
+                        {% if ct.is_running %}
                             <li role="presentation">
                                 <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('connect-{{ ct.id }}').getElementsByTagName('button')[0].click();">Connect</a>
                                 <form id="connect-{{ ct.id }}" action="/workspace/{{ ct.workspace_port }}/" method="GET" target="_blank" role="form">
@@ -96,5 +96,5 @@
    {% endfor %}
 </div>
 {% else %}
-    <div class="alert alert-info">You have no containers yet.</div>
+    <div class="alert alert-info">You have no containers.</div>
 {% endif %}

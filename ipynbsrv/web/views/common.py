@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.http.response import HttpResponse
 from django.shortcuts import render
 from ipynbsrv.core.auth.checks import login_allowed
-from ipynbsrv.core.models import Container, PortMapping
+from ipynbsrv.core.models import Container
 from ipynbsrv.web import settings
 
 
@@ -14,15 +14,9 @@ def dashboard(request):
     '''
     Dashboard view listing the running containers.
     '''
-    containers = Container.objects.filter(owner=request.user)
-    for container in containers:
-        port_mappings = PortMapping.objects.filter(container=container)
-        container.port_mappings = port_mappings.filter(~Q(internal=container.image.proxied_port))
-        container.workspace_port = port_mappings.filter(internal=container.image.proxied_port).first().external
-
     return render(request, 'web/dashboard.html', {
-        'title':  "Dashboard",
-        'containers': containers
+        'title': "Dashboard",
+        'containers': Container.objects.filter(owner=request.user.backend_user)
     })
 
 

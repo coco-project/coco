@@ -27,7 +27,7 @@ def add_member_to_internal_ldap_group(sender, group, user, **kwargs):
 @receiver(group_created)
 def create_on_internal_ldap(sender, group, **kwargs):
     """
-    BackendGroups are used to represent external backends (e.g. LDAP) groups.
+    BackendGroup instances are used to represent external backends (e.g. LDAP) groups.
 
     If such a group is created, we should therefor create the group on the backend.
     """
@@ -43,6 +43,9 @@ def create_on_internal_ldap(sender, group, **kwargs):
             group.backend_id = created.get(GroupBackend.FIELD_ID)
             group.backend_pk = created.get(GroupBackend.FIELD_PK)
             group.save()
+        except GroupBackendError as ex:
+            group.delete()  # XXX: cleanup?
+            raise ex
         finally:
             try:
                 internal_ldap.disconnect()
@@ -62,6 +65,9 @@ def delete_on_internal_ldap(sender, group, **kwargs):
             group.django_group.delete()
         except GroupNotFoundError:
             pass  # already deleted
+        except GroupBackendError as ex:
+            # XXX: recreate?
+            raise ex
         finally:
             try:
                 internal_ldap.disconnect()
@@ -87,6 +93,9 @@ def remove_member_from_internal_ldap_group(sender, group, user, **kwargs):
 
 @receiver(group_modified)
 def group_modified_handler(sender, group, fields, **kwargs):
+    """
+    Helper method to break modifications into smaller pieces.
+    """
     kwargs = kwargs.get('kwargs')  # not sure why this is needed
     if fields is not None and 'user_set' in fields:
         # get the user objects
@@ -100,17 +109,35 @@ def group_modified_handler(sender, group, fields, **kwargs):
         action = kwargs.get('action')
         if action == 'post_add':
             for user in users:
-                group_member_added.send(sender=sender, group=group, user=user, kwargs=kwargs)
+                group_member_added.send(
+                    sender=sender,
+                    group=group,
+                    user=user,
+                    kwargs=kwargs
+                )
         elif action == 'post_remove':
-            group_member_removed.send(sender=sender, group=group, users=users, kwargs=kwargs)
+            group_member_removed.send(
+                sender=sender,
+                group=group,
+                users=users,
+                kwargs=kwargs
+            )
 
 
 @receiver(m2m_changed, sender=User.groups.through)
 def m2m_changed_handler(sender, instance, **kwargs):
+    """
+    Method to map Django m2m_changed model signals to custom ones.
+    """
     if isinstance(instance, Group) and hasattr(instance, 'backend_group'):
         action = kwargs.get('action')
         if action == 'post_add' or action == 'post_remove':
-            group_modified.send(sender=sender, group=instance.backend_group, fields=['user_set'], kwargs=kwargs)
+            group_modified.send(
+                sender=sender,
+                group=instance.backend_group,
+                fields=['user_set'],
+                kwargs=kwargs
+            )
 
 
 @receiver(post_delete, sender=BackendGroup)
@@ -129,4 +156,9 @@ def post_save_handler(sender, instance, **kwargs):
     if 'created' in kwargs and kwargs['created']:
         group_created.send(sender=sender, group=instance, kwargs=kwargs)
     else:
-        group_modified.send(sender=sender, group=instance, fields=kwargs['update_fields'], kwargs=kwargs)
+        group_modified.send(
+            sender=sender,
+            group=instance,
+            fields=kwargs['update_fields'],
+            kwargs=kwargs
+        )
