@@ -1,0 +1,15 @@
+BUGS
+
+
+FEATURES
+
+  - [ ] (optional) A logging system to log raised exceptions or debug information
+
+
+IMPROVEMENTS
+
+  - [ ] Model validation via the in 1.8 newly introduced mechanisms
+        (https://docs.djangoproject.com/en/1.8/ref/models/instances/#validating-objects)
+
+
+REFACTORING

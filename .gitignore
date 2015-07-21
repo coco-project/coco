@@ -3,8 +3,10 @@
 
 # Django development DB
 *.sqlite3
+# Django static files directory
+static
 
-# bower packages
+# Bower packages
 ipynbsrv/web/static/bower_components
 # LESS generated CSS
 ipynbsrv/web/static/css/main.css
