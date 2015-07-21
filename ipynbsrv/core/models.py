@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.contrib.auth.models import Group, User
 from django.db import models
 from django.utils.encoding import smart_unicode
@@ -540,7 +541,7 @@ class Notification(models.Model):
 
     sender = models.ForeignKey(User, help_text='The user who send the notification.')
     message = models.CharField(max_length=255, help_text='The message body.')
-    date = models.DateTimeField()
+    date = models.DateTimeField(default=datetime.now())
     event_type = models.CharField(choices=EVENT_TYPES, default=MISCELLANEOUS, max_length=20)
 
     def send(self):
