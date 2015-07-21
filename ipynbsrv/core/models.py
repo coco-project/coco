@@ -5,7 +5,7 @@ from django.utils.encoding import smart_unicode
 from ipynbsrv.common.utils import ClassLoader
 from ipynbsrv.contract.backends import ContainerBackend, SuspendableContainerBackend
 from ipynbsrv.core import settings
-import re
+from random import randint
 
 
 class Backend(models.Model):
@@ -111,6 +111,7 @@ class BackendGroup(models.Model):
     )
     backend_pk = models.CharField(
         unique=True,
+        default=randint(0, 1000),
         max_length=255,
         help_text='Unique identifier for this group used by the backend.'
     )
@@ -120,8 +121,8 @@ class BackendGroup(models.Model):
         help_text='The regular Django group this backend group is associated with.'
     )
 
-    @classmethod
-    def generate_internal_guid(self):
+    @staticmethod
+    def generate_internal_guid():
         """
         Generate an unique internal group ID.
 
@@ -158,9 +159,11 @@ class BackendUser(models.Model):
     id = models.AutoField(primary_key=True)
     backend_id = models.PositiveIntegerField(
         unique=True,
-        help_text='The ID for this user used internally by the backend.')
+        help_text='The ID for this user used internally by the backend.'
+    )
     backend_pk = models.CharField(
         unique=True,
+        default=randint(0, 1000),
         max_length=255,
         help_text='Unique identifier for this user used by the backend.'
     )
@@ -175,8 +178,8 @@ class BackendUser(models.Model):
         help_text='The primary backend group this user belongs to.'
     )
 
-    @classmethod
-    def generate_internal_uid(self):
+    @staticmethod
+    def generate_internal_uid():
         """
         Generate an unique internal user ID.
         """
@@ -206,6 +209,7 @@ class Container(models.Model):
 
     id = models.AutoField(primary_key=True)
     backend_pk = models.CharField(
+        default=randint(0, 1000),
         max_length=255,
         help_text='The primary key the backend uses to identify this container.'
     )
@@ -232,7 +236,7 @@ class Container(models.Model):
         """
         self.server.get_container_backend().clone_container(self.backend_pk, {})
 
-    def create_snapshot(self, name, description):
+    def create_snapshot(self, name, description=None):
         """
         Create a snapshot of the current container state.
 
@@ -240,14 +244,11 @@ class Container(models.Model):
         :param description: The snapshot's description.
         """
         snapshot = ContainerSnapshot(
-            backend_pk=0,
             name=name,
             description=description,
             container=self
         )
         snapshot.save()
-        from ipynbsrv.core.signals.signals import container_snapshot_created
-        container_snapshot_created.send(sender=self, snapshot=snapshot)
         return snapshot
 
     def get_server_backend_representation(self):
@@ -264,9 +265,9 @@ class Container(models.Model):
 
     def get_backend_name(self):
         """
-        Return the name of this container how it is named on the backend.
+        Return the container name the way it is passed to the backend upon creation.
         """
-        return "%s%i_%s" % (settings.CONTAINER_NAME_PREFIX, self.owner.backend_id, self.name)
+        return 'u%i-%s' % (self.owner.backend_id, self.name)
 
     def get_friendly_name(self):
         """
@@ -370,6 +371,7 @@ class ContainerImage(models.Model):
     id = models.AutoField(primary_key=True)
     backend_pk = models.CharField(
         unique=True,
+        default=randint(0, 1000),
         max_length=255,
         help_text='The primary key the backend uses to identify this image.'
     )
@@ -384,12 +386,6 @@ class ContainerImage(models.Model):
     )
     owner = models.ForeignKey(User)
     is_public = models.BooleanField(default=False)
-
-    def get_backend_name(self):
-        """
-        Return the name of this image how it is named on the backend.
-        """
-        return "%s%i/%s" % (settings.CONTAINER_IMAGE_NAME_PREFIX, self.owner.backend_id, self.name)
 
     def get_friendly_name(self):
         """
@@ -425,25 +421,13 @@ class ContainerSnapshot(models.Model):
     id = models.AutoField(primary_key=True)
     backend_pk = models.CharField(
         unique=True,
+        default=randint(0, 1000),
         max_length=255,
         help_text='The primary key the backend uses to identify this snapshot.'
     )
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
     container = models.ForeignKey('Container')
-
-    def get_backend_name(self):
-        """
-        Return the name of this snapshot how it is named on the backend.
-        """
-        container_name = self.container.get_backend_name()
-        repository = re.sub(
-            r'^' + settings.CONTAINER_NAME_PREFIX + r'(\d+)_(.+)$',
-            settings.CONTAINER_NAME_PREFIX + r'\g<1>/\g<2>',
-            container_name
-        )
-        tag = settings.CONTAINER_SNAPSHOT_PREFIX + self.name
-        return repository + ':' + tag
 
     def get_friendly_name(self):
         """
@@ -781,4 +765,5 @@ class Tag(models.Model):
 
 
 # make sure our signal receivers are loaded
-from ipynbsrv.core.signals import *
+from ipynbsrv.core.signals import container_images, container_snapshots, \
+    containers, groups, users

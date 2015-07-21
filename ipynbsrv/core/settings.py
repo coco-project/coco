@@ -1,10 +1,3 @@
-"""
-Settings defining the prefixes to be used in backend names for container resources.
-"""
-CONTAINER_NAME_PREFIX = 'ipynbsrv-'
-CONTAINER_IMAGE_NAME_PREFIX = CONTAINER_NAME_PREFIX
-CONTAINER_SNAPSHOT_PREFIX = 'snapshot_'
-
 
 """
 Settings storing the paths (relative to STORAGE_DIR_BASE) under which (user) directories should be created.

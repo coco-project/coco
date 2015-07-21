@@ -2,10 +2,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.shortcuts import redirect, render
-from ipynbsrv.conf.helpers import *
+from ipynbsrv.conf.helpers import get_server_selection_algorithm
 from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import Container, ContainerImage, Server
-from random import randint
 
 
 @user_passes_test(login_allowed)
@@ -83,14 +82,22 @@ def create(request):
         if image.exists():
             image = image.first()
             if image.owner == request.user or image.is_public:
-                # pick a host server via the selection algorithm
                 server = get_server_selection_algorithm().choose_server(
                     Server.objects.all().iterator()
                 )
-                container = Container(backend_pk=randint(0, 1000), name=name, description=description, server=server, owner=request.user.backend_user, image=image)
-                container.save()
+                container = Container(
+                    name=name,
+                    description=description,
+                    owner=request.user.backend_user,
+                    image=image,
+                    server=server
+                )
+                try:
+                    container.save()
+                    messages.success(request, "Container created successfully.")
                 # container.start()
-                messages.success(request, "Container created successfully.")
+                except Exception:
+                    messages.error(request, "Whuups, something went wrong :(.")
             else:
                 messages.error(request, "You don't have enough permissions for the requested operation.")
         else:
@@ -114,8 +121,11 @@ def delete(request):
     if container.exists():
         container = container.first()
         if container.owner == request.user.backend_user:
-            container.delete()
-            messages.success(request, "Container deleted successfully.")
+            try:
+                container.delete()
+                messages.success(request, "Container deleted successfully.")
+            except Exception:
+                messages.error(request, "Whuups, something went wrong :(.")
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
@@ -149,8 +159,11 @@ def restart(request):
     if container.exists():
         container = container.first()
         if container.owner == request.user.backend_user:
-            container.restart()
-            messages.success(request, "Container restarted successfully.")
+            try:
+                container.restart()
+                messages.success(request, "Container restarted successfully.")
+            except Exception:
+                messages.error(request, "Whuups, something went wrong :(.")
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
@@ -174,8 +187,11 @@ def start(request):
     if container.exists():
         container = container.first()
         if container.owner == request.user.backend_user:
-            container.start()
-            messages.success(request, "Container started successfully.")
+            try:
+                container.start()
+                messages.success(request, "Container started successfully.")
+            except Exception:
+                messages.error(request, "Whuups, something went wrong :(.")
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
@@ -199,8 +215,11 @@ def stop(request):
     if container.exists():
         container = container.first()
         if container.owner == request.user.backend_user:
-            container.stop()
-            messages.success(request, "Container stopped successfully.")
+            try:
+                container.stop()
+                messages.success(request, "Container stopped successfully.")
+            except Exception:
+                messages.error(request, "Whuups, something went wrong :(.")
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
     else:

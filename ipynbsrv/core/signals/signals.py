@@ -34,6 +34,7 @@ Set of signals to be triggered when working with container_backend container ins
 """
 container_snapshot_created = Signal(providing_args=['snapshot'])
 container_snapshot_deleted = Signal(providing_args=['snapshot'])
+container_snapshot_modified = Signal(providing_args=['snapshot', 'fields'])
 container_snapshot_restored = Signal(providing_args=['snapshot'])
 
 
