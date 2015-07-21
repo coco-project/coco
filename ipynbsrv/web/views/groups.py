@@ -1,9 +1,9 @@
 from datetime import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.shortcuts import redirect, render
-from ipynbsrv.core.auth.checks import login_alloweds
+from ipynbsrv.core.auth.checks import login_allowed
 
 
 @user_passes_test(login_allowed)
@@ -27,7 +27,7 @@ def create(request):
         messages.error(request, "Invalid POST request.")
         return redirect('groups')
 
-    
+    # TODO: create django group, merge signal changes and test if everything runs smoothly
 
     messages.success(request, "Group created sucessfully.")
 
