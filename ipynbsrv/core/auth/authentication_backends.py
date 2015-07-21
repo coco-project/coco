@@ -41,7 +41,7 @@ class BackendProxyAuthentication(object):
                 internal_ldap.set_user_credential(username, make_password(password))  # FIXME: handle in signals
                 return user
             else:  # new user
-                uid = self.generate_internal_uid()
+                uid = BackendUser.generate_internal_uid()
                 group = self.create_user_groups(username, uid)
                 user = self.create_users(username, uid, group.backend_group)
                 # add user to group
@@ -97,17 +97,6 @@ class BackendProxyAuthentication(object):
         )
         backend_user.save()
         return user
-
-    def generate_internal_uid(self):
-        """
-        Generate an internal user ID.
-
-        TODO: make static method on BackendGroup/User?
-        """
-        last_django_id = 0
-        if BackendUser.objects.count() > 0:
-            last_django_id = BackendUser.objects.latest('id').id
-        return settings.USER_ID_OFFSET + last_django_id
 
     def get_user(self, user_id):
         """

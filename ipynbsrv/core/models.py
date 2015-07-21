@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.contrib.auth.models import Group, User
 from django.db import models
 from django.utils.encoding import smart_unicode
@@ -119,6 +120,18 @@ class BackendGroup(models.Model):
         help_text='The regular Django group this backend group is associated with.'
     )
 
+    @classmethod
+    def generate_internal_guid(self):
+        """
+        Generate an unique internal group ID.
+
+        Used for user-created groups. The primary group of each user should use the user's uid as guid.
+        """
+        last_django_id = 0
+        if Group.objects.count() > 0:
+            last_django_id = Group.objects.latest('id').id
+        return settings.GROUP_ID_OFFSET + last_django_id
+
     def __str__(self):
         """
         :inherit.
@@ -161,6 +174,16 @@ class BackendUser(models.Model):
         related_name='primary_user',
         help_text='The primary backend group this user belongs to.'
     )
+
+    @classmethod
+    def generate_internal_uid(self):
+        """
+        Generate an unique internal user ID.
+        """
+        last_django_id = 0
+        if BackendUser.objects.count() > 0:
+            last_django_id = BackendUser.objects.latest('id').id
+        return settings.USER_ID_OFFSET + last_django_id
 
     def __str__(self):
         """
@@ -450,6 +473,124 @@ class ContainerSnapshot(models.Model):
         unique_together = ('name', 'container')
 
 
+class Notification(models.Model):
+
+    """
+    Class that acts as a message between users and groups.
+    """
+
+    """
+    String to identify notifications for miscellaneous events.
+    """
+    MISCELLANEOUS = 'miscellaneous'
+
+    """
+    String to identify notifications for share related events.
+    """
+    SHARE = 'share'
+
+    """
+    String to identify notifications for container related events.
+    """
+    CONTAINER = 'container'
+
+    """
+    String to identify notifications for group related events.
+    """
+    GROUP = 'group'
+
+    """
+    String to identify notifications for image related events.
+    """
+    IMAGE = 'image'
+
+    """
+    List of choosable event event types.
+    """
+    EVENT_TYPES = [
+        (MISCELLANEOUS, 'Miscellaneous'),
+        (SHARE, 'Share'),
+        (CONTAINER, 'Container'),
+        (GROUP, 'Group'),
+        (IMAGE, 'Image')
+    ]
+
+    sender = models.ForeignKey(User, help_text='The user who send the notification.')
+    message = models.CharField(max_length=255, help_text='The message body.')
+    date = models.DateTimeField(default=datetime.now())
+    event_type = models.CharField(
+        choices=EVENT_TYPES,
+        default=MISCELLANEOUS,
+        max_length=20
+    )
+
+    def send(self):
+        """
+        TODO: write doc.
+        """
+        to_send = NotificationReceivers.objects.filter(notification=self.id)
+
+        # TODO: avoid double notifications
+        for n in to_send:
+            for user in n.receiving_group.user_set.all():
+                notification_log = NotificationLog(notification=self, user=user)
+                notification_log.save()
+
+    def __str__(self):
+        """
+        :inherit.
+        """
+        return smart_unicode("{0}: {1}".format(self.date, self.message))
+
+    def __unicode__(self):
+        """
+        :inherit.
+        """
+        return self.__str__()
+
+
+class NotificationLog(models.Model):
+
+    """
+    Keep track of all the notifications per user and if they have been read yet.
+    """
+
+    notification = models.ForeignKey(
+        Notification,
+        help_text='The notification itself.'
+    )
+    user = models.ForeignKey(
+        User,
+        related_name='user',
+        help_text='The BackendUser assigned to this NotificationLog entry.'
+    )
+    read = models.BooleanField(default=False)
+
+    @classmethod
+    def for_user(self, user):
+        """
+        TODO: document.
+        """
+        notifications = None
+        try:
+            notifications = NotificationLog.objects.filter(user=user.id).order_by("-notification__date")
+        finally:
+            return notifications
+
+
+class NotificationReceivers(models.Model):
+
+    """
+    Helper class to allow multiple receivers per Notification.
+    """
+
+    notification = models.ForeignKey(Notification)
+    receiving_group = models.ForeignKey(
+        Group,
+        help_text='The regular Django group that will receive this Notification.'
+    )
+
+
 class Server(models.Model):
 
     """
@@ -593,6 +734,17 @@ class Share(models.Model):
         """
         return user in self.get_members()
 
+    @classmethod
+    def for_user(self, user):
+        """
+        TODO: document
+        """
+        shares = None
+        try:
+            shares = Share.objects.filter(owner=user.id)
+        finally:
+            return shares
+
     def __str__(self):
         """
         :inherit.
@@ -629,5 +781,4 @@ class Tag(models.Model):
 
 
 # make sure our signal receivers are loaded
-from ipynbsrv.core.signals import containers, \
-    container_images, groups, users
+from ipynbsrv.core.signals import *

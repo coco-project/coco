@@ -50,6 +50,21 @@ class ImageAdmin(admin.ModelAdmin):
     search_fields = ['docker_id', 'name', 'description', 'cmd']
 
 
+class NotificationReceiversInline(admin.StackedInline):
+    model = NotificationReceivers
+
+
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['date', 'sender', 'message']
+    list_filter = ['date', 'sender']
+    search_fields = ['sender', 'message']
+    inlines = (NotificationReceiversInline, )
+
+
+class NotificationLogAdmin(admin.ModelAdmin):
+    list_display = ['notification', 'user', 'read']
+
+
 class ServerAdmin(admin.ModelAdmin):
     list_display = ['name', 'hostname', 'internal_ip', 'external_ip']
     list_filter = ['container_backend']
@@ -77,6 +92,8 @@ admin.site.register(ContainerImage, ContainerImageAdmin)
 admin.site.register(ContainerSnapshot, ContainerSnapshotAdmin)
 admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
+admin.site.register(Notification, NotificationAdmin)
+admin.site.register(NotificationLog, NotificationLogAdmin)
 admin.site.register(Server, ServerAdmin)
 admin.site.register(Share, ShareAdmin)
 admin.site.register(Tag, TagAdmin)

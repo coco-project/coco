@@ -1,0 +1,15 @@
+.ipynbsrv-navbar {
+  margin-bottom: 30px;
+  background-color: #3465a4;
+}
+.ipynbsrv-navbar a {
+  color: #fff;
+}
+.ipynbsrv-navbar .nav > li.active > a,
+.ipynbsrv-navbar .nav > li > a:hover,
+.ipynbsrv-navbar .nav > li > a:focus {
+  background-color: #517DB7;
+}
+.ipynbsrv-navbar .navbar-toggle .icon-bar {
+  background-color: #fff;
+}

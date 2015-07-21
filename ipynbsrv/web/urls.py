@@ -13,6 +13,10 @@ urlpatterns = [
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='accounts_logout'),
     url(r'^accounts/unflag/$', 'ipynbsrv.web.views.accounts.remove_cookie', name='accounts_unflag'),
 
+    # /group(s)/...
+    url(r'^groups/$', 'ipynbsrv.web.views.groups.index', name='groups'),
+    url(r'^groups/create$', 'ipynbsrv.web.views.groups.create', name='group_create'),
+
     # /container(s)/...
     url(r'^containers/$', 'ipynbsrv.web.views.containers.index', name='containers'),
     url(r'^container/clone$', 'ipynbsrv.web.views.containers.clone', name='container_clone'),
@@ -35,6 +39,10 @@ urlpatterns = [
     url(r'^share/leave$', 'ipynbsrv.web.views.shares.leave', name='share_leave'),
     url(r'^share/manage/(\d+)$', 'ipynbsrv.web.views.shares.manage', name='share_manage'),
     url(r'^share/remove_user$', 'ipynbsrv.web.views.shares.remove_user', name='share_remove_user'),
+
+    # /notification(s)/...
+    url(r'^notifications/$', 'ipynbsrv.web.views.notifications.index', name='notifications'),
+    url(r'^notifications/create$', 'ipynbsrv.web.views.notifications.create', name='notification_create'),
 
     # internal
     url(r'^_workspace_auth_check$', 'ipynbsrv.web.views.common.workspace_auth_access'),

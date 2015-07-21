@@ -1,0 +1,44 @@
+<div class="modal fade" id="modal-group-create" tabindex="-1" role="dialog" aria-labelledby="modal-group-create" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">New group</h4>
+            </div>
+            <form action="{% url 'group_create' %}" method="POST" role="form">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input name="name" type="text" class="form-control" placeholder="e.g My IPython meetup group" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipient">Members</label>
+                            {% for user in users %}
+
+                            <div class="checkbox">
+                              <label><input name="users" type="checkbox" value="{{ user.id }}">{{ user.username }}</label>
+                            </div>
+
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notify">Notify users?</label>
+                        <div class="checkbox">
+                              <label><input name="notify" type="checkbox" value="notify">Notify users about their group membership.</label>
+                            </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
