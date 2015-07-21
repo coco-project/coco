@@ -1,0 +1,103 @@
+{% extends 'web/base.html' %}
+
+{% load staticfiles %}
+
+{% block external_css %}
+<link rel="stylesheet" href="{% static 'bower_components/datatables/media/css/jquery.dataTables.min.css' %}">
+<link rel="stylesheet" href="{% static 'bower_components/datatables-plugins-bootstrap3/dist/css/datatables-plugins-bootstrap3.css' %}">
+<link rel="stylesheet" href="{% static 'bower_components/jquery-tagsinput-jurgen/jquery.tagsinput.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        {% include 'web/snippets/messages.html' with messages=messages only %}
+
+        <h1>Notifications</h1>
+        <form role="form">
+            <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-notification-create">Create new</button>
+        </form>
+
+        {% if notifications %}
+        <table id="notifications-table" class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th width="20%">Date</th>
+                    <th width="40%">Sender</th>
+                    <th width="12%">Message</th>
+                    <th width="12%">Read</th>
+                    <th width="15%" style="text-align: right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for n in notifications %}
+                <tr data-id="{{ n.id }}">
+                    <td>{{ n.notification.date }}</td>
+                    <td>{{ n.notification.sender }}</td>
+                    <td>{{ n.notification.message }}</td>
+                    <td>{{ n.read }}</td>
+                    <td/>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <div class="alert alert-info">You have no notifications yet.</div>
+        {% endif %}
+
+        {% include 'web/notifications/modal_create.html' with groups=groups event_types=event_types csrf_token=csrf_token only %}
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'bower_components/datatables/media/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'bower_components/datatables-plugins-bootstrap3/dist/js/datatables-plugins-bootstrap3.min.js' %}"></script>
+<script src="{% static 'bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js' %}"></script>
+<script src="{% static 'bower_components/jquery-tagsinput-jurgen/jquery.tagsinput.js' %}"></script>
+<script>
+$(function () {
+    $('[data-toggle="confirmation"]').confirmation({
+        popout: true
+    });
+
+    var tag_options = {
+        width: '100%',
+        height: 'auto',
+        defaultText: '',
+        removeWithBackspace: true
+    };
+    $('#tags').tagsInput(tag_options);
+    $('#users').tagsInput(tag_options);
+
+    var table = $('.js-table-smart');
+    table.dataTable({
+        columnDefs: [{
+            aTargets: [ 4 ],
+            bSearchable: false,
+            bSortable: false
+        }]
+    });
+
+    var search_input = $('#notifications-table_filter').find('input');
+    table.find('.label').click(function (e) {
+        var label = $(e.target);
+        search_input.val(label.text());
+	    search_input.submit();
+    });
+
+    $('[data-toggle="modal"]').click(function (e) {
+        var btn   = $(e.target);
+        var modal = btn.data('target');
+
+        switch (modal) {
+            case "#modal-notifications-adduser": {
+                var id = btn.closest('tr').data('id');
+                $(modal).find('#modal-share-adduser_id').val(id);
+                break;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
