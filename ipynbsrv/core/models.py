@@ -372,6 +372,7 @@ class ContainerImage(models.Model):
     id = models.AutoField(primary_key=True)
     backend_pk = models.CharField(
         unique=True,
+        default=randint(0, 1000),
         max_length=255,
         help_text='The primary key the backend uses to identify this image.'
     )

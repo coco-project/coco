@@ -19,9 +19,9 @@ def remove_on_server(sender, image, **kwargs):
         for server in Server.objects.all():
             if server.is_container_host():
                 backend = server.get_container_backend()
-                if backend.image_exists(image.backend_pk):
+                if backend.container_image_exists(image.backend_pk):
                     try:
-                        backend.delete_image(image.backend_pk)
+                        backend.delete_container_image(image.backend_pk)
                     except ContainerImageNotFoundError:
                         pass  # already removed
                     except ContainerBackendError as ex:
