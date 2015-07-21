@@ -7,12 +7,12 @@
                 </button>
                 <h4 class="modal-title">New group</h4>
             </div>
-            <form action="{% url 'notification_create' %}" method="POST" role="form">
+            <form action="{% url 'group_create' %}" method="POST" role="form">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="name">Name</label>
-                        <input name="name" type="text" pattern="[A-Za-z1-9_-]+" class="form-control" placeholder="e.g My IPython meetup group" required>
+                        <input name="name" type="text" class="form-control" placeholder="e.g My IPython meetup group" required>
                     </div>
 
                     <div class="form-group">
@@ -20,7 +20,7 @@
                             {% for user in users %}
 
                             <div class="checkbox">
-                              <label><input type="checkbox" value="{{ user.id }}">{{ user.username }}</label>
+                              <label><input name="users" type="checkbox" value="{{ user.id }}">{{ user.username }}</label>
                             </div>
 
                             {% endfor %}
@@ -28,9 +28,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="type">Notify users?</label>
+                        <label for="notify">Notify users?</label>
                         <div class="checkbox">
-                              <label><input type="checkbox" value="notify">Notify users about their group membership.</label>
+                              <label><input name="notify" type="checkbox" value="notify">Notify users about their group membership.</label>
                             </div>
                     </div>
                 </div>

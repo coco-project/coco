@@ -1,0 +1,23 @@
+div.dataTables_filter label,
+div.dataTables_length label {
+  font-weight: bold;
+}
+div.dataTables_filter label input,
+div.dataTables_length label input,
+div.dataTables_filter label select,
+div.dataTables_length label select {
+  font-weight: normal;
+}
+.table > thead > tr > th {
+  border-bottom: 0;
+}
+table.dataTable thead th {
+  border-bottom: 0;
+}
+table.dataTable.no-footer {
+  border-bottom: 0;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  margin-left: -1px;
+  padding: 0;
+}

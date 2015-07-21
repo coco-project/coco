@@ -14,7 +14,8 @@ urlpatterns = [
     url(r'^accounts/unflag/$', 'ipynbsrv.web.views.accounts.remove_cookie', name='accounts_unflag'),
 
     # /group(s)/...
-    url(r'^groups/$', 'ipynbsrv.web.views.groups.index', name='accounts_logout'),
+    url(r'^groups/$', 'ipynbsrv.web.views.groups.index', name='groups'),
+    url(r'^groups/create$', 'ipynbsrv.web.views.groups.create', name='group_create'),
 
     # /container(s)/...
     url(r'^containers/$', 'ipynbsrv.web.views.containers.index', name='containers'),

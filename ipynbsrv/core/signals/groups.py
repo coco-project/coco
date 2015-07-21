@@ -11,7 +11,7 @@ from ipynbsrv.core.signals.signals import *
 @receiver(group_member_added)
 def add_member_to_internal_ldap_group(sender, group, user, **kwargs):
     """
-    When ever a member is added to a group we need to sync the LDAP group.
+    Whenever a member is added to a group we need to sync the LDAP group.
     """
     if group is not None and user is not None:
         internal_ldap = get_internal_ldap_connected()

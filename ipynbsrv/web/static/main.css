@@ -1,0 +1,125 @@
+html,
+body {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  font-size: 14px;
+  line-height: 18px;
+}
+h1,
+h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ccc;
+}
+h2 {
+  margin-top: 30px;
+}
+.btn-create {
+  margin-top: -68px;
+}
+.form-grid-filters {
+  margin-bottom: 20px;
+}
+@media (min-width: 768px) {
+  .form-grid-filters .form-group {
+    margin-right: 15px;
+  }
+  .form-grid-filters .form-group:last-child {
+    margin-right: 0;
+  }
+}
+@media (min-width: 768px) {
+  .form-group-search {
+    float: right;
+  }
+}
+.dropdown-menu form {
+  display: none;
+}
+.modal-footer {
+  margin-top: 0;
+}
+td > ul {
+  padding-left: 18px;
+}
+.form-action {
+  display: inline-block;
+}
+.form-login {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 4px;
+}
+.login-footnote {
+  margin-top: 18px;
+  font-size: 12px;
+  line-height: 20px;
+  color: #fff;
+  text-align: center;
+}
+.login-footnote a {
+  color: #C4CFFF;
+}
+.panel-container dl {
+  margin-bottom: 0;
+}
+.panel-container dt {
+  text-align: left;
+}
+@media (min-width: 768px) {
+  .panel-container dt {
+    width: 120px;
+  }
+}
+@media (min-width: 768px) {
+  .panel-container dd {
+    margin-left: 120px;
+  }
+}
+.panel-container .dropdown-menu {
+  right: 0;
+}
+#shares-table .label {
+  cursor: pointer;
+}
+.ipynbsrv-navbar {
+  margin-bottom: 30px;
+  background-color: #3465a4;
+}
+.ipynbsrv-navbar a {
+  color: #fff;
+}
+.ipynbsrv-navbar .nav > li.active > a,
+.ipynbsrv-navbar .nav > li > a:hover,
+.ipynbsrv-navbar .nav > li > a:focus {
+  background-color: #517DB7;
+}
+.ipynbsrv-navbar .navbar-toggle .icon-bar {
+  background-color: #fff;
+}
+div.dataTables_filter label,
+div.dataTables_length label {
+  font-weight: bold;
+}
+div.dataTables_filter label input,
+div.dataTables_length label input,
+div.dataTables_filter label select,
+div.dataTables_length label select {
+  font-weight: normal;
+}
+.table > thead > tr > th {
+  border-bottom: 0;
+}
+table.dataTable thead th {
+  border-bottom: 0;
+}
+table.dataTable.no-footer {
+  border-bottom: 0;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  margin-left: -1px;
+  padding: 0;
+}
