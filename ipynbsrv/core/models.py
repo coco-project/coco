@@ -543,8 +543,14 @@ class Notification(models.Model):
     date = models.DateTimeField()
     event_type = models.CharField(choices=EVENT_TYPES, default=MISCELLANEOUS, max_length=20)
 
-    def send(self, receiver):
-        raise NotImplementedError
+    def send(self):
+        to_send = NotificationReceivers.objects.filter(notification=self.id)
+
+        # TODO: avoid double notifications
+        for n in to_send:
+            for user in n.receiving_group.user_set.all():
+                notification_log = NotificationLog(notification=self, user=user)
+                notification_log.save()
 
     def __str__(self):
         """
