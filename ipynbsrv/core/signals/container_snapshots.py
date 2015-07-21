@@ -21,7 +21,7 @@ def create_on_server(sender, snapshot, **kwargs):
         try:
             created = backend.create_container_snapshot(
                 snapshot.container.backend_pk,
-                snapshot.get_backend_name()
+                snapshot.name
             )
             snapshot.backend_pk = created.get(ContainerBackend.KEY_PK)
             snapshot.save()

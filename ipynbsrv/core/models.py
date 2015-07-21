@@ -266,9 +266,9 @@ class Container(models.Model):
 
     def get_backend_name(self):
         """
-        Return the name of this container how it is named on the backend.
+        Return the container name the way it is passed to the backend upon creation.
         """
-        return "%s%i_%s" % (settings.CONTAINER_NAME_PREFIX, self.owner.backend_id, self.name)
+        return 'u%i-%s' % (self.owner.backend_id, self.name)
 
     def get_friendly_name(self):
         """
@@ -387,12 +387,6 @@ class ContainerImage(models.Model):
     owner = models.ForeignKey(User)
     is_public = models.BooleanField(default=False)
 
-    def get_backend_name(self):
-        """
-        Return the name of this image how it is named on the backend.
-        """
-        return "%s%i/%s" % (settings.CONTAINER_IMAGE_NAME_PREFIX, self.owner.backend_id, self.name)
-
     def get_friendly_name(self):
         """
         Return the humen-friendly name of this image.
@@ -434,19 +428,6 @@ class ContainerSnapshot(models.Model):
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
     container = models.ForeignKey('Container')
-
-    def get_backend_name(self):
-        """
-        Return the name of this snapshot how it is named on the backend.
-        """
-        container_name = self.container.get_backend_name()
-        repository = re.sub(
-            r'^' + settings.CONTAINER_NAME_PREFIX + r'(\d+)_(.+)$',
-            settings.CONTAINER_NAME_PREFIX + r'\g<1>/\g<2>',
-            container_name
-        )
-        tag = settings.CONTAINER_SNAPSHOT_PREFIX + self.name
-        return repository + ':' + tag
 
     def get_friendly_name(self):
         """
