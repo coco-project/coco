@@ -2,10 +2,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.shortcuts import redirect, render
-from ipynbsrv.conf.helpers import *
+from ipynbsrv.conf.helpers import get_server_selection_algorithm
 from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import Container, ContainerImage, Server
-from random import randint
 
 
 @user_passes_test(login_allowed)
@@ -83,11 +82,16 @@ def create(request):
         if image.exists():
             image = image.first()
             if image.owner == request.user or image.is_public:
-                # pick a host server via the selection algorithm
                 server = get_server_selection_algorithm().choose_server(
                     Server.objects.all().iterator()
                 )
-                container = Container(backend_pk=randint(0, 1000), name=name, description=description, server=server, owner=request.user.backend_user, image=image)
+                container = Container(
+                    name=name,
+                    description=description,
+                    owner=request.user.backend_user,
+                    image=image,
+                    server=server
+                )
                 container.save()
                 # container.start()
                 messages.success(request, "Container created successfully.")

@@ -54,7 +54,7 @@ def post_delete_handler(sender, instance, **kwargs):
     """
     Method to map Django post_delete model signals to custom ones.
     """
-    container_snapshot_deleted.send(sender=sender, image=instance, kwargs=kwargs)
+    container_snapshot_deleted.send(sender=sender, snapshot=instance, kwargs=kwargs)
 
 
 @receiver(post_save, sender=ContainerSnapshot)
@@ -63,11 +63,11 @@ def post_save_handler(sender, instance, **kwargs):
     Method to map Django post_save model signals to custom ones.
     """
     if 'created' in kwargs and kwargs['created']:
-        container_snapshot_created.send(sender=sender, image=instance, kwargs=kwargs)
+        container_snapshot_created.send(sender=sender, snapshot=instance, kwargs=kwargs)
     else:
         container_snapshot_modified.send(
             sender=sender,
-            image=instance,
+            snapshot=instance,
             fields=kwargs['update_fields'],
             kwargs=kwargs
         )
