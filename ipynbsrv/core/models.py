@@ -251,12 +251,6 @@ class Container(models.Model):
         snapshot.save()
         return snapshot
 
-    def get_server_backend_representation(self):
-        """
-        Get the representation of this container as returned by the server's container backend instance.
-        """
-        return self.server.get_container_backend().get_container(self.backend_pk)
-
     def get_clones(self):
         """
         Get all containers that are clones of the one this method is called on.
@@ -293,9 +287,7 @@ class Container(models.Model):
 
         TODO: store in cache?
         """
-        ct = self.get_server_backend_representation()
-        return ct.get(ContainerBackend.CONTAINER_KEY_STATUS) \
-            == ContainerBackend.CONTAINER_STATUS_RUNNING
+        return self.server.get_container_backend().container_is_running(self.backend_pk)
 
     def is_suspended(self):
         """
@@ -303,9 +295,7 @@ class Container(models.Model):
 
         TODO: store in cache?
         """
-        ct = self.get_server_backend_representation()
-        return ct.get(ContainerBackend.CONTAINER_KEY_STATUS) \
-            == SuspendableContainerBackend.CONTAINER_STATUS_SUSPENDED
+        return self.server.get_container_backend().container_is_suspended(self.backend_pk)
 
     def restart(self):
         """
