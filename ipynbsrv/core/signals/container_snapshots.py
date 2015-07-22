@@ -3,8 +3,7 @@ from django.dispatch import receiver
 from ipynbsrv.contract.backends import ContainerBackend
 from ipynbsrv.contract.errors import ContainerBackendError, ContainerSnapshotNotFoundError
 from ipynbsrv.core.models import ContainerSnapshot
-from ipynbsrv.core.signals.signals import container_snapshot_created, \
-    container_snapshot_deleted
+from ipynbsrv.core.signals.signals import container_snapshot_created, container_snapshot_deleted
 import logging
 
 
