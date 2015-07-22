@@ -88,9 +88,9 @@ def create(request):
                 container = Container(
                     name=name,
                     description=description,
+                    server=server,
                     owner=request.user.backend_user,
-                    image=image,
-                    server=server
+                    image=image
                 )
                 try:
                     container.save()

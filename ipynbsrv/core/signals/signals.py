@@ -8,14 +8,13 @@ We use these signals to decouple internal Django users from our container instal
 It allows us to threat containers as regular Django objects across the whole app,
 while we can synchronize actions with the container backend in the handlers.
 """
+container_cloned = Signal(providing_args=['container', 'clone'])
 container_created = Signal(providing_args=['container'])
 container_deleted = Signal(providing_args=['container'])
 container_modified = Signal(providing_args=['container', 'fields'])
 container_restarted = Signal(providing_args=['container'])
 container_started = Signal(providing_args=['container'])
 container_stopped = Signal(providing_args=['container'])
-# CloneableContainerBackend
-container_cloned = Signal(providing_args=['container', 'clone'])
 # SuspendableContainerBackend
 container_resumed = Signal(providing_args=['container'])
 container_suspended = Signal(providing_args=['container'])

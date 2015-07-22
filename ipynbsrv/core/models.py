@@ -220,21 +220,39 @@ class Container(models.Model):
         help_text='The server on which this container is/will be located.'
     )
     owner = models.ForeignKey('BackendUser')
-    # ImageBasedContainerBackend
     image = models.ForeignKey(
         'ContainerImage',
         blank=True,
         null=True,
         help_text='The image from which this container was bootstrapped.'
     )
-    # CloneableContainerBackend
-    clone_of = models.ForeignKey('self', blank=True, null=True)
+    clone_of = models.ForeignKey(
+        'self',
+        blank=True,
+        null=True,
+        help_text='The container on which this one is based/was cloned from.'
+    )
 
-    def clone(self):
+    def clone(self, name, description=None):
         """
         TODO: write doc.
         """
-        self.server.get_container_backend().clone_container(self.backend_pk, {})
+        if description is None:
+            description = self.description
+
+        clone = Container(
+            name=name,
+            description=description,
+            server=self.server,
+            owner=self.owner,
+            clone_of=self
+        )
+        clone.save()
+
+        from ipynbsrv.core.signals.signals import container_cloned
+        container_cloned.send(sender=self, container=self, clone=clone)
+
+        return clone
 
     def create_snapshot(self, name, description=None):
         """
@@ -280,6 +298,12 @@ class Container(models.Model):
         Return true if this container is a clone of another one.
         """
         return self.clone_of is not None
+
+    def is_image_based(self):
+        """
+        Return either this container was created based on an image or not.
+        """
+        return self.image is not None
 
     def is_running(self):
         """
@@ -375,6 +399,7 @@ class ContainerImage(models.Model):
         help_text='The command to execute inside the container upon start.'
     )
     owner = models.ForeignKey(User)
+    is_internal = models.BooleanField(default=False)
     is_public = models.BooleanField(default=False)
 
     def get_friendly_name(self):

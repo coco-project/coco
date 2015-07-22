@@ -2,12 +2,12 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.conf.helpers import *
 from ipynbsrv.contract.backends import ContainerBackend
-from ipynbsrv.contract.errors import ContainerBackendError, \
-    ContainerNotFoundError
+from ipynbsrv.contract.errors import ContainerBackendError, ContainerNotFoundError
 from ipynbsrv.core import settings
 from ipynbsrv.core.models import Container
 from ipynbsrv.core.signals.signals import *
 from os import path
+import time
 
 
 storage_backend = get_storage_backend()
@@ -19,10 +19,20 @@ def create_on_server(sender, container, **kwargs):
     Create the newly saved container on the server's container backend.
     """
     if container is not None:
+        cmd = None
+        image = None
+        if container.is_image_based():
+            cmd = container.image.command
+            image = container.image.backend_pk
+        clone_of = None
+        if container.is_clone():
+            clone_of = container.clone_of
+            cmd = container.clone_of.image.cmd
+
+        result = None
         try:
             result = container.server.get_container_backend().create_container(
                 container.get_backend_name(),
-                container.image.backend_pk,
                 [],
                 [
                     {   # home directory
@@ -40,13 +50,31 @@ def create_on_server(sender, container, **kwargs):
                         'target': path.join('/data', 'shares')
                     }
                 ],
-                cmd=container.image.command
+                cmd=cmd,
+                image=image,
+                clone_of=clone_of
             )
-            container.backend_pk = result.get(ContainerBackend.KEY_PK)
-            container.save()
         except ContainerBackendError as ex:
             container.delete()  # XXX: cleanup?
             raise ex
+
+        if result.get(ContainerBackend.CONTAINER_KEY_CLONE_IMAGE, None) is None:
+            container.backend_pk = result.get(ContainerBackend.KEY_PK)
+        else:
+            container.backend_pk = result.get(ContainerBackend.CONTAINER_KEY_CLONE_CONTAINER).get(ContainerBackend.KEY_PK)
+            # an image has been created internally, add it to our DB
+            backend_image = result.get(ContainerBackend.CONTAINER_KEY_CLONE_IMAGE)
+            image = ContainerImage(
+                backend_pk=backend_image.get(ContainerBackend.KEY_PK),
+                name=container.clone_of.image.name + '-clone-' + int(time.time()),
+                description="Internal only image created during the cloning process of container %s." % container.clone_of.get_friendly_name(),
+                command=container.clone_of.image.command,
+                owner=container.owner.django_user,
+                is_internal=True
+            )
+            image.save()
+            container.image = image
+        container.save()
 
 
 @receiver(container_deleted)
