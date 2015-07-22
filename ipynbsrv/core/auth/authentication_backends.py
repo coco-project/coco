@@ -53,7 +53,6 @@ class BackendProxyAuthentication(object):
             if user is not None:  # exists locally but not on backend
                 user.delete()
         except ConnectionError as ex:
-            logger.error("Backend connection error.")
             logger.exception(ex)
             return None
         finally:

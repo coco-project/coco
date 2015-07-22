@@ -23,9 +23,10 @@
             <thead>
                 <tr>
                     <th width="20%">Date</th>
-                    <th width="40%">Sender</th>
-                    <th width="12%">Message</th>
-                    <th width="12%">Read</th>
+                    <th width="20%">Sender</th>
+                    <th width="20%">Message</th>
+                    <th width="15%">Type</th>
+                    <th width="10%">Read</th>
                     <th width="15%" style="text-align: right">Actions</th>
                 </tr>
             </thead>
@@ -35,6 +36,8 @@
                     <td>{{ n.notification.date }}</td>
                     <td>{{ n.notification.sender }}</td>
                     <td>{{ n.notification.message }}</td>
+                    <td>{% if not n.notification.related_object_id %}{{ n.notification.event_type }}
+                    {% else %} <a href="{{ n.notification.get_related_object_url_slug }}">{{ n.notification.event_type }}</a>{% endif %}{{ n.related_object_id }}</td>
                     <td>{{ n.read }}</td>
                     <td/>
                 </tr>
