@@ -16,6 +16,10 @@ urlpatterns = [
     # /group(s)/...
     url(r'^groups/$', 'ipynbsrv.web.views.groups.index', name='groups'),
     url(r'^groups/create$', 'ipynbsrv.web.views.groups.create', name='group_create'),
+    url(r'^groups/delete$', 'ipynbsrv.web.views.groups.delete', name='group_delete'),
+    url(r'^groups/manage/(\d+)$', 'ipynbsrv.web.views.groups.manage', name='group_manage'),
+    url(r'^groups/remove_user$', 'ipynbsrv.web.views.groups.remove_user', name='group_remove_user'),
+    url(r'^groups/add_admin$', 'ipynbsrv.web.views.groups.add_admin', name='group_add_admin'),
 
     # /container(s)/...
     url(r'^containers/$', 'ipynbsrv.web.views.containers.index', name='containers'),

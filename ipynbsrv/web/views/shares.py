@@ -1,8 +1,8 @@
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import redirect, render
+from ipynbsrv.core import settings
 from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import Share, Tag
 
@@ -29,7 +29,7 @@ def add_user(request):
         if share.owner == request.user:
             for user in usernames.split(","):
                 user = User.objects.filter(username=user)
-                if user.exists() and not share.is_member(user.first()):
+                if user.exists() and not share.user_is_member(user.first()):
                     share.group.user_set.add(user.first())
             messages.success(request, "Sucessfully added the new member(s) to the share.")
         else:
