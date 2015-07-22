@@ -91,22 +91,6 @@ def remove_member_from_internal_ldap_group(sender, group, user, **kwargs):
                 pass
 
 
-@receiver(group_member_removed)
-def remove_member_from_internal_ldap_group(sender, group, user, **kwargs):
-    """
-    When ever a member is removed to a group we need to sync the LDAP group.
-    """
-    if group is not None and user is not None:
-        internal_ldap = get_internal_ldap_connected()
-        try:
-            internal_ldap.remove_group_member(group.backend_pk, user.backend_pk)
-        finally:
-            try:
-                internal_ldap.disconnect()
-            except:
-                pass
-
-
 @receiver(group_modified)
 def group_modified_handler(sender, group, fields, **kwargs):
     """
@@ -132,12 +116,13 @@ def group_modified_handler(sender, group, fields, **kwargs):
                     kwargs=kwargs
                 )
         elif action == 'post_remove':
-            group_member_removed.send(
-                sender=sender,
-                group=group,
-                users=users,
-                kwargs=kwargs
-            )
+            for user in users:
+                group_member_removed.send(
+                    sender=sender,
+                    group=group,
+                    user=user,
+                    kwargs=kwargs
+                )
 
 
 @receiver(m2m_changed, sender=User.groups.through)
