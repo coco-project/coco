@@ -139,12 +139,12 @@ def post_save_handler(sender, instance, **kwargs):
     """
     Method to map Django post_save model signals to custom ones.
     """
-    if 'created' in kwargs and kwargs['created']:
+    if 'created' in kwargs and kwargs.get('created'):
         container_created.send(sender=sender, container=instance, kwargs=kwargs)
     else:
         container_modified.send(
             sender=sender,
             container=instance,
-            fields=kwargs['update_fields'],
+            fields=kwargs.get('update_fields'),
             kwargs=kwargs
         )

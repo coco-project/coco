@@ -5,6 +5,7 @@ from ipynbsrv.contract.errors import StorageBackendError
 from ipynbsrv.core import settings
 from ipynbsrv.core.models import Share
 from ipynbsrv.core.signals.signals import share_created, share_modified, share_deleted
+from os import path
 
 
 storage_backend = get_storage_backend()
@@ -13,40 +14,33 @@ storage_backend = get_storage_backend()
 @receiver(share_created)
 def create_share_directory(sender, share, **kwargs):
     """
-    Signal receiver that creates the filesystem directory for a created share.
+    Create the share directory on the storage backend.
     """
     if share is not None:
-        share_dir = settings.STORAGE_DIR_SHARES + share.name
+        share_dir = path.join(settings.STORAGE_DIR_SHARES, share.name)
         try:
             storage_backend.mk_dir(share_dir)
-            # storage_backend.set_dir_owner(share_dir, 'root')
-            storage_backend.set_dir_group(share_dir, share.group.name)
+            storage_backend.set_dir_owner(share_dir, 'root')
+            storage_backend.set_dir_gid(share_dir, share.group.backend_id)
             storage_backend.set_dir_mode(share_dir, 2770)
         except StorageBackendError as ex:
-            # TODO: error handling
+            share.delete()  # XXX: cleanup
             raise ex
 
 
 @receiver(share_deleted)
 def delete_share_directory(sender, share, **kwargs):
     """
-    Signal receiver that deletes the filesystem directory for a removed share.
+    Remove the share directory from the storage backend.
     """
     if share is not None:
-        share_dir = settings.STORAGE_DIR_SHARES + share.name
+        share_dir = path.join(settings.STORAGE_DIR_SHARES, share.name)
         try:
             storage_backend.rm_dir(share_dir, recursive=True)
+            share.group.delete()
         except StorageBackendError as ex:
-            # TODO: error handling
+            # XXX: restore share?
             raise ex
-        share.group.delete()
-
-
-# @receiver(share_modified)
-# def share_modified_handler(sender, share, fields, **kwargs):
-#     if settings.DEBUG:
-#         print "share_modified_handler receiver fired"
-#     # TODO: update share (name, owner etc)
 
 
 @receiver(post_delete, sender=Share)
@@ -62,7 +56,12 @@ def post_save_handler(sender, instance, **kwargs):
     """
     Method to map Django post_save model signals to custom ones.
     """
-    if 'created' in kwargs and kwargs['created']:
+    if 'created' in kwargs and kwargs.get('created'):
         share_created.send(sender, share=instance, kwargs=kwargs)
     else:
-        share_modified.send(sender, share=instance, fields=kwargs['update_fields'], kwargs=kwargs)
+        share_modified.send(
+            sender=sender,
+            share=instance,
+            fields=kwargs.get('update_fields'),
+            kwargs=kwargs
+        )

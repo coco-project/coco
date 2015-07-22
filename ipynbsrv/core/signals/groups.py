@@ -132,12 +132,13 @@ def group_modified_handler(sender, group, fields, **kwargs):
                     kwargs=kwargs
                 )
         elif action == 'post_remove':
-            group_member_removed.send(
-                sender=sender,
-                group=group,
-                users=users,
-                kwargs=kwargs
-            )
+            for user in users:
+                group_member_removed.send(
+                    sender=sender,
+                    group=group,
+                    user=user,
+                    kwargs=kwargs
+                )
 
 
 @receiver(m2m_changed, sender=User.groups.through)
@@ -169,12 +170,12 @@ def post_save_handler(sender, instance, **kwargs):
     """
     Method to map Django post_save model signals to custom ones.
     """
-    if 'created' in kwargs and kwargs['created']:
+    if 'created' in kwargs and kwargs.get('created'):
         group_created.send(sender=sender, group=instance, kwargs=kwargs)
     else:
         group_modified.send(
             sender=sender,
             group=instance,
-            fields=kwargs['update_fields'],
+            fields=kwargs.get('update_fields'),
             kwargs=kwargs
         )
