@@ -104,10 +104,23 @@ class BackendGroup(models.Model):
     that there's a server behind.
     """
 
+    @classmethod
+    def generate_internal_guid():
+        """
+        Generate an unique internal group ID.
+
+        Used for user-created groups. The primary group of each user should use the user's uid as guid.
+        """
+        last_django_id = 0
+        if Group.objects.count() > 0:
+            last_django_id = Group.objects.latest('id').id
+        return settings.GROUP_ID_OFFSET + last_django_id
+
     id = models.AutoField(primary_key=True)
     backend_id = models.PositiveIntegerField(
         unique=True,
-        help_text='The ID for this group used internally by the backend.'
+        help_text='The ID for this group used internally by the backend.',
+        default=generate_internal_guid.__func__
     )
     backend_pk = models.CharField(
         unique=True,
@@ -119,18 +132,6 @@ class BackendGroup(models.Model):
         related_name='backend_group',
         help_text='The regular Django group this backend group is associated with.'
     )
-
-    @classmethod
-    def generate_internal_guid(self):
-        """
-        Generate an unique internal group ID.
-
-        Used for user-created groups. The primary group of each user should use the user's uid as guid.
-        """
-        last_django_id = 0
-        if Group.objects.count() > 0:
-            last_django_id = Group.objects.latest('id').id
-        return settings.GROUP_ID_OFFSET + last_django_id
 
     def __str__(self):
         """
@@ -155,10 +156,22 @@ class BackendUser(models.Model):
     that there's a server behind.
     """
 
+    @classmethod
+    def generate_internal_uid():
+        """
+        Generate an unique internal user ID.
+        """
+        last_django_id = 0
+        if BackendUser.objects.count() > 0:
+            last_django_id = BackendUser.objects.latest('id').id
+        return settings.USER_ID_OFFSET + last_django_id
+
     id = models.AutoField(primary_key=True)
     backend_id = models.PositiveIntegerField(
         unique=True,
-        help_text='The ID for this user used internally by the backend.')
+        help_text='The ID for this user used internally by the backend.',
+        default=generate_internal_uid.__func__
+    )
     backend_pk = models.CharField(
         unique=True,
         max_length=255,
@@ -174,16 +187,6 @@ class BackendUser(models.Model):
         related_name='primary_user',
         help_text='The primary backend group this user belongs to.'
     )
-
-    @classmethod
-    def generate_internal_uid(self):
-        """
-        Generate an unique internal user ID.
-        """
-        last_django_id = 0
-        if BackendUser.objects.count() > 0:
-            last_django_id = BackendUser.objects.latest('id').id
-        return settings.USER_ID_OFFSET + last_django_id
 
     def __str__(self):
         """
@@ -566,6 +569,22 @@ class NotificationLog(models.Model):
     )
     read = models.BooleanField(default=False)
 
+    def __str__(self):
+        """
+        :inherit.
+        """
+        return smart_unicode("@{1}: {2} (Read: {3})".format(
+            self.user.__str__(),
+            self.notification.__str__()),
+            self.read
+            )
+
+    def __unicode__(self):
+        """
+        :inherit.
+        """
+        return self.__str__()
+
     @classmethod
     def for_user(self, user):
         """
@@ -589,6 +608,21 @@ class NotificationReceivers(models.Model):
         Group,
         help_text='The regular Django group that will receive this Notification.'
     )
+
+    def __str__(self):
+        """
+        :inherit.
+        """
+        return smart_unicode("@{1}: {2}".format(
+            self.receiving_group.__str__(),
+            self.notification.__str__())
+            )
+
+    def __unicode__(self):
+        """
+        :inherit.
+        """
+        return self.__str__()
 
 
 class Server(models.Model):
