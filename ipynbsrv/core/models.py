@@ -865,9 +865,10 @@ class Share(models.Model):
 
         :return bool `True` if the user has been a member and removed.
         """
-        was_member = self.user_is_member(user)
-        self.group.django_group.user_set.remove(user.django_user)
-        return was_member
+        if self.user_is_member(user):
+            self.group.django_group.user_set.remove(user.django_user)
+            return True
+        return False
 
     def user_is_member(self, user):
         """
