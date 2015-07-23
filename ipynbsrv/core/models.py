@@ -487,6 +487,25 @@ class ContainerSnapshot(models.Model):
         unique_together = ('name', 'container')
 
 
+class GroupShare(models.Model):
+
+    """
+    Intermediate model to associate group's with shares.
+    """
+
+    group = models.ForeignKey(
+        'BackendGroup',
+        help_text='The group having access to the share.'
+    )
+    share = models.ForeignKey(
+        'Share',
+        help_text='The share the group has access to.'
+    )
+
+    class Meta:
+        unique_together = ('group', 'share')
+
+
 class Notification(models.Model):
 
     """
@@ -796,10 +815,16 @@ class Share(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=75)
     description = models.TextField(null=True, blank=True)
-    tags = models.ManyToManyField('Tag', blank=True)
-    owner = models.ForeignKey(User)
-    # TODO: use OneToOneField
-    group = models.OneToOneField(Group, related_name='share')
+    tags = models.ManyToManyField('Tag', blank=True, null=True)
+    owner = models.ForeignKey(
+        'BackendUser',
+        help_text='The user owning the share (usually the one that created it).'
+    )
+    group = models.OneToOneField(
+        'BackendGroup',
+        related_name='share',
+        help_text='The (backend) group that is used to store membership information.'
+    )
 
     def add_member(self, user):
         """
@@ -809,37 +834,40 @@ class Share(models.Model):
         """
         if self.user_is_member(user):
             return False
-        raise NotImplementedError
+        self.group.django_group.user_set.add(user.django_user)
+        return True
 
-    @classmethod
-    def all_user_is_member(cls, user):
-        """
-        Get all shares the user is a member of.
-
-        :param cls: The class on which the method was called.
-        :param user: The user object to get the shares for.
-        """
-        shares = []
-        for share in cls.objects.all():
-            if share.is_member(user):
-                shares.append(share)
-        return shares
+    # @classmethod
+    # def all_user_is_member(cls, user):
+    #     """
+    #     Get all shares the user is a member of.
+    #
+    #     :param cls: The class on which the method was called.
+    #     :param user: The user object to get the shares for.
+    #     """
+    #     shares = []
+    #     for share in cls.objects.all():
+    #         if share.is_member(user):
+    #             shares.append(share)
+    #     return shares
 
     def get_members(self):
         """
         Get a list of members for this share.
         """
-        return self.group.user_set.all()
+        return [user.backend_user for user in self.group.django_group.user_set.all()]
 
     def remove_member(self, user):
         """
-        Remove the member 'user' from this group.
+        Remove the member `user` from the group.
 
-        :param user: The member to remove.
+        :param user: The user to remove (if is member).
+
+        :return bool `True` if the user has been a member and removed.
         """
-        # if not self.user_is_member(user):
-        #     raise LogicError("User is not a member of the share.")
-        raise NotImplementedError
+        was_member = self.user_is_member(user)
+        self.group.django_group.user_set.remove(user.django_user)
+        return was_member
 
     def user_is_member(self, user):
         """
@@ -849,12 +877,12 @@ class Share(models.Model):
         """
         return user in self.get_members()
 
-    @classmethod
-    def for_user(self, user):
-        """
-        TODO: document.
-        """
-        return Share.objects.filter(owner=user.id)
+    # @classmethod
+    # def for_user(cls, user):
+    #     """
+    #     TODO: document.
+    #     """
+    #     return cls.objects.filter(owner=user.id)
 
     def __str__(self):
         """
@@ -893,4 +921,4 @@ class Tag(models.Model):
 
 # make sure our signal receivers are loaded
 from ipynbsrv.core.signals import container_images, container_snapshots, \
-    containers, groups, users
+    containers, group_shares, groups, shares, users

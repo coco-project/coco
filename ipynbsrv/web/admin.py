@@ -44,6 +44,11 @@ class GroupAdmin(GroupAdmin):
     inlines = (BackendGroupInline, )
 
 
+class GroupShareAdmin(admin.ModelAdmin):
+    list_display = ['group', 'share']
+    list_filter = ['group', 'share']
+
+
 class ImageAdmin(admin.ModelAdmin):
     list_display = ['name', 'description', 'owner', 'is_public']
     list_filter = ['owner', 'is_public']
@@ -92,6 +97,7 @@ admin.site.register(ContainerImage, ContainerImageAdmin)
 admin.site.register(ContainerSnapshot, ContainerSnapshotAdmin)
 admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
+admin.site.register(GroupShare, GroupShareAdmin)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(NotificationLog, NotificationLogAdmin)
 admin.site.register(Server, ServerAdmin)

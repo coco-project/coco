@@ -52,6 +52,13 @@ group_modified = Signal(providing_args=['group', 'fields'])
 
 
 """
+Set of signals to be triggered when working with group shares.
+"""
+group_share_created = Signal(providing_args=['group', 'share'])
+group_share_deleted = Signal(providing_args=['group', 'share'])
+
+
+"""
 Set of signals to be triggered when working with shares.
 
 These are meant to be listened to by handlers that work directly on the filesystem,
@@ -59,9 +66,6 @@ e.g. to create the share directory.
 """
 share_created = Signal(providing_args=['share'])
 share_deleted = Signal(providing_args=['share'])
-# share_member_added = Signal(providing_args=['share', 'member'])
-# share_member_leaved = Signal(providing_args=['share', 'member'])
-# share_member_removed = Signal(providing_args=['share', 'member'])
 share_modified = Signal(providing_args=['share', 'fields'])
 
 

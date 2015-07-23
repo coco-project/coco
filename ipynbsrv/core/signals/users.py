@@ -119,6 +119,8 @@ def remove_home_directory(sender, user, **kwargs):
         if storage_backend.dir_exists(home_dir):
             try:
                 storage_backend.rm_dir(home_dir, recursive=True)
+            except DirectoryNotFoundError:
+                pass  # already deleted
             except StorageBackendError as ex:
                 raise ex
         else:
@@ -135,6 +137,8 @@ def remove_public_directory(sender, user, **kwargs):
         if storage_backend.dir_exists(public_dir):
             try:
                 storage_backend.rm_dir(public_dir, recursive=True)
+            except DirectoryNotFoundError:
+                pass  # already deleted
             except StorageBackendError as ex:
                 raise ex
         else:

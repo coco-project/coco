@@ -2,7 +2,6 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group, User
 from ipynbsrv.conf.helpers import *
 from ipynbsrv.contract.errors import *
-from ipynbsrv.core import settings
 from ipynbsrv.core.models import BackendGroup, BackendUser
 import logging
 
