@@ -216,6 +216,7 @@ class CollaborationGroup(models.Model):
         'BackendUser',
         blank=True,
         null=True,
+        related_name='created_groups',
         help_text='The user that created the group.'
     )
     admins = models.ManyToManyField(
@@ -257,19 +258,26 @@ class Container(models.Model):
     description = models.TextField(blank=True, null=True)
     server = models.ForeignKey(
         'Server',
+        related_name='containers',
         help_text='The server on which this container is/will be located.'
     )
-    owner = models.ForeignKey('BackendUser')
+    owner = models.ForeignKey(
+        'BackendUser',
+        related_name='containers',
+        help_text='The user owning this container.'
+    )
     image = models.ForeignKey(
         'ContainerImage',
         blank=True,
         null=True,
+        related_name='containers',
         help_text='The image from which this container was bootstrapped.'
     )
     clone_of = models.ForeignKey(
         'self',
         blank=True,
         null=True,
+        related_name='base_for',
         help_text='The container on which this one is based/was cloned from.'
     )
 
@@ -438,7 +446,11 @@ class ContainerImage(models.Model):
         max_length=255,
         help_text='The command to execute inside the container upon start.'
     )
-    owner = models.ForeignKey(User)
+    owner = models.ForeignKey(
+        User,
+        related_name='container_images',
+        help_text='The user owning this image. A system user should be taken for public images.'
+    )
     is_internal = models.BooleanField(default=False)
     is_public = models.BooleanField(default=False)
 
@@ -482,7 +494,11 @@ class ContainerSnapshot(models.Model):
     )
     name = models.CharField(max_length=75)
     description = models.TextField(blank=True, null=True)
-    container = models.ForeignKey('Container')
+    container = models.ForeignKey(
+        'Container',
+        related_name='snapshots',
+        help_text='The container from which this snapshot was taken/is for.'
+    )
 
     def get_friendly_name(self):
         """
@@ -557,6 +573,7 @@ class Notification(models.Model):
     id = models.AutoField(primary_key=True)
     sender = models.ForeignKey(
         User,
+        related_name='notifications',
         help_text='The user who sent the notification.'
     )
     message = models.CharField(
@@ -580,24 +597,28 @@ class Notification(models.Model):
         'Container',
         blank=True,
         null=True,
+        related_name='related_notifications',
         help_text='The container this notification is related to.'
     )
     container_image = models.ForeignKey(
         'ContainerImage',
         blank=True,
         null=True,
+        related_name='related_notifications',
         help_text='The container image this notification is related to.'
     )
     group = models.ForeignKey(
         'CollaborationGroup',
         blank=True,
         null=True,
+        related_name='related_notifications',
         help_text='The group this notification is related to.'
     )
     share = models.ForeignKey(
         'Share',
         blank=True,
         null=True,
+        related_name='related_notifications',
         help_text='The share this notification is related to.'
     )
 
@@ -678,11 +699,12 @@ class NotificationLog(models.Model):
 
     notification = models.ForeignKey(
         'Notification',
+        related_name='logs',
         help_text='The notification itself.'
     )
     user = models.ForeignKey(
         'BackendUser',
-        related_name='user',
+        related_name='notification_logs',
         help_text='The user assigned to this NotificationLog entry.'
     )
     read = models.BooleanField(default=False)
@@ -744,7 +766,8 @@ class Server(models.Model):
         blank=True,
         null=True,
         default=None,
-        limit_choices_to={'kind': Backend.CONTAINER_BACKEND}
+        limit_choices_to={'kind': Backend.CONTAINER_BACKEND},
+        related_name='servers'
     )
     container_backend_args = models.CharField(
         blank=True,
@@ -808,6 +831,7 @@ class Share(models.Model):
     description = models.TextField(null=True, blank=True)
     owner = models.ForeignKey(
         'BackendUser',
+        related_name='shares',
         help_text='The user owning the share (usually the one that created it).'
     )
     tags = models.ManyToManyField('Tag', blank=True)
