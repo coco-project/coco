@@ -14,7 +14,19 @@ Set of signals to be triggered for `BackendGroup` model events.
 """
 backend_group_created = Signal(providing_args=['group'])
 backend_group_deleted = Signal(providing_args=['group'])
+backend_group_member_added = Signal(providing_args=['group', 'user'])
+backend_group_member_removed = Signal(providing_args=['group', 'user'])
 backend_group_modified = Signal(providing_args=['group', 'fields'])
+
+
+"""
+Set of signals to be triggered for `CollaborationGroup` model events.
+"""
+collaboration_group_created = Signal(providing_args=['group'])
+collaboration_group_deleted = Signal(providing_args=['group'])
+collaboration_group_member_added = Signal(providing_args=['group', 'user'])
+collaboration_group_member_removed = Signal(providing_args=['group', 'user'])
+collaboration_group_modified = Signal(providing_args=['group', 'fields'])
 
 
 """
@@ -60,17 +72,14 @@ group_modified = Signal(providing_args=['group', 'fields'])
 
 
 """
-Set of signals to be triggered for `GroupShare` model events.
-"""
-group_share_created = Signal(providing_args=['group', 'share'])
-group_share_deleted = Signal(providing_args=['group', 'share'])
-
-
-"""
 Set of signals to be triggered for `Share` model events.
 """
+share_access_group_added = Signal(providing_args=['share', 'group'])
+share_access_group_removed = Signal(providing_args=['share', 'group'])
 share_created = Signal(providing_args=['share'])
 share_deleted = Signal(providing_args=['share'])
+share_member_added = Signal(providing_args=['share', 'user'])
+share_member_removed = Signal(providing_args=['share', 'user'])
 share_modified = Signal(providing_args=['share', 'fields'])
 
 

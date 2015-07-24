@@ -241,56 +241,6 @@ class CollaborationGroup(models.Model):
         return self.__str__()
 
 
-class CollaborationGroupNotification(models.Model):
-
-    """
-    Helper class to map notifications to receiving groups.
-    """
-
-    group = models.ForeignKey(
-        'CollaborationGroup',
-        help_text='The collaboration group receiving the notification.'
-    )
-    notification = models.ForeignKey(
-        'Notification',
-        help_text='The notification the group can access.'
-    )
-
-    def __str__(self):
-        """
-        :inherit.
-        """
-        return smart_unicode("@%s: %s" % (self.group, self.notification))
-
-    def __unicode__(self):
-        """
-        :inherit.
-        """
-        return self.__str__()
-
-    class Meta:
-        unique_together = ('group', 'notification')
-
-
-class CollaborationGroupShare(models.Model):
-
-    """
-    Intermediate model to associate group's with shares.
-    """
-
-    group = models.ForeignKey(
-        'CollaborationGroup',
-        help_text='The group having access to the share.'
-    )
-    share = models.ForeignKey(
-        'Share',
-        help_text='The share the group has access to.'
-    )
-
-    class Meta:
-        unique_together = ('group', 'share')
-
-
 class Container(models.Model):
 
     """
@@ -619,6 +569,13 @@ class Notification(models.Model):
         default=MISCELLANEOUS,
         max_length=15
     )
+    receiver_groups = models.ManyToManyField(
+        'CollaborationGroup',
+        blank=True,
+        null=True,
+        related_name='notifications',
+        help_text='The groups that receive that notification.'
+    )
     # related objects
     container = models.ForeignKey(
         'Container',
@@ -843,17 +800,24 @@ class Share(models.Model):
     """
 
     id = models.AutoField(primary_key=True)
+    backend_group = models.OneToOneField(
+        'BackendGroup',
+        related_name='share',
+        help_text='The (backend) group that is used to store membership information.'
+    )
     name = models.CharField(unique=True, max_length=75)
     description = models.TextField(null=True, blank=True)
-    tags = models.ManyToManyField('Tag', blank=True, null=True)
     owner = models.ForeignKey(
         'BackendUser',
         help_text='The user owning the share (usually the one that created it).'
     )
-    group = models.OneToOneField(
-        'BackendGroup',
-        related_name='share',
-        help_text='The (backend) group that is used to store membership information.'
+    tags = models.ManyToManyField('Tag', blank=True, null=True)
+    access_groups = models.ManyToManyField(
+        'CollaborationGroup',
+        blank=True,
+        null=True,
+        related_name='shares',
+        help_text='The groups having access to that share.'
     )
 
     def add_member(self, user):
@@ -864,7 +828,7 @@ class Share(models.Model):
         """
         if self.user_is_member(user):
             return False
-        self.group.django_group.user_set.add(user.django_user)
+        self.backend_group.django_group.user_set.add(user.django_user)
         return True
 
     # @classmethod
@@ -885,7 +849,7 @@ class Share(models.Model):
         """
         Get a list of members for this share.
         """
-        return [user.backend_user for user in self.group.django_group.user_set.all()]
+        return [user.backend_user for user in self.backend_group.django_group.user_set.all()]
 
     def remove_member(self, user):
         """
@@ -896,7 +860,7 @@ class Share(models.Model):
         :return bool `True` if the user has been a member and removed.
         """
         if self.user_is_member(user):
-            self.group.django_group.user_set.remove(user.django_user)
+            self.backend_group.django_group.user_set.remove(user.django_user)
             return True
         return False
 
@@ -952,5 +916,5 @@ class Tag(models.Model):
 
 # make sure our signal receivers are loaded
 from ipynbsrv.core.signals import backend_users, backend_groups, \
-    container_images, container_snapshots, containers, \
-    group_shares, groups, shares, users
+    collaboration_groups, container_images, container_snapshots, containers, \
+    groups, shares, users

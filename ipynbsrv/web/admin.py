@@ -25,16 +25,6 @@ class CollaborationGroupAdmin(admin.ModelAdmin):
     list_filter = ['creator']
 
 
-class CollaborationGroupNotificationAdmin(admin.ModelAdmin):
-    list_display = ['group', 'notification']
-    list_filter = ['group', 'notification']
-
-
-class CollaborationGroupShareAdmin(admin.ModelAdmin):
-    list_display = ['group', 'share']
-    list_filter = ['group', 'share']
-
-
 class ContainerAdmin(admin.ModelAdmin):
     list_display = ['name', 'description', 'owner']
     list_filter = ['image', 'owner', 'server']
@@ -85,8 +75,6 @@ admin.site.register(Backend, BackendAdmin)
 admin.site.register(BackendGroup, BackendGroupAdmin)
 admin.site.register(BackendUser, BackendUserAdmin)
 admin.site.register(CollaborationGroup, CollaborationGroupAdmin)
-admin.site.register(CollaborationGroupNotification, CollaborationGroupNotificationAdmin)
-admin.site.register(CollaborationGroupShare, CollaborationGroupShareAdmin)
 admin.site.register(Container, ContainerAdmin)
 admin.site.register(ContainerImage, ContainerImageAdmin)
 admin.site.register(ContainerSnapshot, ContainerSnapshotAdmin)

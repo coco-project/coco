@@ -1,75 +1,97 @@
 from django.contrib.auth.models import Group, User
 from django.dispatch import receiver
 from django.db.models.signals import m2m_changed, post_delete, post_save
-from ipynbsrv.conf.helpers import get_internal_ldap_connected
-from ipynbsrv.core.signals.signals import group_created, group_deleted, \
-    group_member_added, group_member_removed, group_modified
+from ipynbsrv.core.signals.signals import *
 
 
 @receiver(group_member_added)
-def add_member_to_internal_ldap_group(sender, group, user, **kwargs):
+def map_to_backend_group_member_added(sender, group, user, **kwargs):
     """
-    When ever a member is added to a group we need to sync the LDAP group.
+    Map the Django group signal to BackendGroup.
     """
-    if group is not None and user is not None and \
-            hasattr(group, 'backend_group') and hasattr(user, 'backend_user'):
-        internal_ldap = get_internal_ldap_connected()
-        try:
-            internal_ldap.add_group_member(group.backend_group.backend_pk, user.backend_user.backend_pk)
-        finally:
-            try:
-                internal_ldap.disconnect()
-            except:
-                pass
+    if group is not None and user is not None:
+        if hasattr(group, 'backend_group') and hasattr(user, 'backend_user'):
+            backend_group_member_added.send(
+                sender=sender,
+                group=group.backend_group,
+                user=user.backend_user,
+                kwargs=kwargs
+            )
 
 
 @receiver(group_member_removed)
-def remove_member_from_internal_ldap_group(sender, group, user, **kwargs):
+def map_to_backend_group_member_removed(sender, group, user, **kwargs):
     """
-    When ever a member is removed to a group we need to sync the LDAP group.
+    Map the Django group signal to BackendGroup.
     """
-    if group is not None and user is not None and \
-            hasattr(group, 'backend_group') and hasattr(user, 'backend_user'):
-        internal_ldap = get_internal_ldap_connected()
-        try:
-            internal_ldap.remove_group_member(group.backend_group.backend_pk, user.backend_user.backend_pk)
-        finally:
-            try:
-                internal_ldap.disconnect()
-            except:
-                pass
+    if group is not None and user is not None:
+        if hasattr(group, 'backend_group') and hasattr(user, 'backend_user'):
+            backend_group_member_removed.send(
+                sender=sender,
+                group=group.backend_group,
+                user=user.backend_user,
+                kwargs=kwargs
+            )
 
 
-@receiver(group_modified)
-def group_modified_handler(sender, group, fields, **kwargs):
+@receiver(group_member_added)
+def map_to_collaboration_group_member_added(sender, group, user, **kwargs):
     """
-    Helper method to break modifications into smaller pieces.
+    Map the Django group signal to BackendGroup.
     """
-    kwargs = kwargs.get('kwargs')  # not sure why this is needed
-    if fields is not None and 'user_set' in fields:
-        # get the user objects
-        users = []
-        if kwargs.get('pk_set') is not None:
-            for user_pk in kwargs.get('pk_set'):
-                users.append(User.objects.get(pk=user_pk))
-        # trigger the signals
-        action = kwargs.get('action')
-        if action == 'post_add':
-            for user in users:
-                group_member_added.send(
-                    sender=sender,
-                    group=group,
-                    user=user,
-                    kwargs=kwargs
-                )
-        elif action == 'post_remove':
-            for user in users:
-                group_member_removed.send(
-                    sender=sender,
-                    group=group,
-                    user=user,
-                    kwargs=kwargs
-                )
+    if group is not None and user is not None:
+        if hasattr(group, 'collaboration_group') and hasattr(user, 'backend_user'):
+            collaboration_group_member_added.send(
+                sender=sender,
+                group=group.collaboration_group,
+                user=user.backend_user,
+                kwargs=kwargs
+            )
+
+
+@receiver(group_member_removed)
+def map_to_collaboration_group_member_removed(sender, group, user, **kwargs):
+    """
+    Map the Django group signal to BackendGroup.
+    """
+    if group is not None and user is not None:
+        if hasattr(group, 'collaboration_group') and hasattr(user, 'backend_user'):
+            collaboration_group_member_removed.send(
+                sender=sender,
+                group=group.collaboration_group,
+                user=user.backend_user,
+                kwargs=kwargs
+            )
+
+
+@receiver(group_member_added)
+def map_to_share_member_added(sender, group, user, **kwargs):
+    """
+    Map the Django group signal to share signals if needed.
+    """
+    if group is not None and user is not None:
+        if hasattr(group, 'share') and hasattr(user, 'backend_user'):
+            share_member_added.send(
+                sender=sender,
+                group=group.share,
+                user=user.backend_user,
+                kwargs=kwargs
+            )
+
+
+@receiver(group_member_removed)
+def map_to_share_member_removed(sender, group, user, **kwargs):
+    """
+    Map the Django group signal to share signals if needed.
+    """
+    if group is not None and user is not None:
+        if hasattr(group, 'share') and hasattr(user, 'backend_user'):
+            share_member_removed.send(
+                sender=sender,
+                group=group.share,
+                user=user.backend_user,
+                kwargs=kwargs
+            )
 
 
 @receiver(m2m_changed, sender=User.groups.through)
@@ -77,15 +99,71 @@ def m2m_changed_handler(sender, instance, **kwargs):
     """
     Method to map Django m2m_changed model signals to custom ones.
     """
+    action = kwargs.get('action')
     if isinstance(instance, Group):
-        action = kwargs.get('action')
-        if action == 'post_add' or action == 'post_remove':
-            group_modified.send(
-                sender=sender,
-                group=instance,
-                fields=['user_set'],
-                kwargs=kwargs
-            )
+        if 'pk_set' in kwargs:  # group members
+            # get the user objects
+            users = []
+            if kwargs.get('pk_set') is not None:
+                for user_pk in kwargs.get('pk_set'):
+                    users.append(User.objects.get(pk=user_pk))
+            # trigger the signals
+            if action == 'post_add':
+                for user in users:
+                    group_member_added.send(
+                        sender=sender,
+                        group=instance,
+                        user=user,
+                        kwargs=kwargs
+                    )
+            elif action == 'pre_clear':
+                for user in instance.user_set.all():
+                    group_member_removed.send(
+                        sender=sender,
+                        group=instance,
+                        user=user,
+                        kwargs=kwargs
+                    )
+            elif action == 'post_remove':
+                for user in users:
+                    group_member_removed.send(
+                        sender=sender,
+                        group=instance,
+                        user=user,
+                        kwargs=kwargs
+                    )
+    elif isinstance(instance, User):
+        if 'pk_set' in kwargs:  # group memberships
+            # get the group objects
+            groups = []
+            if kwargs.get('pk_set') is not None:
+                for group_pk in kwargs.get('pk_set'):
+                    groups.append(Group.objects.get(pk=group_pk))
+            # trigger the signals
+            if action == 'post_add':
+                for group in groups:
+                    group_member_added.send(
+                        sender=sender,
+                        group=group,
+                        user=instance,
+                        kwargs=kwargs
+                    )
+            elif action == 'pre_clear':
+                for group in instance.groups.all():
+                    group_member_removed.send(
+                        sender=sender,
+                        group=group,
+                        user=instance,
+                        kwargs=kwargs
+                    )
+            elif action == 'post_remove':
+                for group in groups:
+                    group_member_removed.send(
+                        sender=sender,
+                        group=group,
+                        user=instance,
+                        kwargs=kwargs
+                    )
 
 
 @receiver(post_delete, sender=Group)

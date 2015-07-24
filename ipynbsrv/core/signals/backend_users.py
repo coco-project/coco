@@ -88,6 +88,24 @@ def create_public_directory(sender, user, **kwargs):
 
 
 @receiver(backend_user_deleted)
+def delete_django_group(sender, user, **kwargs):
+    """
+    Delete the internal Django user on delete.
+    """
+    if user is not None:
+        user.django_user.delete()
+
+
+@receiver(backend_user_deleted)
+def delete_primary_group(sender, user, **kwargs):
+    """
+    Delete the user's primary group upon deletion.
+    """
+    if user is not None:
+        user.primary_group.delete()
+
+
+@receiver(backend_user_deleted)
 def delete_on_internal_ldap(sender, user, **kwargs):
     """
     In case the BackendUser record is deleted, we need to cleanup the LDAP server.
@@ -96,8 +114,6 @@ def delete_on_internal_ldap(sender, user, **kwargs):
         internal_ldap = get_internal_ldap_connected()
         try:
             internal_ldap.delete_user(user.backend_pk)
-            user.delete()
-            user.primary_group.delete()
         except UserNotFoundError:
             pass  # already deleted
         except UserBackendError as ex:
