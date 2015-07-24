@@ -1,9 +1,10 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group, User
-from ipynbsrv.conf.helpers import *
-from ipynbsrv.contract.errors import *
-from ipynbsrv.core import settings
-from ipynbsrv.core.models import BackendGroup, BackendUser
+from ipynbsrv.conf.helpers import get_internal_ldap_connected, get_user_backend_connected
+from ipynbsrv.contract.errors import AuthenticationError, ConnectionError, \
+    UserNotFoundError
+from ipynbsrv.core.models import BackendGroup, BackendUser, \
+    CollaborationGroup
 import logging
 
 
@@ -72,11 +73,15 @@ class BackendProxyAuthentication(object):
         group = Group(name=name)
         group.save()
         backend_group = BackendGroup(
+            django_group=group,
             backend_id=gid,
-            backend_pk=name,
-            django_group=group
+            backend_pk=name
         )
         backend_group.save()
+        collaboration_group = CollaborationGroup(
+            django_group=group
+        )
+        collaboration_group.save()
         return group
 
     def create_users(self, username, uid, primary_group):
@@ -89,9 +94,9 @@ class BackendProxyAuthentication(object):
         user = User(username=username)
         user.save()
         backend_user = BackendUser(
+            django_user=user,
             backend_id=uid,
             backend_pk=username,
-            django_user=user,
             primary_group=primary_group
         )
         backend_user.save()

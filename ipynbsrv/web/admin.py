@@ -1,6 +1,4 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin, GroupAdmin
-from django.contrib.auth.models import User, Group
 from ipynbsrv.core.models import *
 
 
@@ -10,16 +8,21 @@ class BackendAdmin(admin.ModelAdmin):
     search_fields = ['kind', 'module', 'klass', 'arguments']
 
 
-class BackendGroupInline(admin.StackedInline):
-    model = BackendGroup
-    can_delete = False
-    verbose_name_plural = "GroupBackend group"
+class BackendGroupAdmin(admin.ModelAdmin):
+    list_display = ['django_group', 'backend_id', 'backend_pk']
+    list_filter = []
+    search_fields = ['backend_id', 'backend_pk']
 
 
-class BackendUserInline(admin.StackedInline):
-    model = BackendUser
-    can_delete = False
-    verbose_name_plural = "UserBackend user"
+class BackendUserAdmin(admin.ModelAdmin):
+    list_display = ['django_user', 'backend_id', 'backend_pk']
+    list_filter = []
+    search_fields = ['backend_id', 'backend_pk']
+
+
+class CollaborationGroupAdmin(admin.ModelAdmin):
+    list_display = ['django_group', 'creator']
+    list_filter = ['creator']
 
 
 class ContainerAdmin(admin.ModelAdmin):
@@ -40,29 +43,15 @@ class ContainerSnapshotAdmin(admin.ModelAdmin):
     search_fields = ['backend_pk', 'name', 'description']
 
 
-class GroupAdmin(GroupAdmin):
-    inlines = (BackendGroupInline, )
-
-
-class ImageAdmin(admin.ModelAdmin):
-    list_display = ['name', 'description', 'owner', 'is_public']
-    list_filter = ['owner', 'is_public']
-    search_fields = ['docker_id', 'name', 'description', 'cmd']
-
-
-class NotificationReceiversInline(admin.StackedInline):
-    model = NotificationReceivers
-
-
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ['date', 'sender', 'message']
-    list_filter = ['date', 'sender']
+    list_display = ['message', 'sender', 'date']
+    list_filter = ['sender', 'date']
     search_fields = ['sender', 'message']
-    inlines = (NotificationReceiversInline, )
 
 
 class NotificationLogAdmin(admin.ModelAdmin):
     list_display = ['notification', 'user', 'read']
+    list_filter = ['notification', 'user']
 
 
 class ServerAdmin(admin.ModelAdmin):
@@ -82,20 +71,15 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ['label']
 
 
-class UserAdmin(UserAdmin):
-    inlines = (BackendUserInline, )
-
-
 admin.site.register(Backend, BackendAdmin)
+admin.site.register(BackendGroup, BackendGroupAdmin)
+admin.site.register(BackendUser, BackendUserAdmin)
+admin.site.register(CollaborationGroup, CollaborationGroupAdmin)
 admin.site.register(Container, ContainerAdmin)
 admin.site.register(ContainerImage, ContainerImageAdmin)
 admin.site.register(ContainerSnapshot, ContainerSnapshotAdmin)
-admin.site.unregister(Group)
-admin.site.register(Group, GroupAdmin)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(NotificationLog, NotificationLogAdmin)
 admin.site.register(Server, ServerAdmin)
 admin.site.register(Share, ShareAdmin)
 admin.site.register(Tag, TagAdmin)
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)

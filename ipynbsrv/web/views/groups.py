@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group, User
 from django.db import IntegrityError
 from django.shortcuts import redirect, render
 from ipynbsrv.core.auth.checks import login_allowed
-from ipynbsrv.core.models import BackendGroup, Notification, NotificationReceivers
+from ipynbsrv.core.models import BackendGroup, Notification
 
 
 @user_passes_test(login_allowed)

@@ -1,6 +1,6 @@
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from ipynbsrv.conf.helpers import *
+from ipynbsrv.conf.helpers import get_storage_backend
 from ipynbsrv.contract.backends import ContainerBackend
 from ipynbsrv.contract.errors import ContainerBackendError, ContainerNotFoundError
 from ipynbsrv.core import settings
