@@ -213,13 +213,13 @@ class CollaborationGroup(models.Model):
         help_text='The regular Django group this backend group is associated with.'
     )
     creator = models.ForeignKey(
-        User,
+        'BackendUser',
         blank=True,
         null=True,
         help_text='The user that created the group.'
     )
     admins = models.ManyToManyField(
-        User,
+        'BackendUser',
         related_name='managed_groups',
         help_text='The users that are allowed to manage the group.'
     )
@@ -682,7 +682,7 @@ class NotificationLog(models.Model):
         help_text='The notification itself.'
     )
     user = models.ForeignKey(
-        User,
+        'BackendUser',
         related_name='user',
         help_text='The user assigned to this NotificationLog entry.'
     )
