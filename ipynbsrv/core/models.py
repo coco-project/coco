@@ -3,7 +3,6 @@ from django.contrib.auth.models import Group, User
 from django.db import models
 from django.utils.encoding import smart_unicode
 from ipynbsrv.common.utils import ClassLoader
-from ipynbsrv.contract.backends import ContainerBackend, SuspendableContainerBackend
 from ipynbsrv.core import settings
 from random import randint
 
@@ -117,6 +116,11 @@ class BackendGroup(models.Model):
         return settings.GROUP_ID_OFFSET + last_django_id
 
     id = models.AutoField(primary_key=True)
+    django_group = models.OneToOneField(
+        Group,
+        related_name='backend_group',
+        help_text='The regular Django group this backend group is associated with.'
+    )
     backend_id = models.PositiveIntegerField(
         unique=True,
         help_text='The ID for this group used internally by the backend.'
@@ -127,28 +131,12 @@ class BackendGroup(models.Model):
         max_length=255,
         help_text='Unique identifier for this group used by the backend.'
     )
-    django_group = models.OneToOneField(
-        Group,
-        related_name='backend_group',
-        help_text='The regular Django group this backend group is associated with.'
-    )
-    creator = models.ForeignKey(
-        User,
-        blank=True,
-        null=True,
-        help_text='The user that created the group.'
-    )
-    admins = models.ManyToManyField(
-        User,
-        related_name='managed_groups',
-        help_text='The users that are allowed to manage the group.'
-    )
 
     def __str__(self):
         """
         :inherit.
         """
-        return smart_unicode(self.django_group.__str__())
+        return str(self.django_group)
 
     def __unicode__(self):
         """
@@ -178,6 +166,11 @@ class BackendUser(models.Model):
         return settings.USER_ID_OFFSET + last_django_id
 
     id = models.AutoField(primary_key=True)
+    django_user = models.OneToOneField(
+        User,
+        related_name='backend_user',
+        help_text='The regular Django user this backend user is associated with.'
+    )
     backend_id = models.PositiveIntegerField(
         unique=True,
         help_text='The ID for this user used internally by the backend.'
@@ -188,15 +181,47 @@ class BackendUser(models.Model):
         max_length=255,
         help_text='Unique identifier for this user used by the backend.'
     )
-    django_user = models.OneToOneField(
-        User,
-        related_name='backend_user',
-        help_text='The regular Django user this backend user is associated with.'
-    )
     primary_group = models.OneToOneField(
         'BackendGroup',
         related_name='primary_user',
         help_text='The primary backend group this user belongs to.'
+    )
+
+    def __str__(self):
+        """
+        :inherit.
+        """
+        return str(self.django_user)
+
+    def __unicode__(self):
+        """
+        :inherit.
+        """
+        return self.__str__()
+
+
+class CollaborationGroup(models.Model):
+
+    """
+    Collaboration groups can be created by users.
+    """
+
+    id = models.AutoField(primary_key=True)
+    django_group = models.OneToOneField(
+        Group,
+        related_name='collaboration_group',
+        help_text='The regular Django group this backend group is associated with.'
+    )
+    creator = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        help_text='The user that created the group.'
+    )
+    admins = models.ManyToManyField(
+        User,
+        related_name='managed_groups',
+        help_text='The users that are allowed to manage the group.'
     )
     public = models.BooleanField(
         default=False,
@@ -207,13 +232,63 @@ class BackendUser(models.Model):
         """
         :inherit.
         """
-        return smart_unicode(self.django_user.__str__())
+        return str(self.django_group)
 
     def __unicode__(self):
         """
         :inherit.
         """
         return self.__str__()
+
+
+class CollaborationGroupNotification(models.Model):
+
+    """
+    Helper class to map notifications to receiving groups.
+    """
+
+    group = models.ForeignKey(
+        'CollaborationGroup',
+        help_text='The collaboration group receiving the notification.'
+    )
+    notification = models.ForeignKey(
+        'Notification',
+        help_text='The notification the group can access.'
+    )
+
+    def __str__(self):
+        """
+        :inherit.
+        """
+        return smart_unicode("@%s: %s" % (self.group, self.notification))
+
+    def __unicode__(self):
+        """
+        :inherit.
+        """
+        return self.__str__()
+
+    class Meta:
+        unique_together = ('group', 'notification')
+
+
+class CollaborationGroupShare(models.Model):
+
+    """
+    Intermediate model to associate group's with shares.
+    """
+
+    group = models.ForeignKey(
+        'CollaborationGroup',
+        help_text='The group having access to the share.'
+    )
+    share = models.ForeignKey(
+        'Share',
+        help_text='The share the group has access to.'
+    )
+
+    class Meta:
+        unique_together = ('group', 'share')
 
 
 class Container(models.Model):
@@ -487,25 +562,6 @@ class ContainerSnapshot(models.Model):
         unique_together = ('name', 'container')
 
 
-class GroupShare(models.Model):
-
-    """
-    Intermediate model to associate group's with shares.
-    """
-
-    group = models.ForeignKey(
-        Group,
-        help_text='The group having access to the share.'
-    )
-    share = models.ForeignKey(
-        'Share',
-        help_text='The share the group has access to.'
-    )
-
-    class Meta:
-        unique_together = ('group', 'share')
-
-
 class Notification(models.Model):
 
     """
@@ -518,14 +574,14 @@ class Notification(models.Model):
     CONTAINER = 'container'
 
     """
+    String to identify notifications for container image related events.
+    """
+    CONTAINER_IMAGE = 'container_image'
+
+    """
     String to identify notifications for group related events.
     """
     GROUP = 'group'
-
-    """
-    String to identify notifications for image related events.
-    """
-    IMAGE = 'image'
 
     """
     String to identify notifications for miscellaneous events.
@@ -542,15 +598,16 @@ class Notification(models.Model):
     """
     EVENT_TYPES = [
         (CONTAINER, 'Container'),
+        (CONTAINER_IMAGE, 'Container image'),
         (GROUP, 'Group'),
-        (IMAGE, 'Image'),
         (MISCELLANEOUS, 'Miscellaneous'),
         (SHARE, 'Share'),
     ]
 
+    id = models.AutoField(primary_key=True)
     sender = models.ForeignKey(
         User,
-        help_text='The user who send the notification.'
+        help_text='The user who sent the notification.'
     )
     message = models.CharField(
         max_length=255,
@@ -560,90 +617,95 @@ class Notification(models.Model):
     event_type = models.CharField(
         choices=EVENT_TYPES,
         default=MISCELLANEOUS,
-        max_length=20
+        max_length=15
     )
-    related_object_id = models.IntegerField(
+    # related objects
+    container = models.ForeignKey(
+        'Container',
         blank=True,
         null=True,
-        help_text='The id of the object related to the notification.'
+        help_text='The container this notification is related to.'
+    )
+    container_image = models.ForeignKey(
+        'ContainerImage',
+        blank=True,
+        null=True,
+        help_text='The container image this notification is related to.'
+    )
+    group = models.ForeignKey(
+        'CollaborationGroup',
+        blank=True,
+        null=True,
+        help_text='The group this notification is related to.'
+    )
+    share = models.ForeignKey(
+        'Share',
+        blank=True,
+        null=True,
+        help_text='The share this notification is related to.'
     )
 
     def get_related_object(self):
         """
-        Get the object related to by the notification.
-
-        TODO: make this code more dynamic...
+        Get the object related.
         """
-        rel_id = self.related_object_id
-        if not rel_id:
-            return None
-
-        if self.event_type == 'share':
-            share = Share.objects.filter(id=rel_id)
-            if share is not None:
-                return share.first()
-            else:
-                return None
-        elif self.event_type == 'container':
-            container = Container.objects.filter(id=rel_id)
-            if container is not None:
-                return container.first()
-            else:
-                return None
-        elif self.event_type == 'group':
-            group = Group.objects.filter(id=rel_id)
-            if group is not None:
-                return group.first()
-            else:
-                return None
-        elif self.event_type == 'image':
-            image = ContainerImage.objects.filter(id=rel_id)
-            if image is not None:
-                return image.first()
-            else:
-                return None
-        # return None per default
+        if self.container is not None:
+            return self.container
+        if self.container_image is not None:
+            return self.container_image
+        if self.group is not None:
+            return self.group
+        if self.share is not None:
+            return self.share
         return None
 
-    def get_related_object_url_slug(self):
+    def has_related_object(self):
         """
-        Todo: write doc.
-        """
-        obj = self.get_related_object()
-        if obj is None:
-            return None
-        elif type(obj) is Share:
-            # TODO: get url to share
-            return "/share/manage/{}".format(obj.id)
-        elif type(obj) is Container:
-            # TODO: get url to container
-            return "/containers/{}".format(obj.id)
-        elif type(obj) is ContainerImage:
-            # TODO: get url to image
-            return "/images/{}".format(obj.id)
-        elif type(obj) is Group:
-            # TODO: get url to container
-            return "/groups/manage/{}".format(obj.id)
-        else:
-            return None
+        Check if the notification is related to an object.
 
-    def send(self):
+        :return bool `True` if the notification has a related object.
         """
-        TODO: write doc.
-        """
-        to_send = NotificationReceivers.objects.filter(notification=self.id)
+        return self.get_related_object() is not None
 
-        # TODO: avoid double notifications
-        for n in to_send:
-            for user in n.receiving_group.user_set.all():
-                notification_log = NotificationLog(notification=self, user=user)
-                notification_log.save()
+    # def get_related_object_url_slug(self):
+    #     """
+    #     Todo: write doc.
+    #     """
+    #     obj = self.get_related_object()
+    #     if obj is None:
+    #         return None
+    #     elif type(obj) is Share:
+    #         # TODO: get url to share
+    #         return "/share/manage/{}".format(obj.id)
+    #     elif type(obj) is Container:
+    #         # TODO: get url to container
+    #         return "/containers/{}".format(obj.id)
+    #     elif type(obj) is ContainerImage:
+    #         # TODO: get url to image
+    #         return "/images/{}".format(obj.id)
+    #     elif type(obj) is Group:
+    #         # TODO: get url to container
+    #         return "/groups/manage/{}".format(obj.id)
+    #     else:
+    #         return None
+
+    # def send(self):
+    #     """
+    #     TODO: write doc.
+    #     """
+    #     to_send = NotificationReceiver.objects.filter(notification=self.id)
+    #
+    #     # TODO: avoid double notifications
+    #     for n in to_send:
+    #         for user in n.receiving_group.user_set.all():
+    #             notification_log = NotificationLog(notification=self, user=user)
+    #             notification_log.save()
 
     def __str__(self):
         """
         :inherit.
         """
-        return smart_unicode("{0}: {1}".format(self.date, self.message))
+        return smart_unicode("%s: %s" % (self.date, self.message))
 
     def __unicode__(self):
         """
@@ -659,64 +721,32 @@ class NotificationLog(models.Model):
     """
 
     notification = models.ForeignKey(
-        Notification,
+        'Notification',
         help_text='The notification itself.'
     )
     user = models.ForeignKey(
         User,
         related_name='user',
-        help_text='The BackendUser assigned to this NotificationLog entry.'
+        help_text='The user assigned to this NotificationLog entry.'
     )
     read = models.BooleanField(default=False)
 
-    @classmethod
-    def for_user(cls, user):
-        """
-        TODO: document.
-        """
-        notifications = None
-        try:
-            notifications = NotificationLog.objects.filter(user=user.id).order_by("-notification__date")
-        finally:
-            return notifications
+    # @classmethod
+    # def for_user(cls, user):
+    #     """
+    #     TODO: document.
+    #     """
+    #     notifications = None
+    #     try:
+    #         notifications = NotificationLog.objects.filter(user=user.id).order_by("-notification__date")
+    #     finally:
+    #         return notifications
 
     def __str__(self):
         """
         :inherit.
         """
-        return smart_unicode("@{0}: {1} (Read: {2})".format(
-            self.user.__str__(),
-            self.notification.__str__(),
-            self.read
-        ))
-
-    def __unicode__(self):
-        """
-        :inherit.
-        """
-        return self.__str__()
-
-
-class NotificationReceivers(models.Model):
-
-    """
-    Helper class to allow multiple receivers per Notification.
-    """
-
-    notification = models.ForeignKey(Notification)
-    receiving_group = models.ForeignKey(
-        Group,
-        help_text='The regular Django group that will receive this Notification.'
-    )
-
-    def __str__(self):
-        """
-        :inherit.
-        """
-        return smart_unicode("@{0}: {1}".format(
-            self.receiving_group.__str__(),
-            self.notification.__str__()
-        ))
+        return smart_unicode("@%s: %s (Read: %b)" % (self.user, self.notification, self.read))
 
     def __unicode__(self):
         """
@@ -921,5 +951,6 @@ class Tag(models.Model):
 
 
 # make sure our signal receivers are loaded
-from ipynbsrv.core.signals import container_images, container_snapshots, \
-    containers, group_shares, groups, shares, users
+from ipynbsrv.core.signals import backend_users, backend_groups, \
+    container_images, container_snapshots, containers, \
+    group_shares, groups, shares, users

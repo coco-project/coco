@@ -4,7 +4,8 @@ from ipynbsrv.conf.helpers import get_storage_backend
 from ipynbsrv.contract.errors import DirectoryNotFoundError, StorageBackendError
 from ipynbsrv.core import settings
 from ipynbsrv.core.models import Share
-from ipynbsrv.core.signals.signals import share_created, share_modified, share_deleted
+from ipynbsrv.core.signals.signals import share_created, \
+    share_modified, share_deleted
 from os import path
 
 

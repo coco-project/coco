@@ -1,10 +1,9 @@
 from django.contrib.auth.models import Group, User
 from django.dispatch import receiver
 from django.db.models.signals import m2m_changed, post_delete, post_save
-from ipynbsrv.conf.helpers import *
-from ipynbsrv.contract.backends import GroupBackend
-from ipynbsrv.contract.errors import *
-from ipynbsrv.core.signals.signals import *
+from ipynbsrv.conf.helpers import get_internal_ldap_connected
+from ipynbsrv.core.signals.signals import group_created, group_deleted, \
+    group_member_added, group_member_removed, group_modified
 
 
 @receiver(group_member_added)
@@ -17,57 +16,6 @@ def add_member_to_internal_ldap_group(sender, group, user, **kwargs):
         internal_ldap = get_internal_ldap_connected()
         try:
             internal_ldap.add_group_member(group.backend_group.backend_pk, user.backend_user.backend_pk)
-        finally:
-            try:
-                internal_ldap.disconnect()
-            except:
-                pass
-
-
-@receiver(group_created)
-def create_on_internal_ldap(sender, group, **kwargs):
-    """
-    BackendGroup instances are used to represent external backends (e.g. LDAP) groups.
-
-    If such a group is created, we should therefor create the group on the backend.
-    """
-    if group is not None and hasattr(group, 'backend_group'):
-        internal_ldap = get_internal_ldap_connected()
-        try:
-            created = internal_ldap.create_group({
-                'groupname': group.backend_group.backend_pk,
-                'gidNumber': group.backend_group.backend_id
-            })
-            # FIXME: this is the first time we really know the ID/PK given by the backend.
-            # all other operations having used to old ones might not be valid anymore...
-            group.backend_group.backend_id = created.get(GroupBackend.FIELD_ID)
-            group.backend_group.backend_pk = created.get(GroupBackend.FIELD_PK)
-            group.backend_group.save()
-        except GroupBackendError as ex:
-            group.backend_group.delete()  # XXX: cleanup?
-            raise ex
-        finally:
-            try:
-                internal_ldap.disconnect()
-            except:
-                pass
-
-
-@receiver(group_deleted)
-def delete_on_internal_ldap(sender, group, **kwargs):
-    """
-    In case the BackendGroup record is deleted, we need to cleanup the internal LDAP server.
-    """
-    if group is not None and hasattr(group, 'backend_group'):
-        internal_ldap = get_internal_ldap_connected()
-        try:
-            internal_ldap.delete_group(group.backend_group.backend_pk)
-            group.delete()
-        except GroupNotFoundError:
-            pass  # already deleted
-        except GroupBackendError as ex:
-            # XXX: recreate?
-            raise ex
         finally:
             try:
                 internal_ldap.disconnect()

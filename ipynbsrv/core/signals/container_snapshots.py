@@ -3,7 +3,8 @@ from django.dispatch import receiver
 from ipynbsrv.contract.backends import ContainerBackend
 from ipynbsrv.contract.errors import ContainerBackendError, ContainerSnapshotNotFoundError
 from ipynbsrv.core.models import ContainerSnapshot
-from ipynbsrv.core.signals.signals import container_snapshot_created, container_snapshot_deleted
+from ipynbsrv.core.signals.signals import container_snapshot_created, \
+    container_snapshot_deleted, container_snapshot_modified, container_snapshot_restored
 import logging
 
 
@@ -46,6 +47,14 @@ def remove_on_server(sender, snapshot, **kwargs):
                 raise ex
         else:
             logger.warn("Container snapshot %s not found." % snapshot)
+
+
+@receiver(container_snapshot_restored)
+def restore_on_server(sender, snapshot, **kwargs):
+    """
+    Restore the restored snapshot on the container backend.
+    """
+    pass
 
 
 @receiver(post_delete, sender=ContainerSnapshot)
