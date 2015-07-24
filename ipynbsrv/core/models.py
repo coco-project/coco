@@ -1,7 +1,7 @@
-from datetime import datetime
 from django.contrib.auth.models import Group, User
 from django.db import models
 from django.utils.encoding import smart_unicode
+from django.utils.timezone import now
 from ipynbsrv.common.utils import ClassLoader
 from ipynbsrv.core import settings
 from random import randint
@@ -563,7 +563,7 @@ class Notification(models.Model):
         max_length=255,
         help_text='The message body.'
     )
-    date = models.DateTimeField(default=datetime.now())
+    date = models.DateTimeField(default=now())
     event_type = models.CharField(
         choices=EVENT_TYPES,
         default=MISCELLANEOUS,
@@ -572,7 +572,6 @@ class Notification(models.Model):
     receiver_groups = models.ManyToManyField(
         'CollaborationGroup',
         blank=True,
-        null=True,
         related_name='notifications',
         help_text='The groups that receive that notification.'
     )
@@ -811,11 +810,10 @@ class Share(models.Model):
         'BackendUser',
         help_text='The user owning the share (usually the one that created it).'
     )
-    tags = models.ManyToManyField('Tag', blank=True, null=True)
+    tags = models.ManyToManyField('Tag', blank=True)
     access_groups = models.ManyToManyField(
         'CollaborationGroup',
         blank=True,
-        null=True,
         related_name='shares',
         help_text='The groups having access to that share.'
     )
