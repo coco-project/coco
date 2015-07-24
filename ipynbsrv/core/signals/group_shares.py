@@ -10,9 +10,10 @@ def add_user_to_share_groups(sender, group, user, **kwargs):
     """
     Add the user to all share groups the entered group has access to.
     """
-    if group is not None and user is not None:
+    if group is not None and user is not None and \
+            hasattr(user, 'backend_user'):
         for group_share in GroupShare.objects.filter(group=group):
-            group_share.share.add_member(user)
+            group_share.share.add_member(user.backend_user)
 
 
 @receiver(group_member_removed)
@@ -24,12 +25,13 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
     The user is added to the share group for that reason. Now, he leaves the group
     (not the share directly), so we have to make sure he also leaves all the share groups.
     """
-    if group is not None and user is not None:
+    if group is not None and user is not None and \
+            hasattr(user, 'backend_user'):
         # TODO: only if not within an other group that has access as well
         # FIXME: fails (member already deleted on LDAP group -> LdapBackend throws error)
         #        no idea why the user is already removed. modifies other group's as well :O
         for group_share in GroupShare.objects.filter(group=group):
-            group_share.share.remove_member(user)
+            group_share.share.remove_member(user.backend_user)
 
 
 @receiver(group_share_created)
@@ -38,8 +40,9 @@ def add_group_members_to_share_group(sender, group, share, **kwargs):
     Upon associating a share with a group, all members of that group need to be in the share group.
     """
     if group is not None and share is not None:
-        for user in group.django_group.user_set.all():
-            share.add_member(user.backend_user)
+        for user in group.user_set.all():
+            if hasattr(user, 'backend_user'):
+                share.add_member(user.backend_user)
 
 
 @receiver(group_share_deleted)
@@ -49,8 +52,9 @@ def remove_group_members_from_share_group(sender, group, share, **kwargs):
     """
     if group is not None and share is not None:
         # TODO: only if not within an other group that has access as well
-        for user in group.django_group.user_set.all():
-            share.remove_member(user.backend_user)
+        for user in group.user_set.all():
+            if hasattr(user, 'backend_user'):
+                share.remove_member(user.backend_user)
 
 
 @receiver(post_delete, sender=GroupShare)

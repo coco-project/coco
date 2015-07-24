@@ -494,7 +494,7 @@ class GroupShare(models.Model):
     """
 
     group = models.ForeignKey(
-        'BackendGroup',
+        Group,
         help_text='The group having access to the share.'
     )
     share = models.ForeignKey(
