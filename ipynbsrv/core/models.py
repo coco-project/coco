@@ -446,6 +446,20 @@ class ContainerImage(models.Model):
         max_length=255,
         help_text='The command to execute inside the container upon start.'
     )
+    protected_port = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="""The image\'s protected internal port.
+        This port is only accessable through the ipynbsrv application for the container owner."""
+    )
+    public_ports = models.CommaSeparatedIntegerField(
+        default='22',
+        blank=True,
+        null=True,
+        max_length=75,
+        help_text="""A comma-separated list of ports to expose to the public.
+        In contrast to 'protected_port', nothing is done to protect access to those ports."""
+    )
     owner = models.ForeignKey(
         User,
         related_name='container_images',
