@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.encoding import smart_unicode
 from django.utils.timezone import now
 from ipynbsrv.common.utils import ClassLoader
+from ipynbsrv.contract.backends import ContainerBackend
 from ipynbsrv.core import settings
 from random import randint
 
@@ -334,6 +335,22 @@ class Container(models.Model):
         Return the humen-friendly name of this container.
         """
         return self.owner.django_user.get_username() + '_' + self.name
+
+    def get_port_mappings(self, tuples=False):
+        """
+        Return the port mappings for this container.
+
+        :param tuples: If `True`, tuples in the form (internal, exposed) are returned.
+        """
+        mappings = []
+        reported_mappings = self.server.get_container_backend().get_container_port_mappings(self.backend_pk)
+        if tuples:
+            for reported_mapping in reported_mappings:
+                mappings.append((
+                    reported_mapping.get(ContainerBackend.PORT_MAPPING_KEY_INTERNAL),
+                    reported_mapping.get(ContainerBackend.PORT_MAPPING_KEY_EXTERNAL)
+                ))
+        return mappings
 
     def has_clones(self):
         """
