@@ -352,7 +352,7 @@ class Container(models.Model):
                     reported_mapping.get(ContainerBackend.PORT_MAPPING_KEY_EXTERNAL)
                 ))
         else:
-            mappings = reported_mapping
+            mappings = reported_mappings
         return mappings
 
     def has_clones(self):
