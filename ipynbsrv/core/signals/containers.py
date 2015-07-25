@@ -23,23 +23,14 @@ def create_on_server(sender, container, **kwargs):
         cmd = None
         image = None
         if container.is_image_based():
-            if container.image.protected_port is not None:
-                ports.append({
-                    ContainerBackend.PORT_MAPPING_KEY_ADDRESS: container.server.internal_ip,
-                    ContainerBackend.PORT_MAPPING_KEY_INTERNAL: container.image.protected_port
-                })
-            if container.image.public_ports is not None:
-                for port in container.image.public_ports.split(','):
-                    ports.append({
-                        ContainerBackend.PORT_MAPPING_KEY_ADDRESS: '0.0.0.0',
-                        ContainerBackend.PORT_MAPPING_KEY_INTERNAL: int(port)
-                    })
+            ports = get_container_port_mappings(container)
             cmd = container.image.command
             image = container.image.backend_pk
         clone_of = None
         if container.is_clone():
             clone_of = container.clone_of.backend_pk
             if container.clone_of.is_image_based():
+                ports = get_container_port_mappings(container.clone_of)
                 cmd = container.clone_of.image.command
 
         result = None
@@ -108,6 +99,25 @@ def delete_on_server(sender, container, **kwargs):
         except ContainerBackendError as ex:
             # XXX: restore?
             raise ex
+
+
+def get_container_port_mappings(container):
+    """
+    Return the list of port mappings for the container that can be passed to container backends.
+    """
+    ports = []
+    if container.image.protected_port is not None:
+        ports.append({
+            ContainerBackend.PORT_MAPPING_KEY_ADDRESS: container.server.internal_ip,
+            ContainerBackend.PORT_MAPPING_KEY_INTERNAL: container.image.protected_port
+        })
+    if container.image.public_ports is not None:
+        for port in container.image.public_ports.split(','):
+            ports.append({
+                ContainerBackend.PORT_MAPPING_KEY_ADDRESS: '0.0.0.0',
+                ContainerBackend.PORT_MAPPING_KEY_INTERNAL: int(port)
+            })
+    return ports
 
 
 @receiver(container_restarted)
