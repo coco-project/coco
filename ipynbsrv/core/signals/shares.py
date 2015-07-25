@@ -81,9 +81,14 @@ def remove_group_members_from_share_group(sender, share, group, **kwargs):
     Remove all members from the access group from the share group.
     """
     if share is not None and group is not None:
+        leave = False
         for user in group.django_group.user_set.all():
-            if hasattr(user, 'backend_user'):
-                # TODO: only if not within another group having access
+            for access_group in share.access_groups.all():
+                if access_group != group:
+                    if user in access_group.user_set.all():
+                        leave = True
+                        break
+            if not leave and hasattr(user, 'backend_user'):
                 share.remove_member(user.backend_user)
 
 
@@ -97,9 +102,15 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
     (not the share directly), so we have to make sure he also leaves all the share groups.
     """
     if group is not None and user is not None:
-        # TODO: only if not within an other group that has access as well
+        leave = True
         for share in group.shares.all():
-            share.remove_member(user)
+            for access_group in share.access_groups.all():
+                if access_group != group:
+                    if user in access_group.user_set.all():
+                        leave = True
+                        break
+            if not leave:
+                share.remove_member(user)
 
 
 @receiver(m2m_changed, sender=Share.access_groups.through)
