@@ -85,10 +85,10 @@ def remove_group_members_from_share_group(sender, share, group, **kwargs):
         for user in group.django_group.user_set.all():
             for access_group in share.access_groups.all():
                 if access_group != group:
-                    if user in access_group.user_set.all():
+                    if user in access_group.django_group.user_set.all():
                         leave = True
                         break
-            if not leave and hasattr(user, 'backend_user'):
+            if not leave:
                 share.remove_member(user.backend_user)
 
 
@@ -106,7 +106,7 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
         for share in group.shares.all():
             for access_group in share.access_groups.all():
                 if access_group != group:
-                    if user in access_group.user_set.all():
+                    if user.django_user in access_group.django_group.user_set.all():
                         leave = True
                         break
             if not leave:
