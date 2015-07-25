@@ -102,7 +102,7 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
     (not the share directly), so we have to make sure he also leaves all the share groups.
     """
     if group is not None and user is not None:
-        leave = True
+        leave = False
         for share in group.shares.all():
             for access_group in share.access_groups.all():
                 if access_group != group:
@@ -110,6 +110,7 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
                         leave = True
                         break
             if not leave:
+                # FIXME: the group change event is not triggered -> user stays in group
                 share.remove_member(user)
 
 
