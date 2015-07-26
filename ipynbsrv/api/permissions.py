@@ -19,3 +19,19 @@ class IsGroupAdminOrReadOnly(permissions.BasePermission):
             ret = request.user in obj.admins
             print("ret = " + ret)
         return False
+
+
+class IsBackendUserOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission to only allow admins of an object to edit it.
+    """
+
+    def has_permission(self, request, view):
+        # Read permissions are allowed to any request,
+        # so we'll always allow GET, HEAD or OPTIONS requests.
+        if request.method in permissions.SAFE_METHODS:
+            print("safe method")
+            return True
+        if hasattr(request.user, 'backend_user'):
+            return True
+        return False
