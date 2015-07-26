@@ -229,6 +229,13 @@ class CollaborationGroup(models.Model):
         help_text='Indicate if the group should be publicly visible and free to join for everyone.'
     )
 
+    def user_is_member(self, user):
+        """
+        :param user: BackendUser object
+        """
+        # first test if user is existing at all
+        return (user in self.django_group.user_set.all())
+
     def __str__(self):
         """
         :inherit.
