@@ -19,36 +19,39 @@ def create_on_server(sender, container, **kwargs):
     Create the newly saved container on the server's container backend.
     """
     if container is not None:
+        ports = []
         cmd = None
         image = None
         if container.is_image_based():
+            ports = get_container_port_mappings(container)
             cmd = container.image.command
             image = container.image.backend_pk
         clone_of = None
         if container.is_clone():
             clone_of = container.clone_of.backend_pk
             if container.clone_of.is_image_based():
+                ports = get_container_port_mappings(container.clone_of)
                 cmd = container.clone_of.image.command
 
         result = None
         try:
             result = container.server.get_container_backend().create_container(
                 container.get_backend_name(),
-                [],
+                ports,
                 [
                     {   # home directory
                         # TODO: check if we should better use /home/user, because if we create an image
                         # from the container, i.e. Docker keeps the mounts (from old users).
-                        'source': path.join(storage_backend.base_dir, settings.STORAGE_DIR_HOME),
-                        'target': path.join('/home', container.owner.backend_pk)
+                        ContainerBackend.VOLUME_KEY_SOURCE: path.join(storage_backend.base_dir, settings.STORAGE_DIR_HOME),
+                        ContainerBackend.VOLUME_KEY_TARGET: path.join('/home', container.owner.backend_pk)
                     },
                     {   # public directory
-                        'source': path.join(storage_backend.base_dir, settings.STORAGE_DIR_PUBLIC),
-                        'target': path.join('/data', 'public')
+                        ContainerBackend.VOLUME_KEY_SOURCE: path.join(storage_backend.base_dir, settings.STORAGE_DIR_PUBLIC),
+                        ContainerBackend.VOLUME_KEY_TARGET: path.join('/data', 'public')
                     },
                     {   # shares directory
-                        'source': path.join(storage_backend.base_dir, settings.STORAGE_DIR_SHARES),
-                        'target': path.join('/data', 'shares')
+                        ContainerBackend.VOLUME_KEY_SOURCE: path.join(storage_backend.base_dir, settings.STORAGE_DIR_SHARES),
+                        ContainerBackend.VOLUME_KEY_TARGET: path.join('/data', 'shares')
                     }
                 ],
                 cmd=cmd,
@@ -71,6 +74,8 @@ def create_on_server(sender, container, **kwargs):
                 name=container.clone_of.image.name + '-clone-' + str(int(time.time())),
                 description="Internal only image created during the cloning process of container %s." % container.clone_of.get_friendly_name(),
                 command=container.clone_of.image.command,
+                protected_port=container.clone_of.image.protected_port,
+                public_ports=container.clone_of.image.public_ports,
                 owner=container.owner.django_user,
                 is_internal=True
             )
@@ -94,6 +99,25 @@ def delete_on_server(sender, container, **kwargs):
         except ContainerBackendError as ex:
             # XXX: restore?
             raise ex
+
+
+def get_container_port_mappings(container):
+    """
+    Return the list of port mappings for the container that can be passed to container backends.
+    """
+    ports = []
+    if container.image.protected_port is not None:
+        ports.append({
+            ContainerBackend.PORT_MAPPING_KEY_ADDRESS: container.server.internal_ip,
+            ContainerBackend.PORT_MAPPING_KEY_INTERNAL: container.image.protected_port
+        })
+    if container.image.public_ports is not None:
+        for port in container.image.public_ports.split(','):
+            ports.append({
+                ContainerBackend.PORT_MAPPING_KEY_ADDRESS: '0.0.0.0',
+                ContainerBackend.PORT_MAPPING_KEY_INTERNAL: int(port)
+            })
+    return ports
 
 
 @receiver(container_restarted)

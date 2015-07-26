@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.encoding import smart_unicode
 from django.utils.timezone import now
 from ipynbsrv.common.utils import ClassLoader
+from ipynbsrv.contract.backends import ContainerBackend
 from ipynbsrv.core import settings
 from random import randint
 
@@ -411,6 +412,25 @@ class Container(models.Model):
         """
         return self.owner.django_user.get_username() + '_' + self.name
 
+    def get_port_mappings(self, tuples=False):
+        """
+        Return the port mappings for this container.
+
+        :param tuples: If `True`, tuples in the form (internal, exposed) are returned.
+        """
+        mappings = []
+        reported_mappings = self.server.get_container_backend().get_container(self.backend_pk)\
+                                .get(ContainerBackend.CONTAINER_KEY_PORT_MAPPINGS)
+        if tuples:
+            for reported_mapping in reported_mappings:
+                mappings.append((
+                    reported_mapping.get(ContainerBackend.PORT_MAPPING_KEY_INTERNAL),
+                    reported_mapping.get(ContainerBackend.PORT_MAPPING_KEY_EXTERNAL)
+                ))
+        else:
+            mappings = reported_mappings
+        return mappings
+
     def has_clones(self):
         """
         Return true if clones of this container exist, false otherwise.
@@ -521,6 +541,20 @@ class ContainerImage(models.Model):
         null=True,
         max_length=255,
         help_text='The command to execute inside the container upon start.'
+    )
+    protected_port = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="""The image\'s protected internal port.
+        This port is only accessable through the ipynbsrv application for the container owner."""
+    )
+    public_ports = models.CommaSeparatedIntegerField(
+        default='22',
+        blank=True,
+        null=True,
+        max_length=75,
+        help_text="""A comma-separated list of ports to expose to the public.
+        In contrast to 'protected_port', nothing is done to protect access to those ports."""
     )
     owner = models.ForeignKey(
         User,
