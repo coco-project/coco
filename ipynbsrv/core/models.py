@@ -132,6 +132,44 @@ class BackendGroup(models.Model):
         help_text='Unique identifier for this group used by the backend.'
     )
 
+    def add_member(self, user):
+        """
+        Add the user as a member to this group.
+
+        :param user: The user to add.
+        """
+        if self.user_is_member(user):
+            return False
+        self.django_group.user_set.add(user.django_user)
+        return True
+
+    def get_members(self):
+        """
+        Get a list of members for this group.
+        """
+        return [user.backend_user for user in self.django_group.user_set.all()]
+
+    def remove_member(self, user):
+        """
+        Remove the member `user` from the group.
+
+        :param user: The user to remove (if is member).
+
+        :return bool `True` if the user has been a member and removed.
+        """
+        if self.user_is_member(user):
+            self.django_group.user_set.remove(user.django_user)
+            return True
+        return False
+
+    def user_is_member(self, user):
+        """
+        Check if the user is a member of this group.
+
+        :param user: The user to check for membership.
+        """
+        return user in self.get_members()
+
     def __str__(self):
         """
         :inherit.
@@ -228,6 +266,44 @@ class CollaborationGroup(models.Model):
         default=False,
         help_text='Indicate if the group should be publicly visible and free to join for everyone.'
     )
+
+    def add_member(self, user):
+        """
+        Add the user as a member to this group.
+
+        :param user: The user to add.
+        """
+        if self.user_is_member(user):
+            return False
+        self.django_group.user_set.add(user.django_user)
+        return True
+
+    def get_members(self):
+        """
+        Get a list of members for this group.
+        """
+        return [user.backend_user for user in self.django_group.user_set.all()]
+
+    def remove_member(self, user):
+        """
+        Remove the member `user` from the group.
+
+        :param user: The user to remove (if is member).
+
+        :return bool `True` if the user has been a member and removed.
+        """
+        if self.user_is_member(user):
+            self.django_group.user_set.remove(user.django_user)
+            return True
+        return False
+
+    def user_is_member(self, user):
+        """
+        Check if the user is a member of this group.
+
+        :param user: The user to check for membership.
+        """
+        return user in self.get_members()
 
     def __str__(self):
         """
@@ -844,7 +920,7 @@ class Share(models.Model):
 
     def add_member(self, user):
         """
-        Add the user as a member to this group.
+        Add the user as a member to this share.
 
         :param user: The user to add.
         """
@@ -875,7 +951,7 @@ class Share(models.Model):
 
     def remove_member(self, user):
         """
-        Remove the member `user` from the group.
+        Remove the member `user` from the share.
 
         :param user: The user to remove (if is member).
 

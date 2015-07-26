@@ -27,9 +27,8 @@ def add_group_members_to_share_group(sender, share, group, **kwargs):
     Add all members from the access group to the share group.
     """
     if share is not None and group is not None:
-        for user in group.django_group.user_set.all():
-            if hasattr(user, 'backend_user'):
-                share.add_member(user.backend_user)
+        for user in group.get_members():
+            share.add_member(user)
 
 
 @receiver(share_created)
@@ -82,14 +81,14 @@ def remove_group_members_from_share_group(sender, share, group, **kwargs):
     """
     if share is not None and group is not None:
         leave = False
-        for user in group.django_group.user_set.all():
+        for user in group.get_members():
             for access_group in share.access_groups.all():
                 if access_group != group:
-                    if user in access_group.django_group.user_set.all():
+                    if access_group.user_is_member(user):
                         leave = True
                         break
             if not leave:
-                share.remove_member(user.backend_user)
+                share.remove_member(user)
 
 
 @receiver(collaboration_group_member_removed)
@@ -106,11 +105,10 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
         for share in group.shares.all():
             for access_group in share.access_groups.all():
                 if access_group != group:
-                    if user.django_user in access_group.django_group.user_set.all():
+                    if access_group.user_is_member(user):
                         leave = True
                         break
             if not leave:
-                # FIXME: the group change event is not triggered -> user stays in group
                 share.remove_member(user)
 
 
