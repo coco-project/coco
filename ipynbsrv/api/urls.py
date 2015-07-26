@@ -14,30 +14,39 @@ urlpatterns = patterns('',
 
     # /api/backend(s)/...
     url(r'^backends/$', views.BackendList.as_view(), name="backends"),
+    url(r'^backends/(?P<pk>[0-9]+)$', views.BackendDetail.as_view(), name="backend_detail"),
 
     # /api/container(s)/...
     url(r'^containers/$', views.ContainerList.as_view(), name="containers"),
+    url(r'^containers/(?P<pk>[0-9]+)$', views.ContainerDetail.as_view(), name="container_detail"),
 
     # /api/image(s)/...
     url(r'^images/$', views.ContainerImageList.as_view(), name="images"),
+    url(r'^images/(?P<pk>[0-9]+)$', views.ContainerImageDetail.as_view(), name="image_detail"),
 
     # /api/snapshot(s)/...
-    url(r'^snapshot/$', views.ContainerSnapshotList.as_view(), name="snapshot"),
+    url(r'^snapshots/$', views.ContainerSnapshotList.as_view(), name="snapshot"),
+    url(r'^snapshots/(?P<pk>[0-9]+)$', views.ContainerSnapshotDetail.as_view(), name="snapshot_detail"),
 
     # /api/server(s)/...
     url(r'^servers/$', views.ServerList.as_view(), name="servers"),
+    url(r'^servers/(?P<pk>[0-9]+)$', views.ServerDetail.as_view(), name="server_detail"),
 
     # /api/share(s)/...
     url(r'^shares/$', views.ShareList.as_view(), name="shares"),
+    url(r'^shares/(?P<pk>[0-9]+)$', views.ShareDetail.as_view(), name="share_detail"),
 
     # /api/tag(s)/...
     url(r'^tags/$', views.TagList.as_view(), name="tags"),
+    url(r'^tags/(?P<pk>[0-9]+)$', views.TagDetail.as_view(), name="tag_detail"),
 
     # /api/notification(s)/...
     url(r'^notifications/$', views.NotificationList.as_view(), name="notifications"),
+    url(r'^notifications/(?P<pk>[0-9]+)$', views.NotificationDetail.as_view(), name="notification_detail"),
 
     # /api/notificationlog(s)/...
     url(r'^notificationlogs/$', views.NotificationLogList.as_view(), name="notificationlogs"),
+    url(r'^notificationlogs/(?P<pk>[0-9]+)$', views.NotificationLogDetail.as_view(), name="notificationlog_detail"),
 
 )
 urlpatterns = format_suffix_patterns(urlpatterns)
