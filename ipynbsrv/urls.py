@@ -21,6 +21,7 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^api/',       include('ipynbsrv.api.urls')),
     url(r'^',       include('ipynbsrv.web.urls'))
 ]
 
