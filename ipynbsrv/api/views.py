@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User, Group
+from django.utils.datastructures import MultiValueDict
 from ipynbsrv.api.permissions import *
 from ipynbsrv.core.models import *
 from ipynbsrv.api.serializer import *
@@ -6,7 +8,6 @@ from rest_framework.permissions import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from django.contrib.auth.models import User
 
 
 @api_view(('GET',))
@@ -29,6 +30,16 @@ class UserList(generics.ListAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+class GroupList(generics.ListAPIView):
+    """
+    Get a list of all groups.
+    Only visible to authenticated users.
+    """
+
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
 
 
 class BackendList(generics.ListCreateAPIView):
@@ -55,10 +66,16 @@ class CollaborationGroupList(generics.ListCreateAPIView):
     '''
 
     serializer_class = CollaborationGroupSerializer
+    permission_classes = (IsBackendUserOrReadOnly, )
 
     def get_queryset(self):
         queryset = CollaborationGroup.objects.filter(django_group__user__id=self.request.user.id)
         return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(
+            creator=self.request.user.backend_user,
+            )
 
 
 class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
