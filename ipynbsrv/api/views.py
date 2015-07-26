@@ -37,6 +37,16 @@ class BackendList(generics.ListCreateAPIView):
     '''
     queryset = Backend.objects.all()
     serializer_class = BackendSerializer
+    permssion_classes = (IsAdminUser, )
+
+
+class BackendDetail(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Get details of a backend.
+    '''
+    queryset = Backend.objects.all()
+    serializer_class = BackendSerializer
+    permssion_classes = (IsAdminUser, )
 
 
 class CollaborationGroupList(generics.ListCreateAPIView):
@@ -68,8 +78,22 @@ class ContainerList(generics.ListCreateAPIView):
     '''
     Get a list of all the containers.
     '''
-    queryset = Container.objects.all()
     serializer_class = ContainerSerializer
+
+    def get_queryset(self):
+        queryset = Container.objects.filter(owner=self.request.user.id)
+        return queryset
+
+
+class ContainerDetail(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Get details of a container.
+    '''
+    serializer_class = ContainerSerializer
+
+    def get_queryset(self):
+        queryset = Container.objects.filter(owner=self.request.user.id)
+        return queryset
 
 
 class ContainerImageList(generics.ListCreateAPIView):
@@ -80,9 +104,29 @@ class ContainerImageList(generics.ListCreateAPIView):
     serializer_class = ContainerImageSerializer
 
 
+class ContainerImageDetail(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Get details of a container image.
+    '''
+    serializer_class = ContainerImageSerializer
+    permssion_classes = (IsAdminUser, )
+
+    def get_queryset(self):
+        queryset = CollaborationGroup.objects.filter(owner=request.user.id)
+        return queryset
+
+
 class ContainerSnapshotList(generics.ListCreateAPIView):
     '''
     Get a list of all the container snapshots.
+    '''
+    queryset = ContainerSnapshot.objects.all()
+    serializer_class = ContainerSnapshotSerializer
+
+
+class ContainerSnapshotDetail(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Get details of a container snapshot.
     '''
     queryset = ContainerSnapshot.objects.all()
     serializer_class = ContainerSnapshotSerializer
@@ -96,9 +140,25 @@ class ServerList(generics.ListCreateAPIView):
     serializer_class = ServerSerializer
 
 
+class ServerDetail(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Get details of a server.
+    '''
+    queryset = Server.objects.all()
+    serializer_class = ServerSerializer
+
+
 class ShareList(generics.ListCreateAPIView):
     '''
     Get a list of all the shares.
+    '''
+    queryset = Share.objects.all()
+    serializer_class = ShareSerializer
+
+
+class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Get details of a share.
     '''
     queryset = Share.objects.all()
     serializer_class = ShareSerializer
@@ -112,6 +172,14 @@ class TagList(generics.ListCreateAPIView):
     serializer_class = TagSerializer
 
 
+class TagDetail(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Get details of a tag.
+    '''
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+
+
 class NotificationList(generics.ListCreateAPIView):
     '''
     Get a list of all the notifications.
@@ -120,9 +188,25 @@ class NotificationList(generics.ListCreateAPIView):
     serializer_class = NotificationSerializer
 
 
+class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Get details of a notification.
+    '''
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+
+
 class NotificationLogList(generics.ListCreateAPIView):
     '''
     Get a list of all the notification logs.
+    '''
+    queryset = NotificationLog.objects.all()
+    serializer_class = NotificationLogSerializer
+
+
+class NotificationLogDetail (generics.RetrieveUpdateDestroyAPIView):
+    '''
+    Get details of a notification.
     '''
     queryset = NotificationLog.objects.all()
     serializer_class = NotificationLogSerializer
