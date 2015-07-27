@@ -4,7 +4,7 @@ from django.utils.datastructures import MultiValueDict
 from ipynbsrv.api.permissions import *
 from ipynbsrv.core.models import *
 from ipynbsrv.api.serializer import *
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view
@@ -94,10 +94,19 @@ class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
     '''
 
     serializer_class = CollaborationGroupSerializer
+    # TODO: permision does not work yet..
     permssion_classes = (IsGroupAdminOrReadOnly,)
 
     def get_queryset(self):
-        queryset = CollaborationGroup.objects.filter(django_group__user__id=self.request.user.id)
+        if self.request.user.is_superuser:
+            queryset = CollaborationGroup.objects.all()
+        else:
+            queryset = CollaborationGroup.objects.filter(
+                Q(django_group__user__id=self.request.user.id)
+                | Q(creator=self.request.user.backend_user.id)
+                | Q(admins__id=self.request.user.backend_user.id)
+                | Q(public=True)
+            )
         return queryset
 
 
@@ -108,7 +117,10 @@ class ContainerList(generics.ListCreateAPIView):
     serializer_class = ContainerSerializer
 
     def get_queryset(self):
-        queryset = Container.objects.filter(owner=self.request.user.id)
+        if self.request.user.is_superuser:
+            queryset = Container.objects.all()
+        else:
+            queryset = Container.objects.filter(owner=self.request.user.backend_user.id)
         return queryset
 
 
@@ -119,56 +131,178 @@ class ContainerDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ContainerSerializer
 
     def get_queryset(self):
-        queryset = Container.objects.filter(owner=self.request.user.id)
+        if self.request.user.is_superuser:
+            queryset = Container.objects.all()
+        else:
+            queryset = Container.objects.filter(owner=self.request.user.backend_user.id)
         return queryset
 
 
-@api_view(['POST'])
-def container_clone(request):
-    if request.method == 'POST':
-        return Response({"message": "Got some data!", "data": request.data})
-    return Response({"message": "Hello, world!"})
+def get_container(pk):
+    """
+    Get container by pk.
+    """
+    containers = Container.objects.filter(id=pk)
+    if containers:
+        return containers.first()
+    else:
+        return None
 
 
 @api_view(['POST'])
-def container_create_snapshot(request):
-    if request.method == 'POST':
-        return Response({"message": "Got some data!", "data": request.data})
-    return Response({"message": "Hello, world!"})
+def container_clone(request, pk):
+    """
+    Make a clone of the container.
+    Todo: show params on OPTIONS call.
+    :param pk   pk of the container that needs to be cloned
+    :param name
+    :param description
+    """
+    params = {}
+
+    data = request.data
+
+    if not data.get('name'):
+        return Response({"error": "please provide name for the clone: {\"name\" : \"some name \"}"})
+
+    params['name'] = data.get('name')
+
+    if data.get('description'):
+        params['description'] = data.get('description')
+
+    origin = get_container(pk)
+    if origin:
+        clone = origin.clone(**params)
+        clone.save()
+        serializer = ContainerSerializer(clone)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Container not found!", "data": data})
+
+
+@api_view(['POST'])
+def container_create_snapshot(request, pk):
+    """
+    Make a snapshot of the container.
+    Todo: show params on OPTIONS call.
+    :param pk   pk of the container that needs to be cloned
+    :param name
+    :param description
+    """
+    params = {}
+
+    data = request.data
+
+    if not data.get('name'):
+        return Response({"error": "please provide name for the clone: {\"name\" : \"some name \"}"})
+
+    params['name'] = data.get('name')
+
+    if data.get('description'):
+        params['description'] = data.get('description')
+
+    origin = get_container(pk)
+    if origin:
+        snapshot = origin.create_snapshot(**params)
+        snapshot.save()
+        serializer = ContainerSnapshotSerializer(snapshot)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Container not found!", "pk": pk})
 
 
 @api_view(['GET'])
-def container_clones(request):
+def container_clones(request, pk):
+    container = get_container(pk)
+    if container:
+        clones = container.get_clones()
+        serializer = ContainerSerializer(clones, many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Container not found!", "pk": pk})
+
+
+@api_view(['POST'])
+def container_restart(request, pk):
     """
-    Todo: maybe better use viewset?
+    Restart the container.
+    :param pk   pk of the container that needs to be cloned
     """
-    if request.method == 'GET':
-        return Response({"message": "Got some data!", "data": request.data})
-    return Response({"message": "Hello, world!"})
+    containers = Container.objects.filter(id=pk)
+
+    if containers:
+        container = containers.first()
+        container.restart()
+        return Response({"message": "container rebooting"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Container not found!", "data": data})
 
 
 @api_view(['POST'])
-def container_restart(request):
+def container_resume(request, pk):
+    """
+    Resume the container.
+    :param pk   pk of the container that needs to be cloned
+    """
+    containers = Container.objects.filter(id=pk)
+
+    if containers:
+        container = containers.first()
+        container.resume()
+        return Response({"message": "container resuming"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Container not found!", "data": data})
     pass
 
 
 @api_view(['POST'])
-def container_resume(request):
+def container_start(request, pk):
+    """
+    Start the container.
+    :param pk   pk of the container that needs to be cloned
+    """
+    containers = Container.objects.filter(id=pk)
+
+    if containers:
+        container = containers.first()
+        container.start()
+        return Response({"message": "container booting"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Container not found!", "data": data})
     pass
 
 
 @api_view(['POST'])
-def container_start(request):
+def container_stop(request, pk):
+    """
+    Stop the container.
+    :param pk   pk of the container that needs to be cloned
+    """
+    containers = Container.objects.filter(id=pk)
+
+    if containers:
+        container = containers.first()
+        container.stop()
+        return Response({"message": "container stopping"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Container not found!", "data": data})
     pass
 
 
 @api_view(['POST'])
-def container_stop(request):
-    pass
+def container_suspend(request, pk):
+    """
+    Suspend the container.
+    :param pk   pk of the container that needs to be cloned
+    """
+    containers = Container.objects.filter(id=pk)
 
-
-@api_view(['POST'])
-def container_suspend(request):
+    if containers:
+        container = containers.first()
+        container.suspend()
+        return Response({"message": "container suspending"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Container not found!", "data": data})
     pass
 
 
@@ -188,7 +322,7 @@ class ContainerImageDetail(generics.RetrieveUpdateDestroyAPIView):
     permssion_classes = (IsAdminUser, )
 
     def get_queryset(self):
-        queryset = CollaborationGroup.objects.filter(owner=request.user.id)
+        queryset = ContainerImage.objects.all()
         return queryset
 
 

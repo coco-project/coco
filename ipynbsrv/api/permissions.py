@@ -1,6 +1,30 @@
 from rest_framework import permissions
 
 
+class IsGroupAdminMixin(object):
+
+    def is_group_admin(self, request, group):
+        return request.user in group.admins
+
+
+class IsSafeMethodMixin(object):
+
+    def is_safe_method(self, request):
+        return request.method in permissions.SAFE_METHODS
+
+
+class IsBackendUserMixin(object):
+
+    def is_backend_user(self, request):
+        return hasattr(request.user, 'backend_user')
+
+
+class IsOwnerMixin(object):
+
+    def is_owner(self, user, obj):
+        return obj.owner == user
+
+
 class IsGroupAdminOrReadOnly(permissions.BasePermission):
     """
     Custom permission to only allow admins of an object to edit it.
@@ -9,7 +33,6 @@ class IsGroupAdminOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to any request,
         # so we'll always allow GET, HEAD or OPTIONS requests.
-        return False
         if request.method in permissions.SAFE_METHODS:
             print("safe method")
             return True
@@ -18,6 +41,7 @@ class IsGroupAdminOrReadOnly(permissions.BasePermission):
             # Write permissions are only allowed to the owner of the snippet.
             ret = request.user in obj.admins
             print("ret = " + ret)
+            return ret
         return False
 
 

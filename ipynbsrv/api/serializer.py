@@ -5,6 +5,26 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth import get_user_model
 
 
+class CurrentBackendUserDefault(object):
+    """
+    A default class that can be used to represent the current user. 
+    In order to use this, the 'request' must have been provided 
+    as part of the context dictionary when instantiating the serializer.
+
+    Based on `rest_framework.serializers.CurrentUserDefault`.
+    See the django-rest-framework documentation for more info:
+    http://www.django-rest-framework.org/api-guide/validators/#currentuserdefault
+    """
+    def set_context(self, serializer_field):
+        self.user = serializer_field.context['request'].user
+
+    def __call__(self):
+        return self.user.backend_user
+
+    def __repr__(self):
+        return unicode_to_repr('%s()' % self.__class__.__name__)
+
+
 class UserSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
@@ -116,6 +136,11 @@ class ContainerSerializer(serializers.ModelSerializer):
     is_running = serializers.BooleanField(read_only=True)
     is_suspended = serializers.BooleanField(read_only=True)
     has_clones = serializers.BooleanField(read_only=True)
+
+    owner = UserSerializer(
+        read_only=True,
+        default=CurrentBackendUserDefault()
+    )
 
     class Meta:
         model = Container
