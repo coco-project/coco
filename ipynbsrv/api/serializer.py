@@ -254,3 +254,4 @@ class NotificationLogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NotificationLog
+
