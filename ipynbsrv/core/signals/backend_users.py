@@ -46,13 +46,13 @@ def create_on_internal_ldap(sender, user, **kwargs):
         username = user.backend_pk
         internal_ldap = get_internal_ldap_connected()
         try:
-            created = internal_ldap.create_user({
-                'username': username,
-                'password': user.django_user.password,
-                'uidNumber': user.backend_id,
-                'gidNumber': user.primary_group.backend_id,
-                'homeDirectory': "/home/" + username  # TODO: make variable/constant
-            })
+            created = internal_ldap.create_user(
+                user.backend_id,
+                username,
+                user.django_user.password,
+                user.primary_group.backend_id,
+                '/home/' + username  # TODO: make variable/constant
+            )
             # FIXME: this is the first time we really know the ID/PK given by the backend.
             # all other operations having used to old ones might not be valid anymore...
             user.backend_id = created.get(UserBackend.FIELD_ID)

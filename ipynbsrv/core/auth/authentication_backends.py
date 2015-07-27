@@ -39,7 +39,7 @@ class BackendProxyAuthentication(object):
         try:
             user_backend.auth_user(username, password)
             if user is not None:  # existing user
-                internal_ldap.set_user_credential(username, make_password(password))  # FIXME: handle in signals
+                internal_ldap.set_user_password(username, make_password(password))  # FIXME: handle in signals
                 return user
             else:  # new user
                 uid = BackendUser.generate_internal_uid()

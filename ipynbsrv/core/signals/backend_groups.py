@@ -51,10 +51,7 @@ def create_on_internal_ldap(sender, group, **kwargs):
     if group is not None:
         internal_ldap = get_internal_ldap_connected()
         try:
-            created = internal_ldap.create_group({
-                'groupname': group.backend_pk,
-                'gidNumber': group.backend_id
-            })
+            created = internal_ldap.create_group(group.backend_id, group.backend_pk)
             # FIXME: this is the first time we really know the ID/PK given by the backend.
             # all other operations having used to old ones might not be valid anymore...
             group.backend_id = created.get(GroupBackend.FIELD_ID)
