@@ -1,9 +1,11 @@
 from django.contrib.auth.models import User, Group
+from django.db.models import Q
 from django.utils.datastructures import MultiValueDict
 from ipynbsrv.api.permissions import *
 from ipynbsrv.core.models import *
 from ipynbsrv.api.serializer import *
 from rest_framework import generics, permissions
+from rest_framework.decorators import api_view
 from rest_framework.permissions import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -69,7 +71,15 @@ class CollaborationGroupList(generics.ListCreateAPIView):
     permission_classes = (IsBackendUserOrReadOnly, )
 
     def get_queryset(self):
-        queryset = CollaborationGroup.objects.filter(django_group__user__id=self.request.user.id)
+        if self.request.user.is_superuser:
+            queryset = CollaborationGroup.objects.all()
+        else:
+            queryset = CollaborationGroup.objects.filter(
+                Q(django_group__user__id=self.request.user.id)
+                | Q(creator=self.request.user.backend_user.id)
+                | Q(admins__id=self.request.user.backend_user.id)
+                | Q(public=True)
+            )
         return queryset
 
     def perform_create(self, serializer):
@@ -111,6 +121,55 @@ class ContainerDetail(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         queryset = Container.objects.filter(owner=self.request.user.id)
         return queryset
+
+
+@api_view(['POST'])
+def container_clone(request):
+    if request.method == 'POST':
+        return Response({"message": "Got some data!", "data": request.data})
+    return Response({"message": "Hello, world!"})
+
+
+@api_view(['POST'])
+def container_create_snapshot(request):
+    if request.method == 'POST':
+        return Response({"message": "Got some data!", "data": request.data})
+    return Response({"message": "Hello, world!"})
+
+
+@api_view(['GET'])
+def container_clones(request):
+    """
+    Todo: maybe better use viewset?
+    """
+    if request.method == 'GET':
+        return Response({"message": "Got some data!", "data": request.data})
+    return Response({"message": "Hello, world!"})
+
+
+@api_view(['POST'])
+def container_restart(request):
+    pass
+
+
+@api_view(['POST'])
+def container_resume(request):
+    pass
+
+
+@api_view(['POST'])
+def container_start(request):
+    pass
+
+
+@api_view(['POST'])
+def container_stop(request):
+    pass
+
+
+@api_view(['POST'])
+def container_suspend(request):
+    pass
 
 
 class ContainerImageList(generics.ListCreateAPIView):
@@ -171,6 +230,9 @@ class ShareList(generics.ListCreateAPIView):
     '''
     queryset = Share.objects.all()
     serializer_class = ShareSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user.backend_user)
 
 
 class ShareDetail(generics.RetrieveUpdateDestroyAPIView):

@@ -109,6 +109,13 @@ class ContainerSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
+    get_backend_name = serializers.CharField(read_only=True, max_length=255)
+    get_friendly_name = serializers.CharField(read_only=True, max_length=255)
+    is_clone = serializers.BooleanField(read_only=True)
+    is_image_based = serializers.BooleanField(read_only=True)
+    is_running = serializers.BooleanField(read_only=True)
+    is_suspended = serializers.BooleanField(read_only=True)
+    has_clones = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Container
@@ -149,6 +156,7 @@ class ShareSerializer(serializers.ModelSerializer):
     class Meta:
         model = Share
         fields = ('id', 'name', 'description', 'owner', 'tags', 'access_groups')
+        read_only_fields = ('owner', )
 
     def set_tags(self, tags, instance):
         for tag in tags:

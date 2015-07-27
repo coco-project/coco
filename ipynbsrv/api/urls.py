@@ -21,6 +21,14 @@ urlpatterns = patterns('',
     url(r'^containers/$', views.ContainerList.as_view(), name="containers"),
     url(r'^containers/(?P<pk>[0-9]+)$', views.ContainerDetail.as_view(), name="container_detail"),
 
+    url(r'^containers/(?P<pk>[0-9]+)/clone$', views.container_clone, name="container_clone"),
+    url(r'^containers/(?P<pk>[0-9]+)/create_snapshot$', views.container_create_snapshot, name="container_create_snapshot"),
+    url(r'^containers/(?P<pk>[0-9]+)/restart$', views.container_restart, name="container_restart"),
+    url(r'^containers/(?P<pk>[0-9]+)/resume$', views.container_resume, name="container_resume"),
+    url(r'^containers/(?P<pk>[0-9]+)/start$', views.container_start, name="container_start"),
+    url(r'^containers/(?P<pk>[0-9]+)/stop$', views.container_stop, name="container_stop"),
+    url(r'^containers/(?P<pk>[0-9]+)/suspend$', views.container_suspend, name="container_suspend"),
+
     # /api/image(s)/...
     url(r'^images/$', views.ContainerImageList.as_view(), name="images"),
     url(r'^images/(?P<pk>[0-9]+)$', views.ContainerImageDetail.as_view(), name="image_detail"),

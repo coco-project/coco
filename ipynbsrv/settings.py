@@ -40,7 +40,6 @@ INSTALLED_APPS = (
     'rest_framework',
     'widget_tweaks',
     'django_admin_conf_vars',
-    'debug_toolbar',
 )
 
 MIDDLEWARE_CLASSES = (

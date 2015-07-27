@@ -408,7 +408,7 @@ class Container(models.Model):
 
     def get_friendly_name(self):
         """
-        Return the humen-friendly name of this container.
+        Return the human-friendly name of this container.
         """
         return self.owner.django_user.get_username() + '_' + self.name
 
