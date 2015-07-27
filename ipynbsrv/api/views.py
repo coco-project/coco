@@ -7,7 +7,6 @@ from ipynbsrv.api.serializer import *
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import *
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
@@ -322,7 +321,7 @@ class ContainerImageDetail(generics.RetrieveUpdateDestroyAPIView):
     permssion_classes = (IsAdminUser, )
 
     def get_queryset(self):
-        queryset = ContainerImage.objects.all()
+        queryset = CollaborationGroup.objects.filter(owner=request.user.id)
         return queryset
 
 

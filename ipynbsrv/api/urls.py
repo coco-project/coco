@@ -20,6 +20,7 @@ urlpatterns = patterns('',
     # /api/container(s)/...
     url(r'^containers/$', views.ContainerList.as_view(), name="containers"),
     url(r'^containers/(?P<pk>[0-9]+)$', views.ContainerDetail.as_view(), name="container_detail"),
+
     url(r'^containers/(?P<pk>[0-9]+)/clone$', views.container_clone, name="container_clone"),
     url(r'^containers/(?P<pk>[0-9]+)/clones$', views.container_clones, name="container_clones"),
     url(r'^containers/(?P<pk>[0-9]+)/create_snapshot$', views.container_create_snapshot, name="container_create_snapshot"),
