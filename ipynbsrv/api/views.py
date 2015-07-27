@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
-from django.utils.datastructures import MultiValueDict
 from ipynbsrv.api.permissions import *
 from ipynbsrv.core.models import *
 from ipynbsrv.api.serializer import *
@@ -25,7 +24,7 @@ def api_root(request, format=None):
 
 class UserList(generics.ListAPIView):
     """
-    Get a list of all users.
+    Get a list of all users (`django.contrib.auth.models.User`).
     Only visible to authenticated users.
     """
 
@@ -44,27 +43,27 @@ class GroupList(generics.ListAPIView):
 
 
 class BackendList(generics.ListCreateAPIView):
-    '''
+    """
     Get a list of all the containers.
-    '''
+    """
     queryset = Backend.objects.all()
     serializer_class = BackendSerializer
-    permssion_classes = (IsAdminUser, )
+    permssion_classes = (IsSuperUser, )
 
 
 class BackendDetail(generics.RetrieveUpdateDestroyAPIView):
-    '''
+    """
     Get details of a backend.
-    '''
+    """
     queryset = Backend.objects.all()
     serializer_class = BackendSerializer
-    permssion_classes = (IsAdminUser, )
+    permssion_classes = (IsSuperUser, )
 
 
 class CollaborationGroupList(generics.ListCreateAPIView):
-    '''
+    """
     Get a list of all the groups the user is in.
-    '''
+    """
 
     serializer_class = CollaborationGroupSerializer
     permission_classes = (IsBackendUserOrReadOnly, )
@@ -88,9 +87,9 @@ class CollaborationGroupList(generics.ListCreateAPIView):
 
 
 class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
-    '''
+    """
     Get details of a group the user is in.
-    '''
+    """
 
     serializer_class = CollaborationGroupSerializer
     # TODO: permision does not work yet..
@@ -110,9 +109,9 @@ class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ContainerList(generics.ListCreateAPIView):
-    '''
+    """
     Get a list of all the containers.
-    '''
+    """
     serializer_class = ContainerSerializer
 
     def get_queryset(self):
@@ -124,9 +123,9 @@ class ContainerList(generics.ListCreateAPIView):
 
 
 class ContainerDetail(generics.RetrieveUpdateDestroyAPIView):
-    '''
+    """
     Get details of a container.
-    '''
+    """
     serializer_class = ContainerSerializer
 
     def get_queryset(self):
@@ -306,119 +305,190 @@ def container_suspend(request, pk):
 
 
 class ContainerImageList(generics.ListCreateAPIView):
-    '''
+    """
     Get a list of all the container images.
-    '''
-    queryset = ContainerImage.objects.all()
+    """
     serializer_class = ContainerImageSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            queryset = ContainerImage.objects.all()
+        else:
+            queryset = ContainerImage.objects.filter(
+                Q(owner=self.request.user) | Q(is_public=True)
+            )
+        return queryset
 
 
 class ContainerImageDetail(generics.RetrieveUpdateDestroyAPIView):
-    '''
+    """
     Get details of a container image.
-    '''
+    """
     serializer_class = ContainerImageSerializer
     permssion_classes = (IsAdminUser, )
 
     def get_queryset(self):
-        queryset = CollaborationGroup.objects.filter(owner=request.user.id)
+        if self.request.user.is_superuser:
+            queryset = ContainerImage.objects.all()
+        else:
+            queryset = ContainerImage.objects.filter(
+                Q(owner=self.request.user) | Q(is_public=True)
+            )
         return queryset
 
 
 class ContainerSnapshotList(generics.ListCreateAPIView):
-    '''
+    """
     Get a list of all the container snapshots.
-    '''
-    queryset = ContainerSnapshot.objects.all()
+    """
     serializer_class = ContainerSnapshotSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            queryset = ContainerSnapshot.objects.all()
+        else:
+            queryset = ContainerSnapshot.objects.filter(
+                container__owner=self.request.user.backend_user
+            )
+            return queryset
 
 
 class ContainerSnapshotDetail(generics.RetrieveUpdateDestroyAPIView):
-    '''
+    """
     Get details of a container snapshot.
-    '''
-    queryset = ContainerSnapshot.objects.all()
+    """
     serializer_class = ContainerSnapshotSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            queryset = ContainerSnapshot.objects.all()
+        else:
+            queryset = ContainerSnapshot.objects.filter(
+                container__owner=self.request.user.backend_user
+            )
+            return queryset
 
 
 class ServerList(generics.ListCreateAPIView):
-    '''
+    """
     Get a list of all the servers.
-    '''
+    """
     queryset = Server.objects.all()
     serializer_class = ServerSerializer
 
 
 class ServerDetail(generics.RetrieveUpdateDestroyAPIView):
-    '''
+    """
     Get details of a server.
-    '''
+    """
     queryset = Server.objects.all()
     serializer_class = ServerSerializer
 
 
 class ShareList(generics.ListCreateAPIView):
-    '''
+    """
     Get a list of all the shares.
-    '''
-    queryset = Share.objects.all()
+    """
     serializer_class = ShareSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Share.objects.all()
+        else:
+            return Share.objects.filter(
+                Q(owner=self.request.user.backend_user)
+                | Q(backend_group__django_group__user=self.request.user)
+                )
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user.backend_user)
 
 
 class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
-    '''
+    """
     Get details of a share.
-    '''
-    queryset = Share.objects.all()
+    """
+
     serializer_class = ShareSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Share.objects.all()
+        else:
+            return Share.objects.filter(
+                Q(owner=self.request.user.backend_user)
+                | Q(backend_group__django_group__user=self.request.user)
+                )
 
 
 class TagList(generics.ListCreateAPIView):
-    '''
+    """
     Get a list of all the tags.
-    '''
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
 
 class TagDetail(generics.RetrieveUpdateDestroyAPIView):
-    '''
+    """
     Get details of a tag.
-    '''
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
 
 class NotificationList(generics.ListCreateAPIView):
-    '''
+    """
     Get a list of all the notifications.
-    '''
-    queryset = Notification.objects.all()
+    """
+
     serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            queryset = Notification.objects.all()
+        else:
+            queryset = Notification.objects.filter(sender=self.request.user)
+        return queryset
 
 
 class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
-    '''
+    """
     Get details of a notification.
-    '''
-    queryset = Notification.objects.all()
+    """
+
     serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            queryset = Notification.objects.all()
+        else:
+            queryset = Notification.objects.filter(sender=self.request.user)
+        return queryset
 
 
 class NotificationLogList(generics.ListCreateAPIView):
-    '''
+    """
     Get a list of all the notification logs.
-    '''
-    queryset = NotificationLog.objects.all()
+    """
+
     serializer_class = NotificationLogSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return NotificationLog.objects.all()
+        else:
+            return NotificationLog.objects.filter(user=self.request.user.backend_user)
 
 
 class NotificationLogDetail (generics.RetrieveUpdateDestroyAPIView):
-    '''
+    """
     Get details of a notification.
-    '''
-    queryset = NotificationLog.objects.all()
+    """
     serializer_class = NotificationLogSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return NotificationLog.objects.all()
+        else:
+            return NotificationLog.objects.filter(user=self.request.user.backend_user)

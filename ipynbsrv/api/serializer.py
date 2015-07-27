@@ -129,14 +129,15 @@ class ContainerSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
-    get_backend_name = serializers.CharField(read_only=True, max_length=255)
-    get_friendly_name = serializers.CharField(read_only=True, max_length=255)
+    backend_name = serializers.CharField(read_only=True, source='get_backend_name')
+    friendly_name = serializers.CharField(read_only=True, source='get_friendly_name')
     is_clone = serializers.BooleanField(read_only=True)
     is_image_based = serializers.BooleanField(read_only=True)
     is_running = serializers.BooleanField(read_only=True)
     is_suspended = serializers.BooleanField(read_only=True)
     has_clones = serializers.BooleanField(read_only=True)
 
+    # TODO: set read_only = False, if user has no backend_user
     owner = UserSerializer(
         read_only=True,
         default=CurrentBackendUserDefault()
@@ -150,6 +151,7 @@ class ContainerImageSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
+    friendly_name = serializers.CharField(read_only=True, source='get_friendly_name')
 
     class Meta:
         model = ContainerImage
@@ -159,6 +161,7 @@ class ContainerSnapshotSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
+    friendly_name = serializers.CharField(read_only=True, source='get_friendly_name')
 
     class Meta:
         model = ContainerSnapshot
@@ -168,6 +171,7 @@ class ServerSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
+    is_container_host = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Server
@@ -235,6 +239,7 @@ class NotificationSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
+    has_related_object = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Notification
@@ -244,6 +249,8 @@ class NotificationLogSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
+
+    notification = NotificationSerializer(read_only=True, many=False)
 
     class Meta:
         model = NotificationLog

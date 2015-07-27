@@ -25,6 +25,17 @@ class IsOwnerMixin(object):
         return obj.owner == user
 
 
+class IsSuperUser(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        print("mama mia!")
+        return request.user.is_superuser
+
+    def has_object_permission(self, request, view, obj):
+        print("mama mia!")
+        return request.user.is_superuser
+
+
 class IsGroupAdminOrReadOnly(permissions.BasePermission):
     """
     Custom permission to only allow admins of an object to edit it.
