@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 'ifnav_templatetag',
+    'rest_framework',
     'widget_tweaks',
     'django_admin_conf_vars',
 )
@@ -122,3 +123,9 @@ AUTHENTICATION_BACKENDS = (
     'ipynbsrv.core.auth.authentication_backends.BackendProxyAuthentication',
     'django.contrib.auth.backends.ModelBackend',
 )
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}

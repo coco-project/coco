@@ -408,7 +408,7 @@ class Container(models.Model):
 
     def get_friendly_name(self):
         """
-        Return the humen-friendly name of this container.
+        Return the human-friendly name of this container.
         """
         return self.owner.django_user.get_username() + '_' + self.name
 
@@ -776,17 +776,15 @@ class Notification(models.Model):
     #     else:
     #         return None
 
-    # def send(self):
-    #     """
-    #     TODO: write doc.
-    #     """
-    #     to_send = NotificationReceiver.objects.filter(notification=self.id)
-    #
-    #     # TODO: avoid double notifications
-    #     for n in to_send:
-    #         for user in n.receiving_group.user_set.all():
-    #             notification_log = NotificationLog(notification=self, user=user)
-    #             notification_log.save()
+    def send(self):
+        """
+        TODO: write doc.
+        """
+        # TODO: avoid double notifications
+        for n in self.receiver_groups.all():
+            for user in n.get_members():
+                notification_log = NotificationLog(notification=self, user=user)
+                notification_log.save()
 
     def __str__(self):
         """

@@ -12,3 +12,5 @@ ipynbsrv/web/static/bower_components
 ipynbsrv/web/static/css/main.css
 # mkdocs generated files
 ipynbsrv/web/static/docs/user-guide/*
+# migrations
+**/migrations/*
