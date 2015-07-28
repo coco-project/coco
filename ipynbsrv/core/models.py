@@ -419,7 +419,7 @@ class Container(models.Model):
         :param tuples: If `True`, tuples in the form (internal, exposed) are returned.
         """
         mappings = []
-        reported_mappings = self.server.get_container_backend().get_container(self.backend_pk)\
+        reported_mappings = self.server.get_container_backend().get_container(self.backend_pk) \
                                 .get(ContainerBackend.CONTAINER_KEY_PORT_MAPPINGS)
         if tuples:
             for reported_mapping in reported_mappings:
