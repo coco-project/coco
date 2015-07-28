@@ -12,9 +12,9 @@ urlpatterns = patterns('',
     url(r'^configurationvariables/$', views.ConfigurationVariableList.as_view(), name="configurationvariables"),
     url(r'^configurationvariables/(?P<pk>[0-9]+)$', views.ConfigurationVariableDetail.as_view(), name="configurationvariables_detail"),
 
-    # /api/group(s)/...
-    url(r'^groups/$', views.CollaborationGroupList.as_view(), name="groups"),
-    url(r'^groups/(?P<pk>[0-9]+)$', views.CollaborationGroupDetail.as_view(), name="group_detail"),
+    # /api/collaborationgroup(s)/...
+    url(r'^collaborationgroups/$', views.CollaborationGroupList.as_view(), name="collaborationgroups"),
+    url(r'^collaborationgroups/(?P<pk>[0-9]+)$', views.CollaborationGroupDetail.as_view(), name="collaborationgroup_detail"),
     #url(r'^groups/(?P<pk>[0-9]+)/django_group$', views.CollaborationGroupDjangoGroup.as_view(), name="group_detail_django_group"),
 
     # /api/backend(s)/...

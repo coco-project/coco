@@ -4,11 +4,10 @@ from django_admin_conf_vars.models import ConfigurationVariable
 from ipynbsrv.api.permissions import *
 from ipynbsrv.core.models import *
 from ipynbsrv.api.serializer import *
-from rest_framework import generics, permissions, status
+from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import *
 from rest_framework.response import Response
-from rest_framework.reverse import reverse
 
 
 @api_view(('GET',))
@@ -31,6 +30,7 @@ class ConfigurationVariableList(generics.ListCreateAPIView):
 
     queryset = ConfigurationVariable.objects.all()
     serializer_class = ConfigurationVariableSerializer
+    permission_classes = [IsSuperUser]
 
 
 class ConfigurationVariableDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -41,6 +41,7 @@ class ConfigurationVariableDetail(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = ConfigurationVariable.objects.all()
     serializer_class = ConfigurationVariableSerializer
+    permission_classes = [IsSuperUser]
 
 
 class UserList(generics.ListAPIView):
@@ -51,6 +52,7 @@ class UserList(generics.ListAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticatedAndReadOnly]
 
 
 class GroupList(generics.ListAPIView):
@@ -61,6 +63,7 @@ class GroupList(generics.ListAPIView):
 
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticatedAndReadOnly]
 
 
 class BackendList(generics.ListCreateAPIView):
@@ -69,7 +72,7 @@ class BackendList(generics.ListCreateAPIView):
     """
     queryset = Backend.objects.all()
     serializer_class = BackendSerializer
-    permssion_classes = (IsSuperUser, )
+    permission_classes = [IsSuperUser]
 
 
 class BackendDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -78,16 +81,16 @@ class BackendDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = Backend.objects.all()
     serializer_class = BackendSerializer
-    permssion_classes = (IsSuperUser, )
+    permission_classes = [IsSuperUser]
 
 
 class CollaborationGroupList(generics.ListCreateAPIView):
     """
-    Get a list of all the groups the user is in.
+    Get a list of all the collaboration groups the user is in.
     """
 
     serializer_class = CollaborationGroupSerializer
-    permission_classes = (IsBackendUserOrReadOnly, )
+    permission_classes = [IsSuperUserOrIsGroupAdminOrReadOnly]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -109,12 +112,11 @@ class CollaborationGroupList(generics.ListCreateAPIView):
 
 class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
     """
-    Get details of a group the user is in.
+    Get details of a collaboration group the user is in.
     """
 
     serializer_class = CollaborationGroupSerializer
-    # TODO: permision does not work yet..
-    permssion_classes = (IsGroupAdminOrReadOnly,)
+    permission_classes = [IsSuperUserOrIsGroupAdminOrReadOnly]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -148,6 +150,7 @@ class ContainerDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a container.
     """
     serializer_class = ContainerSerializer
+    permission_classes = [IsSuperUserOrIsObjectOwner]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -173,6 +176,7 @@ def container_clone(request, pk):
     """
     Make a clone of the container.
     Todo: show params on OPTIONS call.
+    Todo: permissions
     :param pk   pk of the container that needs to be cloned
     :param name
     :param description
@@ -346,7 +350,7 @@ class ContainerImageDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a container image.
     """
     serializer_class = ContainerImageSerializer
-    permssion_classes = (IsAdminUser, )
+    permission_classes = [IsSuperUserOrIsObjectOwner]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -379,6 +383,7 @@ class ContainerSnapshotDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a container snapshot.
     """
     serializer_class = ContainerSnapshotSerializer
+    # TODO: permissions
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -396,6 +401,7 @@ class ServerList(generics.ListCreateAPIView):
     """
     queryset = Server.objects.all()
     serializer_class = ServerSerializer
+    permission_classes = [IsSuperUser]
 
 
 class ServerDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -404,6 +410,7 @@ class ServerDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = Server.objects.all()
     serializer_class = ServerSerializer
+    permission_classes = [IsSuperUser]
 
 
 class ShareList(generics.ListCreateAPIView):
@@ -431,6 +438,7 @@ class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
     """
 
     serializer_class = ShareSerializer
+    permission_classes = [IsSuperUserOrIsObjectOwner]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -479,6 +487,7 @@ class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
     """
 
     serializer_class = NotificationSerializer
+    permission_classes = [IsSuperUserOrReadOnly]
 
     def get_queryset(self):
         if self.request.user.is_superuser:

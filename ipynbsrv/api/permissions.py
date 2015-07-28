@@ -1,10 +1,18 @@
+from django.contrib.auth.models import User
 from rest_framework import permissions
+from ipynbsrv.core.models import BackendUser
+
+
+class IsAuthenticatedMixin(object):
+
+    def is_authenticated(self, request):
+        return request.user and request.user.is_authenticated()
 
 
 class IsGroupAdminMixin(object):
 
-    def is_group_admin(self, request, group):
-        return request.user in group.admins
+    def is_group_admin(self, user, group):
+        return user in group.admins
 
 
 class IsSafeMethodMixin(object):
@@ -15,58 +23,104 @@ class IsSafeMethodMixin(object):
 
 class IsBackendUserMixin(object):
 
-    def is_backend_user(self, request):
-        return hasattr(request.user, 'backend_user')
+    def is_backend_user(self, user):
+        return hasattr(user, 'backend_user')
 
 
-class IsOwnerMixin(object):
+class IsObjectOwnerMixin(object):
 
     def is_owner(self, user, obj):
-        return obj.owner == user
+        if type(obj.owner) == User:
+            return obj.owner == user
+        elif type(obj.owner) == BackendUser:
+            return obj.owner == user.backend_user
 
 
-class IsSuperUser(permissions.BasePermission):
+class IsObjectCreatorMixin(object):
+
+    def is_owner(self, user, obj):
+        if type(obj.creator) == User:
+            return obj.creator == user
+        elif type(obj.creator) == BackendUser:
+            return obj.creator == user.backend_user
+
+
+class IsSuperUserMixin(object):
+
+    def is_superuser(self, user):
+        return user.is_superuser
+
+
+class IsAuthenticatedAndReadOnly(
+        permissions.BasePermission,
+        IsAuthenticatedMixin,
+        IsSafeMethodMixin):
 
     def has_permission(self, request, view):
-        print("mama mia!")
-        return request.user.is_superuser
+        if self.is_authenticated(request):
+            return self.is_safe_method(request)
 
     def has_object_permission(self, request, view, obj):
-        print("mama mia!")
-        return request.user.is_superuser
+        if self.is_authenticated(request):
+            return self.is_safe_method(request)
 
 
-class IsGroupAdminOrReadOnly(permissions.BasePermission):
-    """
-    Custom permission to only allow admins of an object to edit it.
-    """
+class IsSuperUser(
+        permissions.BasePermission,
+        IsSuperUserMixin):
+
+    def has_permission(self, request, view):
+        return self.is_superuser(request.user)
 
     def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requests.
-        if request.method in permissions.SAFE_METHODS:
-            print("safe method")
+        return self.is_superuser(request.user)
+
+
+class IsSuperUserOrReadOnly(
+        permissions.BasePermission,
+        IsSuperUserMixin,
+        IsSafeMethodMixin):
+
+    def has_object_permission(self, request, view, obj):
+        if self.is_safe_method(request):
             return True
-        if request.user:
-            print("request user set")
-            # Write permissions are only allowed to the owner of the snippet.
-            ret = request.user in obj.admins
-            print("ret = " + ret)
-            return ret
+        if self.is_superuser(request.user):
+            return True
         return False
 
 
-class IsBackendUserOrReadOnly(permissions.BasePermission):
+class IsSuperUserOrIsObjectOwner(
+        permissions.BasePermission,
+        IsObjectOwnerMixin,
+        IsBackendUserMixin,
+        IsSuperUserMixin):
     """
-    Custom permission to only allow admins of an object to edit it.
+    Only allow access to BackendUser which is set as owner of the object.
     """
 
-    def has_permission(self, request, view):
-        # Read permissions are allowed to any request,
-        # so we'll always allow GET, HEAD or OPTIONS requests.
-        if request.method in permissions.SAFE_METHODS:
-            print("safe method")
+    def has_object_permission(self, request, view, obj):
+        if self.is_superuser(request.user):
             return True
-        if hasattr(request.user, 'backend_user'):
+        if self.is_backend_user(request.user):
+            return self.is_owner(request.user, obj)
+        return False
+
+
+class IsSuperUserOrIsGroupAdminOrReadOnly(
+        permissions.BasePermission,
+        IsSuperUserMixin,
+        IsGroupAdminMixin,
+        IsSafeMethodMixin):
+    """
+    Todo: write doc.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if self.is_safe_method(request):
             return True
+        if self.is_superuser(request.user):
+            return True
+        if self.is_backend_user(request.user):
+            return self.is_owner(request.user, obj) \
+                or self.is_group_admin(request.user, obj)
         return False
