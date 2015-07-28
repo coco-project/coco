@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User, Group
 from django.db.models import Q
+from django_admin_conf_vars.models import ConfigurationVariable
 from ipynbsrv.api.permissions import *
 from ipynbsrv.core.models import *
 from ipynbsrv.api.serializer import *
@@ -20,6 +21,26 @@ def api_root(request, format=None):
         'endpoint2': 'desc',
         'endpoint3': 'desc',
     })
+
+
+class ConfigurationVariableList(generics.ListCreateAPIView):
+    """
+    Get a list of all configuration variables.
+    Only visible to authenticated users.
+    """
+
+    queryset = ConfigurationVariable.objects.all()
+    serializer_class = ConfigurationVariableSerializer
+
+
+class ConfigurationVariableDetail(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Get a list of all configuration variables.
+    Only visible to authenticated users.
+    """
+
+    queryset = ConfigurationVariable.objects.all()
+    serializer_class = ConfigurationVariableSerializer
 
 
 class UserList(generics.ListAPIView):

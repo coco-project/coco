@@ -8,6 +8,10 @@ urlpatterns = patterns('',
     # /api/user(s)/...
     url(r'^users/$', views.UserList.as_view(), name="users"),
 
+    # /api/configurationvariable(s)/...
+    url(r'^configurationvariables/$', views.ConfigurationVariableList.as_view(), name="configurationvariables"),
+    url(r'^configurationvariables/(?P<pk>[0-9]+)$', views.ConfigurationVariableDetail.as_view(), name="configurationvariables_detail"),
+
     # /api/group(s)/...
     url(r'^groups/$', views.CollaborationGroupList.as_view(), name="groups"),
     url(r'^groups/(?P<pk>[0-9]+)$', views.CollaborationGroupDetail.as_view(), name="group_detail"),

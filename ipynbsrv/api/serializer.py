@@ -3,6 +3,7 @@ from ipynbsrv.core.models import *
 from ipynbsrv.core import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import get_user_model
+from django_admin_conf_vars.models import ConfigurationVariable
 
 
 class CurrentBackendUserDefault(object):
@@ -23,6 +24,15 @@ class CurrentBackendUserDefault(object):
 
     def __repr__(self):
         return unicode_to_repr('%s()' % self.__class__.__name__)
+
+
+class ConfigurationVariableSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
+
+    class Meta:
+        model = ConfigurationVariable
 
 
 class UserSerializer(serializers.ModelSerializer):
