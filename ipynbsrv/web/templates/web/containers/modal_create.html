@@ -23,7 +23,7 @@
                         <select name="image_id" class="form-control" required>
                             <option></option>
                             {% for img in images %}
-                                <option value="{{ img.id }}">{{ img.get_friendly_name }}</option>
+                                <option value="{{ img.id }}">{{ img.friendly_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
