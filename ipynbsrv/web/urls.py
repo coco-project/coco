@@ -3,7 +3,7 @@ from django.conf.urls import url
 
 urlpatterns = [
     # /accounts/...
-    url(r'^accounts/login/$', 'django.contrib.auth.views.login', {
+    url(r'^accounts/login/$', 'ipynbsrv.web.views.auth.ipynbsrv_login', {
         'template_name': 'web/user/login.html',
         'extra_context': {
             'title': "Login"
