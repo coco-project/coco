@@ -15,6 +15,12 @@ class IsGroupAdminMixin(object):
         return user in group.admins
 
 
+class IsPublicMixin(object):
+
+    def is_public(self, obj):
+        return obj.is_public
+
+
 class IsSafeMethodMixin(object):
 
     def is_safe_method(self, request):
@@ -104,6 +110,20 @@ class IsSuperUserOrIsObjectOwner(
         if self.is_backend_user(request.user):
             return self.is_owner(request.user, obj)
         return False
+
+
+class IsSuperUserOrIsObjectOwnerOrReadOnlyIfPublic(
+        IsSuperUserOrIsObjectOwner,
+        IsPublicMixin,
+        IsSafeMethodMixin):
+    """
+    Todo: write doc.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if self.is_public and self.is_safe_method(request):
+            return True
+        return super.has_object_permission(request, view, obj)
 
 
 class IsSuperUserOrIsGroupAdminOrReadOnly(
