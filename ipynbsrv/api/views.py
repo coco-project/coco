@@ -2,6 +2,7 @@ from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from django_admin_conf_vars.models import ConfigurationVariable
 from ipynbsrv.api.permissions import *
+from ipynbsrv.conf.helpers import get_server_selection_algorithm
 from ipynbsrv.core.models import *
 from ipynbsrv.api.serializer import *
 from rest_framework import generics, status
@@ -9,17 +10,28 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import *
 from rest_framework.response import Response
 
+# TODO: check for unique names before creation of objects !
+
 
 @api_view(('GET',))
 def api_root(request, format=None):
     """
     API Root
     """
-    return Response({
-        'endpoint': 'desc',
-        'endpoint2': 'desc',
-        'endpoint3': 'desc',
-    })
+    return Response({'endpoints': {
+        'configurationvariables': 'desc',
+        'users': 'desc',
+        'collaborationgroups': 'desc',
+        'backends': 'desc',
+        'containers': 'desc',
+        'images': 'desc',
+        'snapshots': 'desc',
+        'servers': 'desc',
+        'shares': 'desc',
+        'tags': 'desc',
+        'notifications': 'desc',
+        'notificationlogs': 'desc',
+    }})
 
 
 class ConfigurationVariableList(generics.ListCreateAPIView):
@@ -52,7 +64,7 @@ class UserList(generics.ListAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticatedAndReadOnly]
+    permission_classes = [IsSuperUser]
 
 
 class GroupList(generics.ListAPIView):
@@ -143,6 +155,15 @@ class ContainerList(generics.ListCreateAPIView):
         else:
             queryset = Container.objects.filter(owner=self.request.user.backend_user.id)
         return queryset
+
+    def perform_create(self, serializer):
+        # target server gets selected by selection algorithm
+        server = get_server_selection_algorithm().choose_server(
+            Server.objects.all().iterator()
+        )
+        serializer.save(
+            server=server,
+            )
 
 
 class ContainerDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -350,7 +371,7 @@ class ContainerImageDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a container image.
     """
     serializer_class = ContainerImageSerializer
-    permission_classes = [IsSuperUserOrIsObjectOwner]
+    permission_classes = [IsSuperUserOrIsObjectOwnerOrReadOnlyIfPublic]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
