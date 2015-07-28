@@ -8,9 +8,10 @@ from django_admin_conf_vars.models import ConfigurationVariable
 
 class CurrentBackendUserDefault(object):
     """
-    A default class that can be used to represent the current user. 
+    A default class that can be used to represent the current backend user. 
     In order to use this, the 'request' must have been provided 
-    as part of the context dictionary when instantiating the serializer.
+    as part of the context dictionary when instantiating the serializer
+    and the user needs to have a backend user.
 
     Based on `rest_framework.serializers.CurrentUserDefault`.
     See the django-rest-framework documentation for more info:
@@ -135,9 +136,21 @@ class CollaborationGroupSerializer(serializers.ModelSerializer):
         return instance
 
 
+class ServerSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
+    is_container_host = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Server
+
+
 class ContainerSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
+    Although server can be set on creation, it will be ignored.
+    Server is set through the server selection algorithm set in the conf module.
     """
     backend_name = serializers.CharField(read_only=True, source='get_backend_name')
     friendly_name = serializers.CharField(read_only=True, source='get_friendly_name')
@@ -151,6 +164,16 @@ class ContainerSerializer(serializers.ModelSerializer):
     owner = UserSerializer(
         read_only=True,
         default=CurrentBackendUserDefault()
+    )
+    # set dummy default, will be overriden on creation anyway
+    server = ServerSerializer(
+        read_only=True,
+        default=randint(0, 1000)
+    )
+    # set dummy default, will be overriden on creation anyway
+    backend_pk = serializers.CharField(
+        default=randint(0, 1000),
+        read_only=True
     )
 
     class Meta:
@@ -175,16 +198,6 @@ class ContainerSnapshotSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ContainerSnapshot
-
-
-class ServerSerializer(serializers.ModelSerializer):
-    """
-    Todo: write doc.
-    """
-    is_container_host = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = Server
 
 
 class ShareSerializer(serializers.ModelSerializer):
