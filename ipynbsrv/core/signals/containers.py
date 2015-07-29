@@ -40,10 +40,11 @@ def create_on_server(sender, container, **kwargs):
                 ports,
                 [
                     {   # home directory
-                        # TODO: check if we should better use /home/user, because if we create an image
-                        # from the container, i.e. Docker keeps the mounts (from old users).
-                        ContainerBackend.VOLUME_KEY_SOURCE: path.join(storage_backend.base_dir, settings.STORAGE_DIR_HOME),
-                        ContainerBackend.VOLUME_KEY_TARGET: path.join('/home', container.owner.backend_pk)
+                        ContainerBackend.VOLUME_KEY_SOURCE: path.join(
+                            path.join(storage_backend.base_dir, settings.STORAGE_DIR_HOME),
+                            container.owner.backend_pk
+                        ),
+                        ContainerBackend.VOLUME_KEY_TARGET: path.join('/home', 'user')
                     },
                     {   # public directory
                         ContainerBackend.VOLUME_KEY_SOURCE: path.join(storage_backend.base_dir, settings.STORAGE_DIR_PUBLIC),
