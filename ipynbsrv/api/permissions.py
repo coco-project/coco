@@ -123,7 +123,11 @@ class IsSuperUserOrIsObjectOwnerOrReadOnlyIfPublic(
     def has_object_permission(self, request, view, obj):
         if self.is_public and self.is_safe_method(request):
             return True
-        return super.has_object_permission(request, view, obj)
+        if self.is_superuser(request.user):
+            return True
+        if self.is_backend_user(request.user):
+            return self.is_owner(request.user, obj)
+        return False
 
 
 class IsSuperUserOrIsGroupAdminOrReadOnly(
