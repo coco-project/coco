@@ -5,6 +5,7 @@ from django.db import IntegrityError
 from django.shortcuts import redirect, render
 from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import BackendGroup, Notification
+from ipynbsrv.web.api_client_proxy import get_httpclient_instance
 
 
 @user_passes_test(login_allowed)
@@ -12,6 +13,12 @@ def index(request):
     """
     Groups listing/index.
     """
+    client = get_httpclient_instance(request)
+    users = client.users.get()
+
+    # Todo: fix api/users/ permissions
+    # Todo: possibility to get groups by user
+
     return render(request, 'web/groups/index.html', {
         'title': "Groups",
         'groups': request.user.groups.all(),

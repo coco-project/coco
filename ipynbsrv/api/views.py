@@ -248,7 +248,6 @@ def container_commit(request, pk):
     :param name:
     :param description:
     :param public:
-    :param internal:
     """
 
     required_params = ["name", "description", "public"]
@@ -258,10 +257,7 @@ def container_commit(request, pk):
             return Response({"error": "Parameters missing.", "required_parameters": required_params })
         params[param] = request.data.get(param)
 
-    print(params)
-
     container = get_container(pk)
-    print(container)
     if container:
         image = container.commit(**params)
         print(image)

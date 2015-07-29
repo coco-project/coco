@@ -49,9 +49,6 @@ def commit(request):
     img_name = request.POST.get('img_name')
     description = request.POST.get('description')
     public = request.POST.get('public', "")
-    internal = request.POST.get('internal', "")
-
-    print("commit")
 
     client = get_httpclient_instance(request)
     try:
@@ -68,7 +65,6 @@ def commit(request):
             "name": img_name,
             "description": description,
             "public": (public == "on"),
-            "internal": (internal == "on")
             })
         messages.success(request, "Sucessfully created the image.")
     else:

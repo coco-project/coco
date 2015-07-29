@@ -394,7 +394,8 @@ class Container(models.Model):
             protected_port=self.image.protected_port,
             public_ports=self.image.public_ports,
             owner=self.owner.django_user,
-            is_public=public
+            is_public=public,
+            is_internal=self.image.is_internal
         )
         image.save()
 
