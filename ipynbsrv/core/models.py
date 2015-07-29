@@ -375,19 +375,17 @@ class Container(models.Model):
         clone.save()
 
         from ipynbsrv.core.signals.signals import container_cloned
-        container_cloned.send(sender=self, container=self, clone=clone)
+        container_cloned.send(sender=Container, container=self, clone=clone)
 
         return clone
 
-    def commit(self, name, description, public, internal):
+    def commit(self, name, description=None, public=False):
         """
-        Create a new ContainerImage based on an existing Container.
+        Create a new container image based on the container.
 
-        :param img_name: The name of the new image.
-        :param description: The description of the image.
-        :param public: The visibility of the new image.
-        :param internal:
-        :param clone:
+        :param name: The name of the newly created container image.
+        :param description: The optional description of the image.
+        :param public: If `True`, the image will be public.
         """
         image = ContainerImage(
             name=name,
@@ -396,14 +394,12 @@ class Container(models.Model):
             protected_port=self.image.protected_port,
             public_ports=self.image.public_ports,
             owner=self.owner.django_user,
-            is_public=public,
-            is_internal=internal
+            is_public=public
         )
         image.save()
 
-        # Todo: remove?
-        #from ipynbsrv.core.signals.signals import container_commited
-        #container_commited.send(sender=Container, container=self, image=image)
+        from ipynbsrv.core.signals.signals import container_committed
+        container_committed.send(sender=Container, container=self, image=image)
 
         return image
 

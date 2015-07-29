@@ -33,6 +33,7 @@ collaboration_group_modified = Signal(providing_args=['group', 'fields'])
 Set of signals to be triggered for `Container` model events.
 """
 container_cloned = Signal(providing_args=['container', 'clone'])
+container_committed = Signal(providing_args=['container', 'image'])
 container_created = Signal(providing_args=['container'])
 container_deleted = Signal(providing_args=['container'])
 container_modified = Signal(providing_args=['container', 'fields'])
