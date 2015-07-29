@@ -36,43 +36,45 @@ def clone(request):
 def commit(request):
     """
     Todo: write doc.
-    Todo: still in use??
     """
 
-    raise NotImplementedError("commit not implemented on container model")
-#
-#    if request.method != "POST":
-#        messages.error(request, "Invalid request method.")
-#        return redirect('images')
-#    if 'ct_id' not in request.POST or 'img_name' not in request.POST or 'description' not in request.POST:
-#        messages.error(request, "Invalid POST request.")
-#        return redirect('images')
-#
-#    ct_id = int(request.POST.get('ct_id'))
-#    img_name = request.POST.get('img_name')
-#    description = request.POST.get('description')
-#    public = request.POST.get('public', "")
-#
-#    client = get_httpclient_instance(request)
-#    try:
-#        container = client.containers(ct_id).get()
-#    except HttpNotFoundError:
-#        messages.error(request, "Selected base container does not exist.")
-#    except Exception:
-#        messages.error(request, "Some other error.")
-#
-#    if container:
-#        if container.owner == request.user.id:
-#            client.containers(ct_id).commit.post()
-#
-#            container.commit(img_name=img_name, description=description, public=(public == "on"))
-#            messages.success(request, "Sucessfully created the image.")
-#    else:
-#        messages.error(request, "You don't have enough permissions for the requested operation.")
-#    else:
-#        messages.error(request, "Selected base container does not exist.")
-#
-#    return redirect('images')
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('images')
+    if 'ct_id' not in request.POST or 'img_name' not in request.POST or 'description' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('images')
+
+    ct_id = int(request.POST.get('ct_id'))
+    img_name = request.POST.get('img_name')
+    description = request.POST.get('description')
+    public = request.POST.get('public', "")
+    internal = request.POST.get('internal', "")
+
+    print("commit")
+
+    client = get_httpclient_instance(request)
+    try:
+        container = client.containers(ct_id).get()
+    except HttpNotFoundError:
+        messages.error(request, "Selected base container does not exist.")
+    except Exception:
+        messages.error(request, "Some other error.")
+
+    print("container found")
+
+    if container:
+        client.containers(ct_id).commit.post({
+            "name": img_name,
+            "description": description,
+            "public": (public == "on"),
+            "internal": (internal == "on")
+            })
+        messages.success(request, "Sucessfully created the image.")
+    else:
+        messages.error(request, "Selected base container does not exist.")
+
+    return redirect('images')
 
 
 @user_passes_test(login_allowed)
@@ -88,6 +90,8 @@ def create(request):
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 
+    print("create container")
+
     name = request.POST.get('name')
     description = request.POST.get('description')
     image_id = int(request.POST.get('image_id'))
@@ -99,14 +103,23 @@ def create(request):
     except HttpNotFoundError:
         messages.error(request, "Container bootstrap image does not exist or you don't have enough permissions for the requested operation.")
 
+    print(image)
+
     if image:
         try:
+            print("before client call")
+            print({
+                "name": str(name),
+                "description": str(description),
+                "image": int(image_id)
+                })
             # server and owner get set by the core automatically
             client.containers.post({
                 "name": str(name),
                 "description": str(description),
                 "image": int(image_id)
                 })
+            print("after client call")
         except Exception:
             messages.error(request, "Whuups, something went wrong :(.")
 
