@@ -18,12 +18,15 @@ class CurrentBackendUserDefault(object):
     http://www.django-rest-framework.org/api-guide/validators/#currentuserdefault
     """
     def set_context(self, serializer_field):
+        print("set context")
         self.user = serializer_field.context['request'].user
 
     def __call__(self):
+        print("__call__")
         return self.user.backend_user
 
     def __repr__(self):
+        print("__repr__")
         return unicode_to_repr('%s()' % self.__class__.__name__)
 
 
@@ -45,6 +48,16 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', )
         read_only_fields = ('id', 'username', )
+
+
+class BackendUserSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
+
+    class Meta:
+        model = BackendUser
+        fields = ('id', )
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -160,11 +173,10 @@ class ContainerSerializer(serializers.ModelSerializer):
     is_suspended = serializers.BooleanField(read_only=True)
     has_clones = serializers.BooleanField(read_only=True)
 
-    # TODO: set read_only = False, if user has no backend_user
-    owner = UserSerializer(
-        read_only=True,
+    owner = serializers.HiddenField(
         default=CurrentBackendUserDefault()
     )
+
     # set dummy default, will be overriden on creation anyway
     server = ServerSerializer(
         read_only=True,
