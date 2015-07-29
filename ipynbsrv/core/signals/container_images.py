@@ -1,13 +1,30 @@
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+from ipynbsrv.contract.backends import ContainerBackend
 from ipynbsrv.contract.errors import ConnectionError, ContainerBackendError, ContainerImageNotFoundError
 from ipynbsrv.core.models import ContainerImage, Server
-from ipynbsrv.core.signals.signals import container_image_created, \
+from ipynbsrv.core.signals.signals import container_committed, container_image_created, \
     container_image_deleted, container_image_modified
 import logging
 
 
 logger = logging.getLogger(__name__)
+
+
+@receiver(container_committed)
+def create_image_on_server(sender, container, image, **kwargs):
+    """
+    Create the container image for the committed container on the server.
+    """
+    if container is not None and image is not None:
+        backend = container.server.get_container_backend()
+        try:
+            result = backend.create_container_image(container.backend_pk, image.name)
+            image.backend_pk = result.get(ContainerBackend.KEY_PK)
+            image.save()
+        except ContainerBackendError as ex:
+            image.delete()
+            raise ex
 
 
 @receiver(container_image_deleted)

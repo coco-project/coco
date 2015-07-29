@@ -51,7 +51,7 @@ def create_on_internal_ldap(sender, user, **kwargs):
                 username,
                 user.django_user.password,
                 user.primary_group.backend_id,
-                '/home/' + username  # TODO: make variable/constant
+                '/home/user'
             )
             # FIXME: this is the first time we really know the ID/PK given by the backend.
             # all other operations having used to old ones might not be valid anymore...

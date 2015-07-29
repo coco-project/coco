@@ -251,7 +251,7 @@ def container_commit(request, pk):
     :param internal:
     """
 
-    required_params = ["name", "description", "public", "internal"]
+    required_params = ["name", "description", "public"]
     params = {}
     for param in required_params:
         if param not in request.data:
