@@ -81,7 +81,6 @@ def commit(request):
 def create(request):
     """
     Todo: write doc.
-    Todo: fix 500 Error!!!
     """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
@@ -89,8 +88,6 @@ def create(request):
     if 'name' not in request.POST or 'description' not in request.POST or 'image_id' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('images')
-
-    print("create container")
 
     name = request.POST.get('name')
     description = request.POST.get('description')
@@ -103,24 +100,21 @@ def create(request):
     except HttpNotFoundError:
         messages.error(request, "Container bootstrap image does not exist or you don't have enough permissions for the requested operation.")
 
-    print(image)
-
     if image:
         try:
-            print("before client call")
-            print({
-                "name": str(name),
-                "description": str(description),
-                "image": int(image_id)
-                })
+            # does not make any sense, but seems like it won't work without this line
+            # Todo: find the actual problem!
+            client.containers.get()
+
             # server and owner get set by the core automatically
             client.containers.post({
-                "name": str(name),
-                "description": str(description),
-                "image": int(image_id)
+                "name": name,
+                "description": description,
+                "image": image_id
                 })
-            print("after client call")
-        except Exception:
+            messages.success(request, "Image created successfully.")
+        except Exception as ex:
+            messages.error(request, ex)
             messages.error(request, "Whuups, something went wrong :(.")
 
     return redirect('containers')

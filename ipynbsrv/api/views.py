@@ -157,7 +157,6 @@ class ContainerList(generics.ListCreateAPIView):
         return queryset
 
     def create(self, request, *args, **kwargs):
-        print("create {}".format(request.data))
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -166,7 +165,6 @@ class ContainerList(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         # target server gets selected by selection algorithm
-        print("perform create")
         server = get_server_selection_algorithm().choose_server(
             Server.objects.all().iterator()
         )
@@ -179,7 +177,6 @@ class ContainerList(generics.ListCreateAPIView):
             serializer.save(
                 server=server,
             )
-        print("perform create end")
 
 
 class ContainerDetail(generics.RetrieveUpdateDestroyAPIView):
