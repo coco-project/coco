@@ -156,14 +156,30 @@ class ContainerList(generics.ListCreateAPIView):
             queryset = Container.objects.filter(owner=self.request.user.backend_user.id)
         return queryset
 
+    def create(self, request, *args, **kwargs):
+        print("create {}".format(request.data))
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     def perform_create(self, serializer):
         # target server gets selected by selection algorithm
+        print("perform create")
         server = get_server_selection_algorithm().choose_server(
             Server.objects.all().iterator()
         )
-        serializer.save(
-            server=server,
+        if hasattr(self.request.user, 'backend_user'):
+            serializer.save(
+                server=server,
+                owner=self.request.user.backend_user
             )
+        else:
+            serializer.save(
+                server=server,
+            )
+        print("perform create end")
 
 
 class ContainerDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -219,6 +235,40 @@ def container_clone(request, pk):
         clone = origin.clone(**params)
         clone.save()
         serializer = ContainerSerializer(clone)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Container not found!", "data": data})
+
+
+@api_view(['POST'])
+def container_commit(request, pk):
+    """
+    Create a new image based on this container.
+
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the container that needs to be cloned
+    :param name:
+    :param description:
+    :param public:
+    :param internal:
+    """
+
+    required_params = ["name", "description", "public", "internal"]
+    params = {}
+    for param in required_params:
+        if param not in request.data:
+            return Response({"error": "Parameters missing.", "required_parameters": required_params })
+        params[param] = request.data.get(param)
+
+    print(params)
+
+    container = get_container(pk)
+    print(container)
+    if container:
+        image = container.commit(**params)
+        print(image)
+        serializer = ContainerImageSerializer(image)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response({"error": "Container not found!", "data": data})

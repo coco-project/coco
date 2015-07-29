@@ -27,6 +27,7 @@ urlpatterns = patterns('',
 
     url(r'^containers/(?P<pk>[0-9]+)/clone$', views.container_clone, name="container_clone"),
     url(r'^containers/(?P<pk>[0-9]+)/clones$', views.container_clones, name="container_clones"),
+    url(r'^containers/(?P<pk>[0-9]+)/commit$', views.container_commit, name="container_commit"),
     url(r'^containers/(?P<pk>[0-9]+)/create_snapshot$', views.container_create_snapshot, name="container_create_snapshot"),
     url(r'^containers/(?P<pk>[0-9]+)/restart$', views.container_restart, name="container_restart"),
     url(r'^containers/(?P<pk>[0-9]+)/resume$', views.container_resume, name="container_resume"),
