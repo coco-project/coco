@@ -379,6 +379,34 @@ class Container(models.Model):
 
         return clone
 
+    def commit(self, name, description, public, internal):
+        """
+        Create a new ContainerImage based on an existing Container.
+
+        :param img_name: The name of the new image.
+        :param description: The description of the image.
+        :param public: The visibility of the new image.
+        :param internal:
+        :param clone:
+        """
+        image = ContainerImage(
+            name=name,
+            description=description,
+            command=self.image.command,
+            protected_port=self.image.protected_port,
+            public_ports=self.image.public_ports,
+            owner=self.owner.django_user,
+            is_public=public,
+            is_internal=internal
+        )
+        image.save()
+
+        # Todo: remove?
+        #from ipynbsrv.core.signals.signals import container_commited
+        #container_commited.send(sender=Container, container=self, image=image)
+
+        return image
+
     def create_snapshot(self, name, description=None):
         """
         Create a snapshot of the current container state.
