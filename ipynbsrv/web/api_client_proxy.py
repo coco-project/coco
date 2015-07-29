@@ -5,7 +5,6 @@ def get_httpclient_instance(request):
     base_url = "http://localhost:8000/api"
     username = request.user.username
     password = request.session.get('password')
-    print("{}:{}".format(username, password))
     return HttpClient(base_url, auth=(username, password))
 
 
