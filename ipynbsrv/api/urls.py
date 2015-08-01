@@ -62,6 +62,7 @@ urlpatterns = patterns('',
     url(r'^notifications/$', views.NotificationList.as_view(), name="notifications"),
     url(r'^notifications/(?P<pk>[0-9]+)$', views.NotificationDetail.as_view(), name="notification_detail"),
     url(r'^notifications/(?P<pk>[0-9]+)/send$', views.notification_send, name="notification_send"),
+    url(r'^notificationtypes/$', views.notification_types, name="notification_types"),
 
     # /api/notificationlog(s)/...
     url(r'^notificationlogs/$', views.NotificationLogList.as_view(), name="notificationlogs"),

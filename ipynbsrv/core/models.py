@@ -689,47 +689,48 @@ class ContainerSnapshot(models.Model):
         unique_together = ('name', 'container')
 
 
+"""
+String to identify notifications for container related events.
+"""
+CONTAINER = 'container'
+
+"""
+String to identify notifications for container image related events.
+"""
+CONTAINER_IMAGE = 'container_image'
+
+"""
+String to identify notifications for group related events.
+"""
+GROUP = 'group'
+
+"""
+String to identify notifications for miscellaneous events.
+"""
+MISCELLANEOUS = 'miscellaneous'
+
+"""
+String to identify notifications for share related events.
+"""
+SHARE = 'share'
+
+"""
+List of choosable event event types.
+"""
+NOTIFICATION_TYPES = [
+    (CONTAINER, 'Container'),
+    (CONTAINER_IMAGE, 'Container image'),
+    (GROUP, 'Group'),
+    (MISCELLANEOUS, 'Miscellaneous'),
+    (SHARE, 'Share'),
+]
+
+
 class Notification(models.Model):
 
     """
     Class that acts as a message between users and groups.
     """
-
-    """
-    String to identify notifications for container related events.
-    """
-    CONTAINER = 'container'
-
-    """
-    String to identify notifications for container image related events.
-    """
-    CONTAINER_IMAGE = 'container_image'
-
-    """
-    String to identify notifications for group related events.
-    """
-    GROUP = 'group'
-
-    """
-    String to identify notifications for miscellaneous events.
-    """
-    MISCELLANEOUS = 'miscellaneous'
-
-    """
-    String to identify notifications for share related events.
-    """
-    SHARE = 'share'
-
-    """
-    List of choosable event event types.
-    """
-    EVENT_TYPES = [
-        (CONTAINER, 'Container'),
-        (CONTAINER_IMAGE, 'Container image'),
-        (GROUP, 'Group'),
-        (MISCELLANEOUS, 'Miscellaneous'),
-        (SHARE, 'Share'),
-    ]
 
     id = models.AutoField(primary_key=True)
     sender = models.ForeignKey(
@@ -742,8 +743,8 @@ class Notification(models.Model):
         help_text='The message body.'
     )
     date = models.DateTimeField(default=now())
-    event_type = models.CharField(
-        choices=EVENT_TYPES,
+    notification_type = models.CharField(
+        choices=NOTIFICATION_TYPES,
         default=MISCELLANEOUS,
         max_length=15
     )
@@ -782,6 +783,9 @@ class Notification(models.Model):
         related_name='related_notifications',
         help_text='The share this notification is related to.'
     )
+
+    def get_notification_types(self):
+        return NOTIFICATION_TYPES
 
     def get_related_object(self):
         """

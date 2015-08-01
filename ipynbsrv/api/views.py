@@ -732,3 +732,11 @@ class NotificationLogDetail (generics.RetrieveUpdateDestroyAPIView):
             return NotificationLog.objects.all()
         else:
             return NotificationLog.objects.filter(user=self.request.user.backend_user)
+
+
+@api_view(('GET',))
+def notification_types(request, format=None):
+    """
+    Notification types.
+    """
+    return Response(NOTIFICATION_TYPES)

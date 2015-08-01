@@ -9,7 +9,7 @@ def create_notificationlogs(sender, notification, **kwargs):
     # create NotificationLog for every user in the receiving groups
     for group in notification.receiver_groups.all():
         for u in group.get_members():
-            n = NotificationLog(notification=notification,user=user)
+            n = NotificationLog(notification=notification, user=user)
             n.save()
 
 

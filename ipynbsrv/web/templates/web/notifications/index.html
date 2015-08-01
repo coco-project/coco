@@ -48,7 +48,7 @@
             <div class="alert alert-info">You have no notifications yet.</div>
         {% endif %}
 
-        {% include 'web/notifications/modal_create.html' with groups=groups event_types=event_types csrf_token=csrf_token only %}
+        {% include 'web/notifications/modal_create.html' with groups=groups notification_types=notification_types csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}
