@@ -75,7 +75,7 @@
                                 </button>
                             </form>
 
-                            {% if member.backend_user.id not in group.admins %}
+                            {% if member.backend_user not in group.admins %}
                             <form action="{% url 'group_add_admin' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
                                 <input type="hidden" name="group_id" value="{{ group.id }}">
@@ -94,7 +94,7 @@
             </tbody>
         </table>
 
-        {% include 'web/collaborationgroups/modal_addusers.html' with users=users origin='manage' csrf_token=csrf_token only %}
+        {% include 'web/collaborationgroups/modal_addusers.html' with users=users origin='manage' group=group csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}

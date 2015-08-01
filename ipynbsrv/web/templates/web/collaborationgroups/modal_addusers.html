@@ -14,10 +14,11 @@
                     <div class="form-group">
                         <label for="recipient">Members</label>
                             {% for user in users %}
-
-                            <div class="checkbox">
-                              <label><input name="users" type="checkbox" value="{{ user.id }}">{{ user.username }}</label>
-                            </div>
+                                {% if user.backend_user and user.backend_user not in group.members %}
+                                <div class="checkbox">
+                                  <label><input name="users" type="checkbox" value="{{ user.id }}">{{ user.username }}</label>
+                                </div>
+                                {% endif %}
 
                             {% endfor %}
                         </select>
@@ -31,6 +32,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <input type="hidden" name="group_id" value="{{ group.id }}" />
+
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Create</button>
                 </div>
