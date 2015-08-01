@@ -126,7 +126,7 @@ def add_admin(request):
 
 
 @user_passes_test(login_allowed)
-def add_users(request):
+def add_members(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
@@ -149,7 +149,7 @@ def add_users(request):
 
 
 @user_passes_test(login_allowed)
-def remove_user(request):
+def remove_member(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('groups')
@@ -160,25 +160,26 @@ def remove_user(request):
     group_id = int(request.POST.get('group_id'))
     user_id = int(request.POST.get('user_id'))
 
-    group = Group.objects.filter(pk=group_id)
-    if group.exists():
-        group = group.first()
-        if group.backend_group.creator == request.user or request.user in group.backend_group.admins.all() or request.user.id == user_id:
-            user = User.objects.filter(pk=user_id)
-            if user.exists():
-                group.user_set.remove(user.first())
-                messages.success(request, "Sucessfully removed the user from the group.")
-                request.method = "GET"
-                return redirect('group_manage', group.id)
-            else:
-                messages.error(request, "User does not exist.")
+    client = get_httpclient_instance(request)
+
+    user = client.users(user_id).get()
+    group = client.collaborationgroups(group_id).get()
+
+    if group:
+        if user:
+            client.collaborationgroups(group_id).remove_members.post({
+                "users": [user_id]
+                })
+            messages.success(request, "Sucessfully removed the user from the group.")
+            request.method = "GET"
+            return redirect('group_manage', group.id)
         else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
+            messages.error(request, "User does not exist.")
             return redirect('group_manage', group.id)
     else:
         messages.error(request, "Group does not exist.")
 
-    return redirect('groups')
+    return redirect('group_manage', group_id)
 
 
 def notify_group_members(group, message, sender):

@@ -7,7 +7,7 @@
                 </button>
                 <h4 class="modal-title">Add users</h4>
             </div>
-            <form action="{% url 'group_add_users' %}" method="POST" role="form">
+            <form action="{% url 'group_add_members' %}" method="POST" role="form">
                 {% csrf_token %}
                 <div class="modal-body">
 
@@ -35,7 +35,7 @@
                     <input type="hidden" name="group_id" value="{{ group.id }}" />
 
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Create</button>
+                    <button type="submit" class="btn btn-primary">Add Users</button>
                 </div>
             </form>
         </div>

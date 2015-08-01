@@ -69,7 +69,7 @@
                     <td style="text-align: right">
                         {% if member.backend_user.id != group.creator %} 
                           {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator %}
-                            <form action="{% url 'group_remove_user' %}" method="POST" role="form" class="form-action">
+                            <form action="{% url 'group_remove_member' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
                                 <input type="hidden" name="group_id" value="{{ group.id }}">
                                 <input type="hidden" name="user_id" value="{{ member.id }}">
