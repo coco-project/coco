@@ -306,6 +306,18 @@ class CollaborationGroup(models.Model):
         """
         return user in self.get_members()
 
+    def get_name(self):
+        """
+        Get the name of the collaboration group.
+        """
+        return self.django_group.name
+
+    def get_member_count(self):
+        """
+        Get the number of users in the group
+        """
+        return int(self.django_group.user_set.all().count())
+
     def __str__(self):
         """
         :inherit.

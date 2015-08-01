@@ -14,28 +14,37 @@
         {% include 'web/snippets/messages.html' with messages=messages only %}
 
         <h1>Group</h1>
+        {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator %}
         <form role="form">
-        {% if request.user in group.backend_group.admins.all %}
             <button type="button" class="btn btn-primary btn-delete pull-right" data-toggle="modal" data-target="#modal-group-delete">
                 Delete Group
             </button>
+        </form>
+        <form role="form">
+            <button type="button" class="btn btn-primary btn-add pull-right" data-toggle="modal" data-target="#modal-group-addusers">Add Users</button>
+        </form>
+        {% endif %}
+        {% if request.user.backend_user.id in group.admins and request.user.backend_user.id != group.creator %}
+        <form role="form">
             <button type="button" class="btn btn-primary btn-leave pull-right" data-toggle="modal" data-target="#modal-group-leave">
                 Leave Group
             </button>
-        {% endif %}
         </form>
+        {% endif %}
 
         <table class="table">
             <tbody>
                 <tr>
                     <td>Name:</td><td>{{ group.name }}</td>
+                </tr><tr>
+                    <td>Creator:</td><td>{{ group.creator }}</td>
                 </tr>
             </tbody>
         </table>
 
         <h2>Members</h2>
         <form role="form">
-        {% if request.user in group.backend_group.admins.all %}
+        {% if request.user.backend_user in group.backend_group.admins.all %}
             <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-share-adduser">
                 Add new
             </button>
@@ -52,11 +61,11 @@
                 {% for member in members %}
                 <tr>
                     <td>{{ member.username }}
-                    {% if member == request.user %} <span class="label label-info">That's you!</span>{% endif %}
-                    {% if member in group.backend_group.admins.all %} <span class="label label-info">Admin</span>{% endif %}
-                    {% if member == group.backend_group.creator %} <span class="label label-info">Creator</span>{% endif %}</td>
+                    {% if member.id == request.user.id %} <span class="label label-info">That's you!</span>{% endif %}
+                    {% if member.backend_user.id in group.admins %} <span class="label label-info">Admin</span>{% endif %}
+                    {% if member.backend_user.id == group.creator %} <span class="label label-info">Creator</span>{% endif %}</td>
                     <td style="text-align: right">
-                        {% if member != group.backend_group.creator and request.user in group.backend_group.admins.all %}
+                        {% if member.backend_user.id != group.creator and request.user.backend_user.id in group.admins %}
                             <form action="{% url 'group_remove_user' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
                                 <input type="hidden" name="group_id" value="{{ group.id }}">
@@ -66,7 +75,7 @@
                                 </button>
                             </form>
 
-                            {% if member not in group.backend_group.admins.all %}
+                            {% if member.backend_user.id not in group.admins %}
                             <form action="{% url 'group_add_admin' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
                                 <input type="hidden" name="group_id" value="{{ group.id }}">
@@ -85,7 +94,7 @@
             </tbody>
         </table>
 
-        {% include 'web/shares/modal_adduser.html' with id=share.id origin='manage' csrf_token=csrf_token only %}
+        {% include 'web/collaborationgroups/modal_addusers.html' with users=users origin='manage' csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}

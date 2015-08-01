@@ -32,12 +32,12 @@
         {% for group in groups %}
         <tr>
             <td><a href="/groups/manage/{{group.id}}">{{group.name}}</a></td>
-            <td>{{ group.user_set.count }}</td>
-            <td>{% if request.user in group.backend_group.admins.all %}<span class="label label-info">Admin</span>{% endif %}
-                {% if request.user == group.backend_group.creator %}<span class="label label-info">Admin</span>{% endif %}
+            <td>{{ group.member_count }}</td>
+            <td>{% if request.user.backend_user.id in group.admins.all %}<span class="label label-info">Admin</span>{% endif %}
+                {% if request.user.backend_user.id == group.creator %}<span class="label label-info">Creator</span>{% endif %}
             </td>
             <td>
-            {% if request.user != group.backend_group.creator %}
+            {% if request.user.backend_user.id != group.creator %}
             <form action="{% url 'group_remove_user' %}" method="POST" role="form" class="form-action">
                 {% csrf_token %}
                 <input type="hidden" name="group_id" value="{{ group.id }}">
@@ -47,7 +47,7 @@
                 </button>
             </form>
             {% endif %}
-            {% if request.user == group.backend_group.creator or request.user in group.backend_group.admins.all %}
+            {% if request.user.backend_user.id == group.creator or request.user.id in group.admins %}
             <form action="{% url 'group_delete' %}" method="POST" role="form" class="form-action">
                 {% csrf_token %}
                 <input type="hidden" name="group_id" value="{{ group.id }}">
@@ -66,8 +66,8 @@
             <div class="alert alert-info">You have no groups yet.</div>
         {% endif %}
 
-        {% include 'web/shares/modal_adduser.html' with csrf_token=csrf_token only %}
-        {% include 'web/groups/modal_create.html' with users=users csrf_token=csrf_token only %}
+        {% include 'web/collaborationgroups/modal_addusers.html' with csrf_token=csrf_token only %}
+        {% include 'web/collaborationgroups/modal_create.html' with users=users csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}

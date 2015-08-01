@@ -15,14 +15,12 @@ def index(request):
     """
     client = get_httpclient_instance(request)
     users = client.users.get()
+    collab_groups = client.collaborationgroups.get()
 
-    # Todo: fix api/users/ permissions
-    # Todo: possibility to get groups by user
-
-    return render(request, 'web/groups/index.html', {
+    return render(request, 'web/collaborationgroups/index.html', {
         'title': "Groups",
-        'groups': request.user.groups.all(),
-        'users': User.objects.all()
+        'groups': collab_groups,
+        'users': users
     })
 
 
@@ -31,11 +29,16 @@ def manage(request, group_id):
     """
     Manage single group.
     """
-    group = Group.objects.get(id=group_id)
-    return render(request, 'web/groups/manage.html', {
+    client = get_httpclient_instance(request)
+    group = client.collaborationgroups(group_id).get()
+    members = group.django_group.user_set
+    users = client.users.get()
+
+    return render(request, 'web/collaborationgroups/manage.html', {
         'title': "Group",
         'group': group,
-        'members': group.user_set.all()
+        'members': members,
+        'users': users,
     })
 
 
@@ -45,53 +48,22 @@ def create(request):
         messages.error(request, "Invalid request method.")
         return redirect('groups')
 
-    if 'name' not in request.POST or 'users' not in request.POST:
+    params = {}
+
+    if 'name' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('groups')
+    else:
+        params['django_group'] = {"name": request.POST.get('name')}
 
-    name = request.POST['name']
-    users = request.POST.getlist('users')
+    if 'public' in request.POST:
+        params['public'] = True
 
-    try:
-        guid = BackendGroup.generate_internal_guid()
+    client = get_httpclient_instance(request)
+    print(params)
+    client.collaborationgroups.post(**params)
 
-        group = Group(name=name)
-        group.save()
-        be_group = BackendGroup(
-            backend_pk=name,
-            backend_id=guid,
-            django_group=group,
-            creator=request.user
-        )
-        be_group.save()
-        be_group.admins.add(request.user)
-        be_group.save()
-
-        for u in users:
-            user = User.objects.filter(id=u)
-            if user is not None:
-                print(u)
-                group.user_set.add(user.first())
-
-    except IntegrityError:
-        messages.error(request, "Name already in use. Please choose another one.")
-    except Exception as e:
-        try:
-            be_group.delete()
-        except:
-            pass
-        # TODO: nice error & rollback
-        raise e
-
-    if 'notify' in request.POST:
-        notify_group_members(
-            group=group,
-            message="You have been added to the group {}".format(name),
-            sender=request.user
-        )
-        messages.success(request, "Members will get a notification about the group creation")
-
-        messages.success(request, "Group `{}` created sucessfully.".format(name))
+    messages.success(request, "Group `{}` created sucessfully.".format(name))
 
     return redirect('groups')
 
@@ -155,6 +127,11 @@ def add_admin(request):
         messages.error(request, "Group does not exist.")
 
     return redirect('groups')
+
+
+@user_passes_test(login_allowed)
+def add_users(request):
+    pass
 
 
 @user_passes_test(login_allowed)

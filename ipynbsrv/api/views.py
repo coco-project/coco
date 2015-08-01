@@ -114,7 +114,7 @@ class CollaborationGroupList(generics.ListCreateAPIView):
     """
 
     serializer_class = CollaborationGroupSerializer
-    permission_classes = [IsSuperUserOrIsGroupAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -123,15 +123,17 @@ class CollaborationGroupList(generics.ListCreateAPIView):
             queryset = CollaborationGroup.objects.filter(
                 Q(django_group__user__id=self.request.user.id)
                 | Q(creator=self.request.user.backend_user.id)
-                | Q(admins__id=self.request.user.backend_user.id)
                 | Q(public=True)
-            )
+            ).distinct()
         return queryset
 
     def perform_create(self, serializer):
-        serializer.save(
-            creator=self.request.user.backend_user,
-            )
+        if hasattr(self.request.user, 'backend_user'):
+            serializer.save(
+                creator=self.request.user.backend_user,
+                )
+        else:
+            serializer.save()
 
 
 class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -149,9 +151,8 @@ class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
             queryset = CollaborationGroup.objects.filter(
                 Q(django_group__user__id=self.request.user.id)
                 | Q(creator=self.request.user.backend_user.id)
-                | Q(admins__id=self.request.user.backend_user.id)
                 | Q(public=True)
-            )
+            ).distinct()
         return queryset
 
 
