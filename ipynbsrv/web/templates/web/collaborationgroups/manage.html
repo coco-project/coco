@@ -15,8 +15,10 @@
 
         <h1>Group</h1>
         {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator %}
-        <form role="form">
-            <button type="button" class="btn btn-primary btn-delete pull-right" data-toggle="modal" data-target="#modal-group-delete">
+        <form action="{% url 'group_delete' %}" method="POST" role="form">
+            {% csrf_token %}
+            <input type="hidden" name="group_id" value="{{ group.id }}">
+            <button type="submit" class="btn btn-primary btn-delete pull-right" data-toggle="modal" data-target="#modal-group-delete">
                 Delete Group
             </button>
         </form>
