@@ -66,7 +66,7 @@ class GroupSerializer(serializers.ModelSerializer):
     Todo: write doc.
     """
 
-    user_set = UserSerializer(many=True, read_only=False)
+    user_set = UserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Group
@@ -96,11 +96,14 @@ class CollaborationGroupSerializer(serializers.ModelSerializer):
     Todo: write doc.
     """
     django_group = GroupSerializer(many=False)
+    name = serializers.CharField(source='get_name', read_only=True)
+    member_count = serializers.IntegerField(source='get_member_count', read_only=True)
+    members = BackendUserSerializer(source='get_members', read_only=True, many=True)
 
     class Meta:
         model = CollaborationGroup
-        fields = ('id', 'django_group', 'creator', 'admins', 'public')
-        read_only_fields = ('creator', )
+        fields = ('id', 'name', 'django_group', 'creator', 'members', 'member_count', 'admins', 'public')
+        read_only_fields = ('admins', )
 
     def set_admins(self, admins, collab_group, django_group):
         """
@@ -121,15 +124,11 @@ class CollaborationGroupSerializer(serializers.ModelSerializer):
         group = Group.objects.create(**group_data)
         # add creator to group
         group.user_set.add(validated_data.get('creator').django_user)
-        # get group admins
-        admins = validated_data.pop('admins')
         # create collaboration group
         collab_group = CollaborationGroup.objects.create(
             django_group=group,
             **validated_data
             )
-        # set admins and add them as group members
-        self.set_admins(admins, collab_group, group)
         return collab_group
 
     def update(self, instance, validated_data):
@@ -140,9 +139,6 @@ class CollaborationGroupSerializer(serializers.ModelSerializer):
         django_group.save()
 
         # always keep creator and admins in the user set
-        admins = validated_data.pop('admins')
-        self.set_admins(admins, instance, django_group)
-
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
