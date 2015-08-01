@@ -226,6 +226,9 @@ class BackendUser(models.Model):
         help_text='The primary backend group this user belongs to.'
     )
 
+    def get_username(self):
+        return self.django_user.username
+
     def __str__(self):
         """
         :inherit.
@@ -785,6 +788,9 @@ class Notification(models.Model):
     )
 
     def get_notification_types(self):
+        """
+        Todo: document
+        """
         return NOTIFICATION_TYPES
 
     def get_related_object(self):
@@ -1016,20 +1022,6 @@ class Share(models.Model):
         self.backend_group.django_group.user_set.add(user.django_user)
         return True
 
-    # @classmethod
-    # def all_user_is_member(cls, user):
-    #     """
-    #     Get all shares the user is a member of.
-    #
-    #     :param cls: The class on which the method was called.
-    #     :param user: The user object to get the shares for.
-    #     """
-    #     shares = []
-    #     for share in cls.objects.all():
-    #         if share.is_member(user):
-    #             shares.append(share)
-    #     return shares
-
     def get_members(self):
         """
         Get a list of members for this share.
@@ -1056,13 +1048,6 @@ class Share(models.Model):
         :param user: The user to check for membership.
         """
         return user in self.get_members()
-
-    # @classmethod
-    # def for_user(cls, user):
-    #     """
-    #     TODO: document.
-    #     """
-    #     return cls.objects.filter(owner=user.id)
 
     def __str__(self):
         """

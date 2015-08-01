@@ -43,10 +43,11 @@ class BackendUserSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
+    username = serializers.CharField(source='get_username')
 
     class Meta:
         model = BackendUser
-        fields = ('id', )
+        fields = ('id', 'username')
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -213,11 +214,11 @@ class ShareSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
+    members = BackendUserSerializer(source='get_members', many=True)
 
     class Meta:
         model = Share
-        fields = ('id', 'name', 'description', 'owner', 'tags', 'access_groups')
-        read_only_fields = ('owner', )
+        fields = ('id', 'name', 'description', 'owner', 'members', 'tags', 'access_groups')
 
     def set_tags(self, tags, instance):
         for tag in tags:
@@ -233,8 +234,7 @@ class ShareSerializer(serializers.ModelSerializer):
         """
         # django_group need to be created first because the foreign key is in
         # the CollaborationGroup model
-        print("create share")
-        name = validated_data.get('name')
+        name = settings.SHARE_GROUP_PREFIX + validated_data.get('name')
         group = Group.objects.create(name=name)
         group.save()
         backend_group = BackendGroup(

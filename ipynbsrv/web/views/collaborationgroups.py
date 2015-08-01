@@ -134,11 +134,13 @@ def add_members(request):
     users = request.POST.getlist('users')
     group_id = request.POST.get('group_id')
 
+    client = get_httpclient_instance(request)
+
     user_list = []
     # validate existance of users first
     for u in users:
-        user = User.objects.filter(id=u)
-    if user is not None:
+        user = client.users(u).get()
+    if user:
         user_list.append(u)
 
     # then call API to add the users to the group
@@ -182,10 +184,14 @@ def remove_member(request):
     return redirect('group_manage', group_id)
 
 
-def notify_group_members(group, message, sender):
-    n = Notification(sender=sender, message=message, event_type=Notification.GROUP)
-    n.save()
-    nr = NotificationReceivers(notification=n, receiving_group=group)
-    nr.save()
-
-    n.send()
+def notify_group_members(group, message, sender, request):
+    """
+    Todo: write documentation.
+    """
+    client = get_httpclient_instance(request)
+    client.notifications.post({
+        "sender": sender,
+        "message": message,
+        "event_type": Notification.GROUP,
+        "receiving_groups": [group]
+        })

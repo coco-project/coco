@@ -622,7 +622,13 @@ class ShareList(generics.ListCreateAPIView):
                 )
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user.backend_user)
+        print("perform create")
+        if hasattr(self.request.user, 'backend_user'):
+            serializer.save(
+                owner=self.request.user.backend_user,
+                )
+        else:
+            serializer.save()
 
 
 class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -641,6 +647,40 @@ class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
                 Q(owner=self.request.user.backend_user)
                 | Q(backend_group__django_group__user=self.request.user)
                 )
+
+
+@api_view(['POST'])
+def share_add_users(request, pk):
+    """
+    Add a list of users to the share.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    :param users list of user ids to add to the group
+    """
+    required_params = ["users"]
+    params = validate_request_params(required_params, request)
+
+    obj = CollaborationGroup.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "CollaborationGroup not found!", "data": request.data})
+    group = obj.first()
+
+    # validate all the user_ids first before adding them
+    user_list = []
+    for user_id in params.get("users"):
+        obj = User.objects.filter(id=user_id)
+        if not obj:
+            return Response({"error": "User not found!", "data": user_id})
+        user = obj.first()
+        if not user.backend_user:
+            return Response({"error": "User has no backend user!", "data": user_id})
+        user_list.append(user.backend_user)
+    for user in user_list:
+        group.add_member(user)
+
+    serializer = CollaborationGroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class TagList(generics.ListCreateAPIView):
