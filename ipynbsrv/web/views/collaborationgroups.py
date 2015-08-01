@@ -48,20 +48,24 @@ def create(request):
         messages.error(request, "Invalid request method.")
         return redirect('groups')
 
-    params = {}
-
     if 'name' not in request.POST:
         messages.error(request, "Invalid POST request.")
-        return redirect('groups')
     else:
-        params['django_group'] = {"name": request.POST.get('name')}
+        name = request.POST.get('name')
 
+    public = False
     if 'public' in request.POST:
-        params['public'] = True
+        public = True
 
     client = get_httpclient_instance(request)
-    print(params)
-    client.collaborationgroups.post(**params)
+
+    # stupid create workaround (see containers)
+    client.collaborationgroups.get()
+    client.collaborationgroups.post({
+        "django_group": {
+            "name": name
+        }, "public": public,
+    })
 
     messages.success(request, "Group `{}` created sucessfully.".format(name))
 
@@ -79,17 +83,12 @@ def delete(request):
 
     group_id = int(request.POST.get('group_id'))
 
-    group = Group.objects.filter(pk=group_id)
-    if group.exists():
-        group = group.first()
-        if group.backend_group.creator == request.user or request.user in group.backend_group.admins.all():
-            group.delete()
-            messages.success(request, "Sucessfully deleted group.")
-            request.method = "GET"
-            return redirect('groups')
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
-            return redirect('groups')
+    client = get_httpclient_instance(request)
+    group = client.collaborationgroups(group_id).get()
+    if group:
+        client.collaborationgroups(group_id).delete()
+        messages.success(request, "Group `{}` deleted.".format(group.name))
+
     else:
         messages.error(request, "Group does not exist.")
 
@@ -108,40 +107,53 @@ def add_admin(request):
     group_id = int(request.POST.get('group_id'))
     user_id = int(request.POST.get('user_id'))
 
-    group = Group.objects.filter(pk=group_id)
-    if group.exists():
-        group = group.first()
-        if group.backend_group.creator == request.user or request.user in group.backend_group.admins.all():
-            user = User.objects.filter(pk=user_id)
-            if user.exists():
-                group.backend_group.admins.add(user.first())
-                messages.success(request, "Sucessfully added user to group admins.")
+    client = get_httpclient_instance(request)
+    group = client.collaborationgroups(group_id).get()
+
+    if group:
+        if request.user.is_superuser or request.user.backend_user.id == group.creator or request.backend_user in group.admins:
+            user = client.users(group_id).get()
+            if user and hasattr(user, 'backend_user'):
+                client.collaborationgroups(group_id).add_admin.post(user_id)
+                messages.success(request, "Sucessfully added user {} to group admins on {}.".format(user.username, group.name))
                 request.method = "GET"
                 return redirect('group_manage', group.id)
-            else:
-                messages.error(request, "User does not exist.")
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
-            return redirect('group_manage', group.id)
     else:
         messages.error(request, "Group does not exist.")
-
-    return redirect('groups')
+        return redirect('group_manage', group.id)
 
 
 @user_passes_test(login_allowed)
 def add_users(request):
-    pass
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('shares')
+
+    users = request.POST.getlist('users')
+    group_id = request.POST.get('group_id')
+
+    user_list = []
+    # validate existance of users first
+    for u in users:
+        user = User.objects.filter(id=u)
+    if user is not None:
+        user_list.append(u)
+
+    # then call API to add the users to the group
+    client = get_httpclient_instance(request)
+    client.collaborationgroups(group_id).add_members.post({"users": user_list})
+
+    return redirect('group_manage', group_id)
 
 
 @user_passes_test(login_allowed)
 def remove_user(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
-        return redirect('shares')
+        return redirect('groups')
     if 'group_id' not in request.POST or 'user_id' not in request.POST:
         messages.error(request, "Invalid POST request.")
-        return redirect('shares')
+        return redirect('groups')
 
     group_id = int(request.POST.get('group_id'))
     user_id = int(request.POST.get('user_id'))
