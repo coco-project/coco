@@ -79,6 +79,17 @@ class UserList(generics.ListAPIView):
     permission_classes = [IsSuperUserOrReadOnly]
 
 
+class UserDetails(generics.RetrieveAPIView):
+    """
+    Get a list of all users (`django.contrib.auth.models.User`).
+    Only visible to authenticated users.
+    """
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsSuperUserOrReadOnly]
+
+
 class GroupList(generics.ListAPIView):
     """
     Get a list of all groups.
@@ -185,6 +196,43 @@ def collaborationgroup_add_members(request, pk):
         user_list.append(user.backend_user)
     for user in user_list:
         group.add_member(user)
+
+    serializer = CollaborationGroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+def collaborationgroup_add_admins(request, pk):
+    """
+    Add a list of users to the group.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    :param users list of user ids to add to the group
+    """
+    required_params = ["users"]
+    params = validate_request_params(required_params, request)
+
+    obj = CollaborationGroup.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "CollaborationGroup not found!", "data": request.data})
+    group = obj.first()
+
+    # validate all the user_ids first before adding them
+    user_list = []
+    for user_id in params.get("users"):
+        obj = User.objects.filter(id=user_id)
+        if not obj:
+            return Response({"error": "User not found!", "data": user_id})
+        user = obj.first()
+        print(user)
+        if not user.backend_user:
+            return Response({"error": "User has no backend user!", "data": user_id})
+        user_list.append(user.backend_user)
+    for user in user_list:
+        result = group.add_admin(user)
+        if not result:
+            return Response({"error": "{} is no member of {}".format(user.username, group.name), "data": user_id})
 
     serializer = CollaborationGroupSerializer(group)
     return Response(serializer.data, status=status.HTTP_201_CREATED)

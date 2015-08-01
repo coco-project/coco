@@ -7,6 +7,7 @@ urlpatterns = patterns('',
 
     # /api/user(s)/...
     url(r'^users/$', views.UserList.as_view(), name="users"),
+    url(r'^users/(?P<pk>[0-9]+)$', views.UserDetails.as_view(), name="user_details"),
 
     # /api/configurationvariable(s)/...
     url(r'^configurationvariables/$', views.ConfigurationVariableList.as_view(), name="configurationvariables"),
@@ -16,6 +17,7 @@ urlpatterns = patterns('',
     url(r'^collaborationgroups/$', views.CollaborationGroupList.as_view(), name="collaborationgroups"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)$', views.CollaborationGroupDetail.as_view(), name="collaborationgroup_detail"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)/add_members$', views.collaborationgroup_add_members, name="collaborationgroup_add_members"),
+    url(r'^collaborationgroups/(?P<pk>[0-9]+)/add_admins$', views.collaborationgroup_add_admins, name="collaborationgroup_add_admins"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)/remove_members$', views.collaborationgroup_remove_members, name="collaborationgroup_remove_members"),
 
     # /api/backend(s)/...
