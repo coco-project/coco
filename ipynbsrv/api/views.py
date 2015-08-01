@@ -189,6 +189,40 @@ def collaborationgroup_add_members(request, pk):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+@api_view(['POST'])
+def collaborationgroup_remove_members(request, pk):
+    """
+    Remove a list of users from the group.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    :param users list of user ids to remove from the group
+    """
+    required_params = ["users"]
+    params = validate_request_params(required_params, request)
+
+    obj = CollaborationGroup.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "CollaborationGroup not found!", "data": request.data})
+    group = obj.first()
+
+    # validate all the user_ids first before adding them
+    user_list = []
+    for user_id in params.get("users"):
+        obj = User.objects.filter(id=user_id)
+        if not obj:
+            return Response({"error": "User not found!", "data": user_id})
+        user = obj.first()
+        if not user.backend_user:
+            return Response({"error": "User has no backend user!", "data": user_id})
+        user_list.append(user.backend_user)
+    for user in user_list:
+        group.remove_member(user)
+
+    serializer = CollaborationGroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 class ContainerList(generics.ListCreateAPIView):
     """
     Get a list of all the containers.
