@@ -271,10 +271,11 @@ class NotificationSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
-    has_related_object = serializers.BooleanField(read_only=True)
+    notification_type = serializers.ChoiceField(choices=NOTIFICATION_TYPES, default='miscellaneous')
 
     class Meta:
         model = Notification
+        read_only_fields = ('date', )
 
 
 class NotificationLogSerializer(serializers.ModelSerializer):
