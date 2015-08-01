@@ -1098,4 +1098,4 @@ class Tag(models.Model):
 # make sure our signal receivers are loaded
 from ipynbsrv.core.signals import backend_users, backend_groups, \
     collaboration_groups, container_images, container_snapshots, containers, \
-    groups, shares, users
+    groups, shares, users, notifications

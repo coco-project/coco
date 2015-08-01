@@ -73,6 +73,12 @@ group_modified = Signal(providing_args=['group', 'fields'])
 
 
 """
+Set of signals to be triggered for `Notification` model events.
+"""
+notification_created = Signal(providing_args=['notification'])
+
+
+"""
 Set of signals to be triggered for `Share` model events.
 """
 share_access_group_added = Signal(providing_args=['share', 'group'])
