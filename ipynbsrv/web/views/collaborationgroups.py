@@ -112,10 +112,12 @@ def add_admin(request):
 
     if group:
         if request.user.is_superuser or request.user.backend_user.id == group.creator or request.backend_user in group.admins:
-            user = client.users(group_id).get()
+            user = client.users(user_id).get()
             if user and hasattr(user, 'backend_user'):
-                client.collaborationgroups(group_id).add_admin.post(user_id)
-                messages.success(request, "Sucessfully added user {} to group admins on {}.".format(user.username, group.name))
+                client.collaborationgroups(group_id).add_admins.post({
+                    "users": [user_id]
+                    })
+                messages.success(request, "{} is now a admin of {}.".format(user.username, group.name))
                 request.method = "GET"
                 return redirect('group_manage', group.id)
     else:

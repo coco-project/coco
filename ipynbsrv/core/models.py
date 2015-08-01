@@ -268,6 +268,20 @@ class CollaborationGroup(models.Model):
         help_text='Indicate if the group should be publicly visible and free to join for everyone.'
     )
 
+    def add_admin(self, user):
+        """
+        Add the user as a member to this group.
+
+        :param user: The backend user to add.
+        """
+        print("add_admin")
+        if not self.user_is_member(user):
+            print("false")
+            return False
+        self.admins.add(user)
+        print("true")
+        return True
+
     def add_member(self, user):
         """
         Add the user as a member to this group.
@@ -300,7 +314,7 @@ class CollaborationGroup(models.Model):
 
     def user_is_member(self, user):
         """
-        Check if the user is a member of this group.
+        Check if the backend user is a member of this group.
 
         :param user: The user to check for membership.
         """
