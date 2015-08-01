@@ -12,7 +12,7 @@ class IsAuthenticatedMixin(object):
 class IsGroupAdminMixin(object):
 
     def is_group_admin(self, user, group):
-        return user in group.admins
+        return user in group.admins.all()
 
 
 class IsPublicMixin(object):
@@ -44,7 +44,7 @@ class IsObjectOwnerMixin(object):
 
 class IsObjectCreatorMixin(object):
 
-    def is_owner(self, user, obj):
+    def is_creator(self, user, obj):
         if type(obj.creator) == User:
             return obj.creator == user
         elif type(obj.creator) == BackendUser:
@@ -134,7 +134,9 @@ class IsSuperUserOrIsGroupAdminOrReadOnly(
         permissions.BasePermission,
         IsSuperUserMixin,
         IsGroupAdminMixin,
-        IsSafeMethodMixin):
+        IsSafeMethodMixin,
+        IsBackendUserMixin,
+        IsObjectCreatorMixin):
     """
     Todo: write doc.
     """
@@ -145,6 +147,6 @@ class IsSuperUserOrIsGroupAdminOrReadOnly(
         if self.is_superuser(request.user):
             return True
         if self.is_backend_user(request.user):
-            return self.is_owner(request.user, obj) \
-                or self.is_group_admin(request.user, obj)
+            return self.is_creator(request.user, obj) \
+                or self.is_group_admin(request.user.backend_user, obj)
         return False
