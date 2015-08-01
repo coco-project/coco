@@ -15,6 +15,7 @@ urlpatterns = patterns('',
     # /api/collaborationgroup(s)/...
     url(r'^collaborationgroups/$', views.CollaborationGroupList.as_view(), name="collaborationgroups"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)$', views.CollaborationGroupDetail.as_view(), name="collaborationgroup_detail"),
+    url(r'^collaborationgroups/(?P<pk>[0-9]+)/add_members$', views.collaborationgroup_add_members, name="collaborationgroup_add_members"),
     #url(r'^groups/(?P<pk>[0-9]+)/django_group$', views.CollaborationGroupDjangoGroup.as_view(), name="group_detail_django_group"),
 
     # /api/backend(s)/...

@@ -272,7 +272,7 @@ class CollaborationGroup(models.Model):
         """
         Add the user as a member to this group.
 
-        :param user: The user to add.
+        :param user: The backend user to add.
         """
         if self.user_is_member(user):
             return False

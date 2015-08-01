@@ -39,17 +39,6 @@ class ConfigurationVariableSerializer(serializers.ModelSerializer):
         model = ConfigurationVariable
 
 
-class UserSerializer(serializers.ModelSerializer):
-    """
-    Todo: write doc.
-    """
-
-    class Meta:
-        model = User
-        fields = ('id', 'username', )
-        read_only_fields = ('id', 'username', )
-
-
 class BackendUserSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
@@ -60,12 +49,24 @@ class BackendUserSerializer(serializers.ModelSerializer):
         fields = ('id', )
 
 
+class UserSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
+    backend_user = BackendUserSerializer()
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'backend_user')
+        read_only_fields = ('id', 'username', )
+
+
 class GroupSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
 
-    user_set = UserSerializer(many=True, read_only=True)
+    user_set = UserSerializer(many=True, read_only=False)
 
     class Meta:
         model = Group
@@ -289,4 +290,3 @@ class NotificationLogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NotificationLog
-
