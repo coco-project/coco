@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
-from rest_framework import permissions
 from ipynbsrv.core.models import BackendUser
+from rest_framework import permissions
 
 
 class IsAuthenticatedMixin(object):

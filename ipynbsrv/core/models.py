@@ -786,12 +786,6 @@ class Notification(models.Model):
         help_text='The share this notification is related to.'
     )
 
-    def get_notification_types(self):
-        """
-        Todo: document.
-        """
-        return self.NOTIFICATION_TYPES
-
     def get_related_object(self):
         """
         Get the object related.
@@ -835,16 +829,6 @@ class Notification(models.Model):
     #         return "/groups/manage/{}".format(obj.id)
     #     else:
     #         return None
-
-    def send(self):
-        """
-        TODO: write doc.
-        """
-        # TODO: avoid double notifications
-        for n in self.receiver_groups.all():
-            for user in n.get_members():
-                notification_log = NotificationLog(notification=self, user=user)
-                notification_log.save()
 
     def __str__(self):
         """

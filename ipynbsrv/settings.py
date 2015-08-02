@@ -28,6 +28,7 @@ ALLOWED_HOSTS = []
 # Application definition
 INSTALLED_APPS = (
     # Core
+    'ipynbsrv.api',
     'ipynbsrv.core',
     'django.contrib.admin',
     'django.contrib.auth',

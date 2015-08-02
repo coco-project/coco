@@ -1,15 +1,15 @@
-from rest_framework import serializers
-from ipynbsrv.core.models import *
-from ipynbsrv.core import settings
-from django.contrib.auth.models import User, Group
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, User
 from django_admin_conf_vars.models import ConfigurationVariable
+from ipynbsrv.core import settings
+from ipynbsrv.core.models import *
+from rest_framework import serializers
 
 
 class CurrentBackendUserDefault(object):
     """
-    A default class that can be used to represent the current backend user. 
-    In order to use this, the 'request' must have been provided 
+    A default class that can be used to represent the current backend user.
+    In order to use this, the 'request' must have been provided
     as part of the context dictionary when instantiating the serializer
     and the user needs to have a backend user.
 
@@ -108,7 +108,7 @@ class CollaborationGroupSerializer(serializers.ModelSerializer):
 
     def set_admins(self, admins, collab_group, django_group):
         """
-        Set the admins on the collaboration group, 
+        Set the admins on the collaboration group,
         and add them as members of the django_group.
         """
         for admin in admins:
@@ -271,7 +271,7 @@ class NotificationSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
-    notification_type = serializers.ChoiceField(choices=NOTIFICATION_TYPES, default='miscellaneous')
+    notification_type = serializers.ChoiceField(choices=Notification.NOTIFICATION_TYPES, default='miscellaneous')
 
     class Meta:
         model = Notification

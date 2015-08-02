@@ -730,23 +730,6 @@ class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
         return queryset
 
 
-@api_view(['POST'])
-def notification_send(request, pk):
-    """
-    Send the notification to all the users in the receiving groups.
-    Todo: show params on OPTIONS call.
-    :param pk   pk of the notification
-    """
-
-    notification = Notification.objects.filter(id=pk)
-    if notification:
-        n = notification.first()
-        n.send()
-        return Response({"message": "notification sent to receivers."}, status=status.HTTP_201_CREATED)
-    else:
-        return Response({"error": "Container not found!", "data": data})
-
-
 class NotificationLogList(generics.ListAPIView):
     """
     Get a list of all the notification logs.
