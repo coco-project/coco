@@ -30,7 +30,6 @@ INSTALLED_APPS = (
     # Core
     'ipynbsrv.api',
     'ipynbsrv.core',
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -38,7 +37,11 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_admin_conf_vars',
     'rest_framework',
-    # Clients
+    # Admin
+    'ipynbsrv.admin.apps.MyAdmin',
+    'djangocms_admin_style',
+    'django.contrib.admin',
+    # Web
     'ipynbsrv.web',
     'widget_tweaks',
 )

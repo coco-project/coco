@@ -40,14 +40,19 @@ class BackendProxyAuthentication(object):
             user_backend.auth_user(username, password)
             if user is not None:  # existing user
                 internal_ldap.set_user_password(username, make_password(password))  # FIXME: handle in signals
-                return user
+                auth = user
             else:  # new user
                 uid = BackendUser.generate_internal_uid()
                 group = self.create_user_groups(username, uid)
                 user = self.create_users(username, uid, group.backend_group)
                 # add user to group
                 group.user_set.add(user)
-                return user
+                auth = user
+
+            if auth.is_active:
+                return auth
+            else:
+                return None
         except AuthenticationError:
             return None
         except UserNotFoundError:

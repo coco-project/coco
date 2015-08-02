@@ -315,7 +315,7 @@ class CollaborationGroup(models.Model):
         related_name='managed_groups',
         help_text='The users that are allowed to manage the group.'
     )
-    public = models.BooleanField(
+    is_public = models.BooleanField(
         default=False,
         help_text='Indicate if the group should be publicly visible and free to join for everyone.'
     )
@@ -1037,7 +1037,6 @@ class Server(models.Model):
         max_length=255,
         help_text='The human-friendly name of this server.'
     )
-    hostname = models.CharField(unique=True, max_length=255)
     internal_ip = models.GenericIPAddressField(
         unique=True,
         protocol='IPv4',
@@ -1084,7 +1083,6 @@ class Server(models.Model):
         if self.container_backend_args:
             return self.container_backend_args \
                 .replace('%name%', self.name) \
-                .replace('%hostname%', self.hostname) \
                 .replace('%internal_ip%', self.internal_ip) \
                 .replace('%external_ip%', self.external_ip)
         return None
@@ -1143,13 +1141,13 @@ class Share(models.Model):
         related_name='shares',
         help_text='The user owning the share (usually the one that created it).'
     )
-    tags = models.ManyToManyField('Tag', blank=True)
     access_groups = models.ManyToManyField(
         'CollaborationGroup',
         blank=True,
         related_name='shares',
         help_text='The groups having access to that share.'
     )
+    tags = models.ManyToManyField('Tag', blank=True)
 
     def add_member(self, user):
         """
