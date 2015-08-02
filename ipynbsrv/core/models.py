@@ -7,8 +7,7 @@ from django.utils.timezone import now
 from ipynbsrv.common.utils import ClassLoader
 from ipynbsrv.contract.backends import ContainerBackend
 from ipynbsrv.core import settings
-from ipynbsrv.core.helpers import get_server_selection_algorithm
-from ipynbsrv.core.validators import *
+from ipynbsrv.core.validators import validate_json_format
 from random import randint
 
 
