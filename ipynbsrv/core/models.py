@@ -3,7 +3,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.encoding import smart_unicode
-from django.utils.timezone import now
 from ipynbsrv.common.utils import ClassLoader
 from ipynbsrv.contract.backends import ContainerBackend
 from ipynbsrv.core import settings
@@ -149,8 +148,16 @@ class BackendGroup(models.Model):
         self.django_group.user_set.add(user.django_user)
         return True
 
+    def clean_fields(self, exclude={}):
+        """
+        :inherit.
+        """
+        if not 'backend_id' in exclude and self.backend_id is None:
+            self.backend_id = self.__class__.generate_internal_gid()
+        super(BackendGroup, self).clean_fields(exclude)
+
     @staticmethod
-    def generate_internal_guid():
+    def generate_internal_gid():
         """
         Generate an unique internal group ID.
 
@@ -239,6 +246,14 @@ class BackendUser(models.Model):
         related_name='primary_user',
         help_text='The primary backend group this user belongs to.'
     )
+
+    def clean_fields(self, exclude={}):
+        """
+        :inherit.
+        """
+        if not 'backend_id' in exclude and self.backend_id is None:
+            self.backend_id = self.__class__.generate_internal_uid()
+        super(BackendUser, self).clean_fields(exclude)
 
     @staticmethod
     def generate_internal_uid():
@@ -830,7 +845,7 @@ class Notification(models.Model):
         max_length=255,
         help_text='The message body.'
     )
-    date = models.DateTimeField(default=now())
+    date = models.DateTimeField(auto_now=True)
     notification_type = models.CharField(
         choices=NOTIFICATION_TYPES,
         default=MISCELLANEOUS,
