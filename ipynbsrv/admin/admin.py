@@ -1,3 +1,4 @@
+from django_admin_conf_vars.models import ConfigurationVariable
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -63,6 +64,29 @@ class CollaborationGroupAdmin(admin.ModelAdmin):
             'fields': ['is_public']
         })
     ]
+
+
+class ConfigurationVariableAdmin(admin.ModelAdmin):
+
+    """
+    Admin model for the `ConfigurationVariable` model.
+    """
+
+    list_display = ['name']
+
+    fieldsets = [
+        ('General Properties', {
+            'fields': ['name', 'description', 'value']
+        })
+    ]
+
+    readonly_fields = ['description', 'name']
+
+    def has_add_permission(self, request):
+        """
+        :inherit.
+        """
+        return False
 
 
 class ContainerAdmin(admin.ModelAdmin):
@@ -477,6 +501,7 @@ class UserAdmin(admin.ModelAdmin):
 admin_site = CoreAdminSite(name='ipynbsrv')
 admin_site.register(Backend, BackendAdmin)
 admin_site.register(CollaborationGroup, CollaborationGroupAdmin)
+admin_site.register(ConfigurationVariable, ConfigurationVariableAdmin)
 admin_site.register(Container, ContainerAdmin)
 admin_site.register(ContainerImage, ContainerImageAdmin)
 admin_site.register(ContainerSnapshot, ContainerSnapshotAdmin)
