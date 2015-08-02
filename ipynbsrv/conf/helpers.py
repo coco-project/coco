@@ -15,7 +15,7 @@ def get_internal_ldap():
     """
     global _INTERNAL_LDAP
     if _INTERNAL_LDAP is None:
-        module, klass = ClassLoader.split(config.INTERNAL_LDAP_CLASS)
+        module, klass = ClassLoader.split(str(config.INTERNAL_LDAP_CLASS))
         _INTERNAL_LDAP = ClassLoader(module, klass, config.INTERNAL_LDAP_ARGS)
     return _INTERNAL_LDAP.get_instance()
 
@@ -41,7 +41,7 @@ def get_server_selection_algorithm():
     """
     global _SERVER_SELECTION_ALGORITHM
     if _SERVER_SELECTION_ALGORITHM is None:
-        module, klass = ClassLoader.split(config.SERVER_SELECTION_ALGORITHM_CLASS)
+        module, klass = ClassLoader.split(str(config.SERVER_SELECTION_ALGORITHM_CLASS))
         cl = ClassLoader(module, klass)
         _SERVER_SELECTION_ALGORITHM = cl.get_instance()
     return _SERVER_SELECTION_ALGORITHM
@@ -59,7 +59,7 @@ def get_storage_backend():
     """
     global _STORAGE_BACKEND
     if _STORAGE_BACKEND is None:
-        module, klass = ClassLoader.split(config.STORAGE_BACKEND_CLASS)
+        module, klass = ClassLoader.split(str(config.STORAGE_BACKEND_CLASS))
         cl = ClassLoader(module, klass, config.STORAGE_BACKEND_ARGS)
         _STORAGE_BACKEND = cl.get_instance()
     return _STORAGE_BACKEND
@@ -77,7 +77,7 @@ def get_user_backend():
     """
     global _USER_BACKEND
     if _USER_BACKEND is None:
-        module, klass = ClassLoader.split(config.USER_BACKEND_CLASS)
+        module, klass = ClassLoader.split(str(config.USER_BACKEND_CLASS))
         _USER_BACKEND = ClassLoader(module, klass, config.USER_BACKEND_ARGS)
     return _USER_BACKEND.get_instance()
 
