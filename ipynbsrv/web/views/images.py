@@ -1,9 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
-from django.db.models import Q
 from django.shortcuts import render, redirect
 from ipynbsrv.core.auth.checks import login_allowed
-from ipynbsrv.core.models import Container, ContainerImage
+from ipynbsrv.web.api_client_proxy import get_httpclient_instance
+from slumber.exceptions import HttpNotFoundError
 
 
 @user_passes_test(login_allowed)
@@ -17,27 +17,41 @@ def delete(request):
 
     img_id = int(request.POST.get('id'))
 
-    img = ContainerImage.objects.filter(pk=img_id)
-    if img.exists():
-        img = img.first()
-        if img.owner == request.user:
-            img.delete()
+    client = get_httpclient_instance(request)
+
+    try:
+        image = client.images(img_id).get()
+    except HttpNotFoundError:
+        messages.error(request, "Image does not exist or you don't have the permissions to delete it.")
+
+    if image:
+        try:
+            client.images(img_id).delete()
             messages.success(request, "Image deleted successfully.")
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
+        except Exception:
+            messages.error(request, "Whuups, something went wrong :(.")
     else:
-        messages.error(request, "Image does not exist.")
+        messages.error(request, "Image does not exist or you don't have the permissions to delete it.")
 
     return redirect('images')
 
 
 @user_passes_test(login_allowed)
 def index(request):
+    client = get_httpclient_instance(request)
+
+    containers = client.containers.get()
+    images = client.images.get()
+    if request.GET.get('ct'):
+        selected = client.containers(int(request.GET.get('ct'))).get()
+    else:
+        selected = None
+
     return render(request, 'web/images/index.html', {
         'title': "Images",
-        'containers': Container.objects.filter(owner=request.user.backend_user),
-        'images': ContainerImage.objects.filter((Q(owner=request.user) | Q(is_public=True))),
+        'containers': containers,
+        'images': images,
         # meta information for the create modal
-        'selected': Container.objects.filter(pk=int(request.GET.get('ct', -1))).first(),
+        'selected': selected,
         'share': 'share' in request.GET
     })

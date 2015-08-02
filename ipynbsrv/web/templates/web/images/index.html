@@ -32,13 +32,13 @@
                     <tbody>
                         {% for img in images %}
                         <tr>
-                            <td>{{ img.get_friendly_name }}</td>
+                            <td>{{ img.friendly_name }}</td>
                             <td>{{ img.description }}</td>
                             <td style="text-align: center">
-                                <input type="checkbox" data-sort="1"{% if img.is_public %} checked{% endif %}{% if img.owner != request.user %} disabled{% endif %}>
+                                <input type="checkbox" data-sort="1"{% if img.is_public %} checked{% endif %}{% if img.owner != request.user.id %} disabled{% endif %}>
                             </td>
                             <td>
-                                {% if img.owner == request.user %}
+                                {% if img.owner == request.user.id %}
                                 <form action="{% url 'image_delete' %}" method="POST" class="pull-right" role="form">
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{ img.id }}">

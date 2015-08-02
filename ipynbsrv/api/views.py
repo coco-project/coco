@@ -2,6 +2,7 @@ from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from django_admin_conf_vars.models import ConfigurationVariable
 from ipynbsrv.api.permissions import *
+from ipynbsrv.conf.helpers import get_server_selection_algorithm
 from ipynbsrv.core.models import *
 from ipynbsrv.api.serializer import *
 from rest_framework import generics, status
@@ -9,17 +10,40 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import *
 from rest_framework.response import Response
 
+# TODO: check for unique names before creation of objects !
+
+
+def validate_request_params(required_params, request):
+    """
+    Validate request parameters.
+    """
+    params = {}
+    for param in required_params:
+            if param not in request.data:
+                return Response({"error": "Parameters missing.", "required_parameters": required_params })
+            params[param] = request.data.get(param)
+    return params
+
 
 @api_view(('GET',))
 def api_root(request, format=None):
     """
     API Root
     """
-    return Response({
-        'endpoint': 'desc',
-        'endpoint2': 'desc',
-        'endpoint3': 'desc',
-    })
+    return Response({'endpoints': {
+        'configurationvariables': 'desc',
+        'users': 'desc',
+        'collaborationgroups': 'desc',
+        'backends': 'desc',
+        'containers': 'desc',
+        'images': 'desc',
+        'snapshots': 'desc',
+        'servers': 'desc',
+        'shares': 'desc',
+        'tags': 'desc',
+        'notifications': 'desc',
+        'notificationlogs': 'desc',
+    }})
 
 
 class ConfigurationVariableList(generics.ListCreateAPIView):
@@ -52,7 +76,18 @@ class UserList(generics.ListAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticatedAndReadOnly]
+    permission_classes = [IsSuperUserOrReadOnly]
+
+
+class UserDetails(generics.RetrieveAPIView):
+    """
+    Get a list of all users (`django.contrib.auth.models.User`).
+    Only visible to authenticated users.
+    """
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsSuperUserOrReadOnly]
 
 
 class GroupList(generics.ListAPIView):
@@ -90,7 +125,7 @@ class CollaborationGroupList(generics.ListCreateAPIView):
     """
 
     serializer_class = CollaborationGroupSerializer
-    permission_classes = [IsSuperUserOrIsGroupAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -99,15 +134,17 @@ class CollaborationGroupList(generics.ListCreateAPIView):
             queryset = CollaborationGroup.objects.filter(
                 Q(django_group__user__id=self.request.user.id)
                 | Q(creator=self.request.user.backend_user.id)
-                | Q(admins__id=self.request.user.backend_user.id)
                 | Q(public=True)
-            )
+            ).distinct()
         return queryset
 
     def perform_create(self, serializer):
-        serializer.save(
-            creator=self.request.user.backend_user,
-            )
+        if hasattr(self.request.user, 'backend_user'):
+            serializer.save(
+                creator=self.request.user.backend_user,
+                )
+        else:
+            serializer.save()
 
 
 class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -125,10 +162,114 @@ class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
             queryset = CollaborationGroup.objects.filter(
                 Q(django_group__user__id=self.request.user.id)
                 | Q(creator=self.request.user.backend_user.id)
-                | Q(admins__id=self.request.user.backend_user.id)
                 | Q(public=True)
-            )
+            ).distinct()
         return queryset
+
+
+@api_view(['POST'])
+def collaborationgroup_add_members(request, pk):
+    """
+    Add a list of users to the group.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    :param users list of user ids to add to the group
+    """
+    required_params = ["users"]
+    params = validate_request_params(required_params, request)
+
+    obj = CollaborationGroup.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "CollaborationGroup not found!", "data": request.data})
+    group = obj.first()
+
+    # validate all the user_ids first before adding them
+    user_list = []
+    for user_id in params.get("users"):
+        obj = User.objects.filter(id=user_id)
+        if not obj:
+            return Response({"error": "User not found!", "data": user_id})
+        user = obj.first()
+        if not user.backend_user:
+            return Response({"error": "User has no backend user!", "data": user_id})
+        user_list.append(user.backend_user)
+    for user in user_list:
+        group.add_member(user)
+
+    serializer = CollaborationGroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+def collaborationgroup_add_admins(request, pk):
+    """
+    Add a list of users to the group.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    :param users list of user ids to add to the group
+    """
+    required_params = ["users"]
+    params = validate_request_params(required_params, request)
+
+    obj = CollaborationGroup.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "CollaborationGroup not found!", "data": request.data})
+    group = obj.first()
+
+    # validate all the user_ids first before adding them
+    user_list = []
+    for user_id in params.get("users"):
+        obj = User.objects.filter(id=user_id)
+        if not obj:
+            return Response({"error": "User not found!", "data": user_id})
+        user = obj.first()
+        print(user)
+        if not user.backend_user:
+            return Response({"error": "User has no backend user!", "data": user_id})
+        user_list.append(user.backend_user)
+    for user in user_list:
+        result = group.add_admin(user)
+        if not result:
+            return Response({"error": "{} is no member of {}".format(user.username, group.name), "data": user_id})
+
+    serializer = CollaborationGroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+def collaborationgroup_remove_members(request, pk):
+    """
+    Remove a list of users from the group.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    :param users list of user ids to remove from the group
+    """
+    required_params = ["users"]
+    params = validate_request_params(required_params, request)
+
+    obj = CollaborationGroup.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "CollaborationGroup not found!", "data": request.data})
+    group = obj.first()
+
+    # validate all the user_ids first before adding them
+    user_list = []
+    for user_id in params.get("users"):
+        obj = User.objects.filter(id=user_id)
+        if not obj:
+            return Response({"error": "User not found!", "data": user_id})
+        user = obj.first()
+        if not user.backend_user:
+            return Response({"error": "User has no backend user!", "data": user_id})
+        user_list.append(user.backend_user)
+    for user in user_list:
+        group.remove_member(user)
+
+    serializer = CollaborationGroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class ContainerList(generics.ListCreateAPIView):
@@ -143,6 +284,28 @@ class ContainerList(generics.ListCreateAPIView):
         else:
             queryset = Container.objects.filter(owner=self.request.user.backend_user.id)
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        # target server gets selected by selection algorithm
+        server = get_server_selection_algorithm().choose_server(
+            Server.objects.all().iterator()
+        )
+        if hasattr(self.request.user, 'backend_user'):
+            serializer.save(
+                server=server,
+                owner=self.request.user.backend_user
+            )
+        else:
+            serializer.save(
+                server=server,
+            )
 
 
 class ContainerDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -198,6 +361,36 @@ def container_clone(request, pk):
         clone = origin.clone(**params)
         clone.save()
         serializer = ContainerSerializer(clone)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Container not found!", "data": data})
+
+
+@api_view(['POST'])
+def container_commit(request, pk):
+    """
+    Create a new image based on this container.
+
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the container that needs to be cloned
+    :param name:
+    :param description:
+    :param public:
+    """
+
+    required_params = ["name", "description", "public"]
+    params = {}
+    for param in required_params:
+        if param not in request.data:
+            return Response({"error": "Parameters missing.", "required_parameters": required_params })
+        params[param] = request.data.get(param)
+
+    container = get_container(pk)
+    if container:
+        image = container.commit(**params)
+        print(image)
+        serializer = ContainerImageSerializer(image)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response({"error": "Container not found!", "data": data})
@@ -350,7 +543,7 @@ class ContainerImageDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a container image.
     """
     serializer_class = ContainerImageSerializer
-    permission_classes = [IsSuperUserOrIsObjectOwner]
+    permission_classes = [IsSuperUserOrIsObjectOwnerOrReadOnlyIfPublic]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -429,7 +622,13 @@ class ShareList(generics.ListCreateAPIView):
                 )
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user.backend_user)
+        print("perform create")
+        if hasattr(self.request.user, 'backend_user'):
+            serializer.save(
+                owner=self.request.user.backend_user,
+                )
+        else:
+            serializer.save()
 
 
 class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -448,6 +647,40 @@ class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
                 Q(owner=self.request.user.backend_user)
                 | Q(backend_group__django_group__user=self.request.user)
                 )
+
+
+@api_view(['POST'])
+def share_add_users(request, pk):
+    """
+    Add a list of users to the share.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    :param users list of user ids to add to the group
+    """
+    required_params = ["users"]
+    params = validate_request_params(required_params, request)
+
+    obj = CollaborationGroup.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "CollaborationGroup not found!", "data": request.data})
+    group = obj.first()
+
+    # validate all the user_ids first before adding them
+    user_list = []
+    for user_id in params.get("users"):
+        obj = User.objects.filter(id=user_id)
+        if not obj:
+            return Response({"error": "User not found!", "data": user_id})
+        user = obj.first()
+        if not user.backend_user:
+            return Response({"error": "User has no backend user!", "data": user_id})
+        user_list.append(user.backend_user)
+    for user in user_list:
+        group.add_member(user)
+
+    serializer = CollaborationGroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class TagList(generics.ListCreateAPIView):
@@ -539,3 +772,11 @@ class NotificationLogDetail (generics.RetrieveUpdateDestroyAPIView):
             return NotificationLog.objects.all()
         else:
             return NotificationLog.objects.filter(user=self.request.user.backend_user)
+
+
+@api_view(('GET',))
+def notification_types(request, format=None):
+    """
+    Notification types.
+    """
+    return Response(NOTIFICATION_TYPES)

@@ -226,6 +226,9 @@ class BackendUser(models.Model):
         help_text='The primary backend group this user belongs to.'
     )
 
+    def get_username(self):
+        return self.django_user.username
+
     def __str__(self):
         """
         :inherit.
@@ -268,11 +271,25 @@ class CollaborationGroup(models.Model):
         help_text='Indicate if the group should be publicly visible and free to join for everyone.'
     )
 
+    def add_admin(self, user):
+        """
+        Add the user as a member to this group.
+
+        :param user: The backend user to add.
+        """
+        print("add_admin")
+        if not self.user_is_member(user):
+            print("false")
+            return False
+        self.admins.add(user)
+        print("true")
+        return True
+
     def add_member(self, user):
         """
         Add the user as a member to this group.
 
-        :param user: The user to add.
+        :param user: The backend user to add.
         """
         if self.user_is_member(user):
             return False
@@ -300,11 +317,23 @@ class CollaborationGroup(models.Model):
 
     def user_is_member(self, user):
         """
-        Check if the user is a member of this group.
+        Check if the backend user is a member of this group.
 
         :param user: The user to check for membership.
         """
         return user in self.get_members()
+
+    def get_name(self):
+        """
+        Get the name of the collaboration group.
+        """
+        return self.django_group.name
+
+    def get_member_count(self):
+        """
+        Get the number of users in the group
+        """
+        return int(self.django_group.user_set.all().count())
 
     def __str__(self):
         """
@@ -375,9 +404,34 @@ class Container(models.Model):
         clone.save()
 
         from ipynbsrv.core.signals.signals import container_cloned
-        container_cloned.send(sender=self, container=self, clone=clone)
+        container_cloned.send(sender=Container, container=self, clone=clone)
 
         return clone
+
+    def commit(self, name, description=None, public=False):
+        """
+        Create a new container image based on the container.
+
+        :param name: The name of the newly created container image.
+        :param description: The optional description of the image.
+        :param public: If `True`, the image will be public.
+        """
+        image = ContainerImage(
+            name=name,
+            description=description,
+            command=self.image.command,
+            protected_port=self.image.protected_port,
+            public_ports=self.image.public_ports,
+            owner=self.owner.django_user,
+            is_public=public,
+            is_internal=self.image.is_internal
+        )
+        image.save()
+
+        from ipynbsrv.core.signals.signals import container_committed
+        container_committed.send(sender=Container, container=self, image=image)
+
+        return image
 
     def create_snapshot(self, name, description=None):
         """
@@ -638,47 +692,48 @@ class ContainerSnapshot(models.Model):
         unique_together = ('name', 'container')
 
 
+"""
+String to identify notifications for container related events.
+"""
+CONTAINER = 'container'
+
+"""
+String to identify notifications for container image related events.
+"""
+CONTAINER_IMAGE = 'container_image'
+
+"""
+String to identify notifications for group related events.
+"""
+GROUP = 'group'
+
+"""
+String to identify notifications for miscellaneous events.
+"""
+MISCELLANEOUS = 'miscellaneous'
+
+"""
+String to identify notifications for share related events.
+"""
+SHARE = 'share'
+
+"""
+List of choosable event event types.
+"""
+NOTIFICATION_TYPES = [
+    (CONTAINER, 'Container'),
+    (CONTAINER_IMAGE, 'Container image'),
+    (GROUP, 'Group'),
+    (MISCELLANEOUS, 'Miscellaneous'),
+    (SHARE, 'Share'),
+]
+
+
 class Notification(models.Model):
 
     """
     Class that acts as a message between users and groups.
     """
-
-    """
-    String to identify notifications for container related events.
-    """
-    CONTAINER = 'container'
-
-    """
-    String to identify notifications for container image related events.
-    """
-    CONTAINER_IMAGE = 'container_image'
-
-    """
-    String to identify notifications for group related events.
-    """
-    GROUP = 'group'
-
-    """
-    String to identify notifications for miscellaneous events.
-    """
-    MISCELLANEOUS = 'miscellaneous'
-
-    """
-    String to identify notifications for share related events.
-    """
-    SHARE = 'share'
-
-    """
-    List of choosable event event types.
-    """
-    EVENT_TYPES = [
-        (CONTAINER, 'Container'),
-        (CONTAINER_IMAGE, 'Container image'),
-        (GROUP, 'Group'),
-        (MISCELLANEOUS, 'Miscellaneous'),
-        (SHARE, 'Share'),
-    ]
 
     id = models.AutoField(primary_key=True)
     sender = models.ForeignKey(
@@ -691,8 +746,8 @@ class Notification(models.Model):
         help_text='The message body.'
     )
     date = models.DateTimeField(default=now())
-    event_type = models.CharField(
-        choices=EVENT_TYPES,
+    notification_type = models.CharField(
+        choices=NOTIFICATION_TYPES,
         default=MISCELLANEOUS,
         max_length=15
     )
@@ -731,6 +786,12 @@ class Notification(models.Model):
         related_name='related_notifications',
         help_text='The share this notification is related to.'
     )
+
+    def get_notification_types(self):
+        """
+        Todo: document
+        """
+        return NOTIFICATION_TYPES
 
     def get_related_object(self):
         """
@@ -961,20 +1022,6 @@ class Share(models.Model):
         self.backend_group.django_group.user_set.add(user.django_user)
         return True
 
-    # @classmethod
-    # def all_user_is_member(cls, user):
-    #     """
-    #     Get all shares the user is a member of.
-    #
-    #     :param cls: The class on which the method was called.
-    #     :param user: The user object to get the shares for.
-    #     """
-    #     shares = []
-    #     for share in cls.objects.all():
-    #         if share.is_member(user):
-    #             shares.append(share)
-    #     return shares
-
     def get_members(self):
         """
         Get a list of members for this share.
@@ -1001,13 +1048,6 @@ class Share(models.Model):
         :param user: The user to check for membership.
         """
         return user in self.get_members()
-
-    # @classmethod
-    # def for_user(cls, user):
-    #     """
-    #     TODO: document.
-    #     """
-    #     return cls.objects.filter(owner=user.id)
 
     def __str__(self):
         """
@@ -1047,4 +1087,4 @@ class Tag(models.Model):
 # make sure our signal receivers are loaded
 from ipynbsrv.core.signals import backend_users, backend_groups, \
     collaboration_groups, container_images, container_snapshots, containers, \
-    groups, shares, users
+    groups, shares, users, notifications

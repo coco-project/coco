@@ -14,26 +14,14 @@
                         <label for="name">Name</label>
                         <input name="name" type="text" class="form-control" placeholder="e.g My IPython meetup group" required>
                     </div>
-
-                    <div class="form-group">
-                        <label for="recipient">Members</label>
-                            {% for user in users %}
-
-                            <div class="checkbox">
-                              <label><input name="users" type="checkbox" value="{{ user.id }}">{{ user.username }}</label>
-                            </div>
-
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="notify">Notify users?</label>
-                        <div class="checkbox">
-                              <label><input name="notify" type="checkbox" value="notify">Notify users about their group membership.</label>
-                            </div>
+                <div class="form-group">
+                    <label for="public">Public?</label>
+                    <div class="checkbox">
+                          <label><input name="public" type="checkbox" value="public">Make this group public.</label>
+                        </div>
                     </div>
                 </div>
+                
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Create</button>

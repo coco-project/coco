@@ -12,7 +12,13 @@ class IsAuthenticatedMixin(object):
 class IsGroupAdminMixin(object):
 
     def is_group_admin(self, user, group):
-        return user in group.admins
+        return user in group.admins.all()
+
+
+class IsPublicMixin(object):
+
+    def is_public(self, obj):
+        return obj.is_public
 
 
 class IsSafeMethodMixin(object):
@@ -38,7 +44,7 @@ class IsObjectOwnerMixin(object):
 
 class IsObjectCreatorMixin(object):
 
-    def is_owner(self, user, obj):
+    def is_creator(self, user, obj):
         if type(obj.creator) == User:
             return obj.creator == user
         elif type(obj.creator) == BackendUser:
@@ -106,11 +112,31 @@ class IsSuperUserOrIsObjectOwner(
         return False
 
 
+class IsSuperUserOrIsObjectOwnerOrReadOnlyIfPublic(
+        IsSuperUserOrIsObjectOwner,
+        IsPublicMixin,
+        IsSafeMethodMixin):
+    """
+    Todo: write doc.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if self.is_public and self.is_safe_method(request):
+            return True
+        if self.is_superuser(request.user):
+            return True
+        if self.is_backend_user(request.user):
+            return self.is_owner(request.user, obj)
+        return False
+
+
 class IsSuperUserOrIsGroupAdminOrReadOnly(
         permissions.BasePermission,
         IsSuperUserMixin,
         IsGroupAdminMixin,
-        IsSafeMethodMixin):
+        IsSafeMethodMixin,
+        IsBackendUserMixin,
+        IsObjectCreatorMixin):
     """
     Todo: write doc.
     """
@@ -121,6 +147,6 @@ class IsSuperUserOrIsGroupAdminOrReadOnly(
         if self.is_superuser(request.user):
             return True
         if self.is_backend_user(request.user):
-            return self.is_owner(request.user, obj) \
-                or self.is_group_admin(request.user, obj)
+            return self.is_creator(request.user, obj) \
+                or self.is_group_admin(request.user.backend_user, obj)
         return False

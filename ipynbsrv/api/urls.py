@@ -7,6 +7,7 @@ urlpatterns = patterns('',
 
     # /api/user(s)/...
     url(r'^users/$', views.UserList.as_view(), name="users"),
+    url(r'^users/(?P<pk>[0-9]+)$', views.UserDetails.as_view(), name="user_details"),
 
     # /api/configurationvariable(s)/...
     url(r'^configurationvariables/$', views.ConfigurationVariableList.as_view(), name="configurationvariables"),
@@ -15,7 +16,9 @@ urlpatterns = patterns('',
     # /api/collaborationgroup(s)/...
     url(r'^collaborationgroups/$', views.CollaborationGroupList.as_view(), name="collaborationgroups"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)$', views.CollaborationGroupDetail.as_view(), name="collaborationgroup_detail"),
-    #url(r'^groups/(?P<pk>[0-9]+)/django_group$', views.CollaborationGroupDjangoGroup.as_view(), name="group_detail_django_group"),
+    url(r'^collaborationgroups/(?P<pk>[0-9]+)/add_members$', views.collaborationgroup_add_members, name="collaborationgroup_add_members"),
+    url(r'^collaborationgroups/(?P<pk>[0-9]+)/add_admins$', views.collaborationgroup_add_admins, name="collaborationgroup_add_admins"),
+    url(r'^collaborationgroups/(?P<pk>[0-9]+)/remove_members$', views.collaborationgroup_remove_members, name="collaborationgroup_remove_members"),
 
     # /api/backend(s)/...
     url(r'^backends/$', views.BackendList.as_view(), name="backends"),
@@ -27,6 +30,7 @@ urlpatterns = patterns('',
 
     url(r'^containers/(?P<pk>[0-9]+)/clone$', views.container_clone, name="container_clone"),
     url(r'^containers/(?P<pk>[0-9]+)/clones$', views.container_clones, name="container_clones"),
+    url(r'^containers/(?P<pk>[0-9]+)/commit$', views.container_commit, name="container_commit"),
     url(r'^containers/(?P<pk>[0-9]+)/create_snapshot$', views.container_create_snapshot, name="container_create_snapshot"),
     url(r'^containers/(?P<pk>[0-9]+)/restart$', views.container_restart, name="container_restart"),
     url(r'^containers/(?P<pk>[0-9]+)/resume$', views.container_resume, name="container_resume"),
@@ -58,6 +62,7 @@ urlpatterns = patterns('',
     url(r'^notifications/$', views.NotificationList.as_view(), name="notifications"),
     url(r'^notifications/(?P<pk>[0-9]+)$', views.NotificationDetail.as_view(), name="notification_detail"),
     url(r'^notifications/(?P<pk>[0-9]+)/send$', views.notification_send, name="notification_send"),
+    url(r'^notificationtypes/$', views.notification_types, name="notification_types"),
 
     # /api/notificationlog(s)/...
     url(r'^notificationlogs/$', views.NotificationLogList.as_view(), name="notificationlogs"),

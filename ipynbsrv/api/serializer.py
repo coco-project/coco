@@ -8,21 +8,25 @@ from django_admin_conf_vars.models import ConfigurationVariable
 
 class CurrentBackendUserDefault(object):
     """
-    A default class that can be used to represent the current user. 
+    A default class that can be used to represent the current backend user. 
     In order to use this, the 'request' must have been provided 
-    as part of the context dictionary when instantiating the serializer.
+    as part of the context dictionary when instantiating the serializer
+    and the user needs to have a backend user.
 
     Based on `rest_framework.serializers.CurrentUserDefault`.
     See the django-rest-framework documentation for more info:
     http://www.django-rest-framework.org/api-guide/validators/#currentuserdefault
     """
     def set_context(self, serializer_field):
+        print("set context")
         self.user = serializer_field.context['request'].user
 
     def __call__(self):
+        print("__call__")
         return self.user.backend_user
 
     def __repr__(self):
+        print("__repr__")
         return unicode_to_repr('%s()' % self.__class__.__name__)
 
 
@@ -35,14 +39,26 @@ class ConfigurationVariableSerializer(serializers.ModelSerializer):
         model = ConfigurationVariable
 
 
+class BackendUserSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
+    username = serializers.CharField(source='get_username')
+
+    class Meta:
+        model = BackendUser
+        fields = ('id', 'username')
+
+
 class UserSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
+    backend_user = BackendUserSerializer()
 
     class Meta:
         model = User
-        fields = ('id', 'username', )
+        fields = ('id', 'username', 'backend_user')
         read_only_fields = ('id', 'username', )
 
 
@@ -81,11 +97,14 @@ class CollaborationGroupSerializer(serializers.ModelSerializer):
     Todo: write doc.
     """
     django_group = GroupSerializer(many=False)
+    name = serializers.CharField(source='get_name', read_only=True)
+    member_count = serializers.IntegerField(source='get_member_count', read_only=True)
+    members = BackendUserSerializer(source='get_members', read_only=True, many=True)
 
     class Meta:
         model = CollaborationGroup
-        fields = ('id', 'django_group', 'creator', 'admins', 'public')
-        read_only_fields = ('creator', )
+        fields = ('id', 'name', 'django_group', 'creator', 'members', 'member_count', 'admins', 'public')
+        read_only_fields = ('admins', )
 
     def set_admins(self, admins, collab_group, django_group):
         """
@@ -106,15 +125,11 @@ class CollaborationGroupSerializer(serializers.ModelSerializer):
         group = Group.objects.create(**group_data)
         # add creator to group
         group.user_set.add(validated_data.get('creator').django_user)
-        # get group admins
-        admins = validated_data.pop('admins')
         # create collaboration group
         collab_group = CollaborationGroup.objects.create(
             django_group=group,
             **validated_data
             )
-        # set admins and add them as group members
-        self.set_admins(admins, collab_group, group)
         return collab_group
 
     def update(self, instance, validated_data):
@@ -125,9 +140,6 @@ class CollaborationGroupSerializer(serializers.ModelSerializer):
         django_group.save()
 
         # always keep creator and admins in the user set
-        admins = validated_data.pop('admins')
-        self.set_admins(admins, instance, django_group)
-
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
@@ -135,9 +147,21 @@ class CollaborationGroupSerializer(serializers.ModelSerializer):
         return instance
 
 
+class ServerSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
+    is_container_host = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Server
+
+
 class ContainerSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
+    Although server can be set on creation, it will be ignored.
+    Server is set through the server selection algorithm set in the conf module.
     """
     backend_name = serializers.CharField(read_only=True, source='get_backend_name')
     friendly_name = serializers.CharField(read_only=True, source='get_friendly_name')
@@ -147,10 +171,19 @@ class ContainerSerializer(serializers.ModelSerializer):
     is_suspended = serializers.BooleanField(read_only=True)
     has_clones = serializers.BooleanField(read_only=True)
 
-    # TODO: set read_only = False, if user has no backend_user
-    owner = UserSerializer(
-        read_only=True,
+    owner = serializers.HiddenField(
         default=CurrentBackendUserDefault()
+    )
+
+    # set dummy default, will be overriden on creation anyway
+    server = ServerSerializer(
+        read_only=True,
+        default=randint(0, 1000)
+    )
+    # set dummy default, will be overriden on creation anyway
+    backend_pk = serializers.CharField(
+        default=randint(0, 1000),
+        read_only=True
     )
 
     class Meta:
@@ -177,25 +210,15 @@ class ContainerSnapshotSerializer(serializers.ModelSerializer):
         model = ContainerSnapshot
 
 
-class ServerSerializer(serializers.ModelSerializer):
-    """
-    Todo: write doc.
-    """
-    is_container_host = serializers.BooleanField(read_only=True)
-
-    class Meta:
-        model = Server
-
-
 class ShareSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
+    members = BackendUserSerializer(source='get_members', many=True)
 
     class Meta:
         model = Share
-        fields = ('id', 'name', 'description', 'owner', 'tags', 'access_groups')
-        read_only_fields = ('owner', )
+        fields = ('id', 'name', 'description', 'owner', 'members', 'tags', 'access_groups')
 
     def set_tags(self, tags, instance):
         for tag in tags:
@@ -211,8 +234,7 @@ class ShareSerializer(serializers.ModelSerializer):
         """
         # django_group need to be created first because the foreign key is in
         # the CollaborationGroup model
-        print("create share")
-        name = validated_data.get('name')
+        name = settings.SHARE_GROUP_PREFIX + validated_data.get('name')
         group = Group.objects.create(name=name)
         group.save()
         backend_group = BackendGroup(
@@ -249,10 +271,11 @@ class NotificationSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
-    has_related_object = serializers.BooleanField(read_only=True)
+    notification_type = serializers.ChoiceField(choices=NOTIFICATION_TYPES, default='miscellaneous')
 
     class Meta:
         model = Notification
+        read_only_fields = ('date', )
 
 
 class NotificationLogSerializer(serializers.ModelSerializer):
@@ -264,4 +287,3 @@ class NotificationLogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NotificationLog
-

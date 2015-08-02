@@ -2,13 +2,18 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.shortcuts import redirect, render
-from ipynbsrv.conf.helpers import get_server_selection_algorithm
 from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import Container, ContainerImage, Server
+from ipynbsrv.web.api_client_proxy import get_httpclient_instance
+from slumber.exceptions import HttpNotFoundError
 
 
 @user_passes_test(login_allowed)
 def clone(request):
+    """
+    Todo: write doc.
+    Todo: get name & description param from GUI.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
@@ -17,22 +22,22 @@ def clone(request):
         return redirect('containers')
 
     ct_id = int(request.POST.get('id'))
+    client = get_httpclient_instance(request)
+    container = client.containers(ct_id).get()
+    new_name = "{}_clone".format(container.name)
 
-    container = Container.objects.filter(pk=ct_id)
-    if container.exists():
-        container = container.first()
-        if container.owner == request.user:
-            container.clone()
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
-    else:
-        messages.error(request, "Container does not exist.")
+    # create clone
+    client.containers(ct_id).clone.post({"name": new_name})
 
     return redirect('containers')
 
 
 @user_passes_test(login_allowed)
 def commit(request):
+    """
+    Todo: write doc.
+    """
+
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('images')
@@ -45,17 +50,23 @@ def commit(request):
     description = request.POST.get('description')
     public = request.POST.get('public', "")
 
-    container = Container.objects.filter(pk=ct_id)
-    if container.exists():
-        container = container.first()
-        if container.owner == request.user:
-            if ContainerImage.objects.filter(name=img_name).filter(owner=request.user).exists():
-                messages.error(request, "An image with that name already exists.")
-            else:
-                container.commit(img_name=img_name, description=description, public=(public == "on"))
-                messages.success(request, "Sucessfully created the image.")
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
+    client = get_httpclient_instance(request)
+    try:
+        container = client.containers(ct_id).get()
+    except HttpNotFoundError:
+        messages.error(request, "Selected base container does not exist.")
+    except Exception:
+        messages.error(request, "Some other error.")
+
+    print("container found")
+
+    if container:
+        client.containers(ct_id).commit.post({
+            "name": img_name,
+            "description": description,
+            "public": (public == "on"),
+            })
+        messages.success(request, "Sucessfully created the image.")
     else:
         messages.error(request, "Selected base container does not exist.")
 
@@ -64,6 +75,9 @@ def commit(request):
 
 @user_passes_test(login_allowed)
 def create(request):
+    """
+    Todo: write doc.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('images')
@@ -75,39 +89,38 @@ def create(request):
     description = request.POST.get('description')
     image_id = int(request.POST.get('image_id'))
 
-    if Container.objects.filter(name=name).filter(owner=request.user.backend_user).exists():
-        messages.error(request, "A container with that name already exists.")
-    else:
-        image = ContainerImage.objects.filter(pk=image_id)
-        if image.exists():
-            image = image.first()
-            if image.owner == request.user or image.is_public:
-                server = get_server_selection_algorithm().choose_server(
-                    Server.objects.all().iterator()
-                )
-                container = Container(
-                    name=name,
-                    description=description,
-                    server=server,
-                    owner=request.user.backend_user,
-                    image=image
-                )
-                try:
-                    container.save()
-                    messages.success(request, "Container created successfully.")
-                # container.start()
-                except Exception:
-                    messages.error(request, "Whuups, something went wrong :(.")
-            else:
-                messages.error(request, "You don't have enough permissions for the requested operation.")
-        else:
-            messages.error(request, "Container bootstrap image does not exist.")
+    client = get_httpclient_instance(request)
+
+    try:
+        image = client.images(image_id).get()
+    except HttpNotFoundError:
+        messages.error(request, "Container bootstrap image does not exist or you don't have enough permissions for the requested operation.")
+
+    if image:
+        try:
+            # does not make any sense, but seems like it won't work without this line
+            # Todo: find the actual problem!
+            client.containers.get()
+
+            # server and owner get set by the core automatically
+            client.containers.post({
+                "name": name,
+                "description": description,
+                "image": image_id
+                })
+            messages.success(request, "Image created successfully.")
+        except Exception as ex:
+            messages.error(request, ex)
+            messages.error(request, "Whuups, something went wrong :(.")
 
     return redirect('containers')
 
 
 @user_passes_test(login_allowed)
 def delete(request):
+    """
+    Todo: write doc.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
@@ -117,17 +130,19 @@ def delete(request):
 
     ct_id = int(request.POST.get('id'))
 
-    container = Container.objects.filter(pk=ct_id)
-    if container.exists():
-        container = container.first()
-        if container.owner == request.user.backend_user:
-            try:
-                container.delete()
-                messages.success(request, "Container deleted successfully.")
-            except Exception:
-                messages.error(request, "Whuups, something went wrong :(.")
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
+    client = get_httpclient_instance(request)
+
+    try:
+        container = client.containers(ct_id)
+    except HttpNotFoundError:
+        messages.error(request, "Container does not exist, or you don't have permissions to delete it.")
+
+    if container:
+        try:
+            client.containers(ct_id).delete()
+            messages.success(request, "Container deleted successfully.")
+        except Exception:
+            messages.error(request, "Whuups, something went wrong :(.")
     else:
         messages.error(request, "Container does not exist.")
 
@@ -136,16 +151,25 @@ def delete(request):
 
 @user_passes_test(login_allowed)
 def index(request):
-    containers = Container.objects.filter(owner=request.user.backend_user)
+    """
+    Get a list of all containers and render it.
+    """
+    client = get_httpclient_instance(request)
+    # containers = Container.objects.filter(owner=request.user.backend_user)
+    containers = client.containers.get()
+    images = client.images.get()
     return render(request, 'web/containers/index.html', {
         'title': "Containers",
         'containers': containers,
-        'images': ContainerImage.objects.filter((Q(owner=request.user) | Q(is_public=True)))
+        'images': images
     })
 
 
 @user_passes_test(login_allowed)
 def restart(request):
+    """
+    Todo: write doc.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
@@ -155,17 +179,20 @@ def restart(request):
 
     ct_id = int(request.POST.get('id'))
 
-    container = Container.objects.filter(pk=ct_id)
-    if container.exists():
-        container = container.first()
-        if container.owner == request.user.backend_user:
-            try:
-                container.restart()
-                messages.success(request, "Container restarted successfully.")
-            except Exception:
-                messages.error(request, "Whuups, something went wrong :(.")
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
+    client = get_httpclient_instance(request)
+
+    try:
+        container = client.containers(ct_id).get()
+    except HttpNotFoundError:
+        messages.error(request, "Container does not exist.")
+
+    if container:
+        try:
+            client.containers(ct_id).restart.post()
+            messages.success(request, "Container is restarting.")
+        except Exception as e:
+            print(e)
+            messages.error(request, "Whuups, something went wrong :(.")
     else:
         messages.error(request, "Container does not exist.")
 
@@ -174,6 +201,9 @@ def restart(request):
 
 @user_passes_test(login_allowed)
 def start(request):
+    """
+    Todo: write doc.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
@@ -183,17 +213,19 @@ def start(request):
 
     ct_id = int(request.POST.get('id'))
 
-    container = Container.objects.filter(pk=ct_id)
-    if container.exists():
-        container = container.first()
-        if container.owner == request.user.backend_user:
-            try:
-                container.start()
-                messages.success(request, "Container started successfully.")
-            except Exception:
-                messages.error(request, "Whuups, something went wrong :(.")
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
+    client = get_httpclient_instance(request)
+
+    try:
+        container = client.containers(ct_id).get()
+    except HttpNotFoundError:
+        messages.error(request, "Container does not exist.")
+
+    if container:
+        try:
+            client.containers(ct_id).start.post()
+            messages.success(request, "Container is starting.")
+        except Exception:
+            messages.error(request, "Whuups, something went wrong :(.")
     else:
         messages.error(request, "Container does not exist.")
 
@@ -202,6 +234,9 @@ def start(request):
 
 @user_passes_test(login_allowed)
 def stop(request):
+    """
+    Todo: write doc.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
@@ -211,17 +246,19 @@ def stop(request):
 
     ct_id = int(request.POST.get('id'))
 
-    container = Container.objects.filter(pk=ct_id)
-    if container.exists():
-        container = container.first()
-        if container.owner == request.user.backend_user:
-            try:
-                container.stop()
-                messages.success(request, "Container stopped successfully.")
-            except Exception:
-                messages.error(request, "Whuups, something went wrong :(.")
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
+    client = get_httpclient_instance(request)
+
+    try:
+        container = client.containers(ct_id).get()
+    except HttpNotFoundError:
+        messages.error(request, "Container does not exist.")
+
+    if container:
+        try:
+            client.containers(ct_id).stop.post()
+            messages.success(request, "Container stopped successfully.")
+        except Exception:
+            messages.error(request, "Whuups, something went wrong :(.")
     else:
         messages.error(request, "Container does not exist.")
 

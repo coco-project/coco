@@ -61,7 +61,7 @@
                 <tr>
                     <td>{{ member.username }}{% if member == request.user %} <span class="label label-info">That's you!</span>{% endif %}</td>
                     <td style="text-align: right">
-                        {% if member != share.owner %}
+                        {% if member.backend_user.id != share.owner %}
                             <form action="{% url 'share_remove_user' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
                                 <input type="hidden" name="share_id" value="{{ share.id }}">
