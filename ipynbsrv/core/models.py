@@ -227,7 +227,10 @@ class BackendUser(models.Model):
     )
 
     def get_username(self):
-        return self.django_user.username
+        """
+        Get the user's internal username.
+        """
+        return self.django_user.get_username()
 
     def __str__(self):
         """
@@ -273,16 +276,13 @@ class CollaborationGroup(models.Model):
 
     def add_admin(self, user):
         """
-        Add the user as a member to this group.
+        Add the user as an administrator to this group.
 
         :param user: The backend user to add.
         """
-        print("add_admin")
-        if not self.user_is_member(user):
-            print("false")
+        if self.user_is_member(user):
             return False
         self.admins.add(user)
-        print("true")
         return True
 
     def add_member(self, user):
@@ -301,6 +301,18 @@ class CollaborationGroup(models.Model):
         Get a list of members for this group.
         """
         return [user.backend_user for user in self.django_group.user_set.all()]
+
+    def get_name(self):
+        """
+        Get the name of the collaboration group.
+        """
+        return self.django_group.name
+
+    def get_member_count(self):
+        """
+        Get the number of users in the group.
+        """
+        return self.django_group.user_set.all().count()
 
     def remove_member(self, user):
         """
@@ -322,18 +334,6 @@ class CollaborationGroup(models.Model):
         :param user: The user to check for membership.
         """
         return user in self.get_members()
-
-    def get_name(self):
-        """
-        Get the name of the collaboration group.
-        """
-        return self.django_group.name
-
-    def get_member_count(self):
-        """
-        Get the number of users in the group
-        """
-        return int(self.django_group.user_set.all().count())
 
     def __str__(self):
         """
@@ -692,48 +692,47 @@ class ContainerSnapshot(models.Model):
         unique_together = ('name', 'container')
 
 
-"""
-String to identify notifications for container related events.
-"""
-CONTAINER = 'container'
-
-"""
-String to identify notifications for container image related events.
-"""
-CONTAINER_IMAGE = 'container_image'
-
-"""
-String to identify notifications for group related events.
-"""
-GROUP = 'group'
-
-"""
-String to identify notifications for miscellaneous events.
-"""
-MISCELLANEOUS = 'miscellaneous'
-
-"""
-String to identify notifications for share related events.
-"""
-SHARE = 'share'
-
-"""
-List of choosable event event types.
-"""
-NOTIFICATION_TYPES = [
-    (CONTAINER, 'Container'),
-    (CONTAINER_IMAGE, 'Container image'),
-    (GROUP, 'Group'),
-    (MISCELLANEOUS, 'Miscellaneous'),
-    (SHARE, 'Share'),
-]
-
-
 class Notification(models.Model):
 
     """
     Class that acts as a message between users and groups.
     """
+
+    """
+    String to identify notifications for container related events.
+    """
+    CONTAINER = 'container'
+
+    """
+    String to identify notifications for container image related events.
+    """
+    CONTAINER_IMAGE = 'container_image'
+
+    """
+    String to identify notifications for group related events.
+    """
+    GROUP = 'group'
+
+    """
+    String to identify notifications for miscellaneous events.
+    """
+    MISCELLANEOUS = 'miscellaneous'
+
+    """
+    String to identify notifications for share related events.
+    """
+    SHARE = 'share'
+
+    """
+    List of choosable event event types.
+    """
+    NOTIFICATION_TYPES = [
+        (CONTAINER, 'Container'),
+        (CONTAINER_IMAGE, 'Container image'),
+        (GROUP, 'Group'),
+        (MISCELLANEOUS, 'Miscellaneous'),
+        (SHARE, 'Share'),
+    ]
 
     id = models.AutoField(primary_key=True)
     sender = models.ForeignKey(
@@ -789,9 +788,9 @@ class Notification(models.Model):
 
     def get_notification_types(self):
         """
-        Todo: document
+        Todo: document.
         """
-        return NOTIFICATION_TYPES
+        return self.NOTIFICATION_TYPES
 
     def get_related_object(self):
         """
@@ -1087,4 +1086,4 @@ class Tag(models.Model):
 # make sure our signal receivers are loaded
 from ipynbsrv.core.signals import backend_users, backend_groups, \
     collaboration_groups, container_images, container_snapshots, containers, \
-    groups, shares, users, notifications
+    groups, notifications, shares, users
