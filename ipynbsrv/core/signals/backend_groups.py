@@ -1,8 +1,8 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_delete, post_save
-from ipynbsrv.conf.helpers import get_internal_ldap_connected
 from ipynbsrv.contract.backends import GroupBackend
 from ipynbsrv.contract.errors import GroupBackendError, GroupNotFoundError
+from ipynbsrv.core.helpers import get_internal_ldap_connected
 from ipynbsrv.core.models import BackendGroup
 from ipynbsrv.core.signals.signals import backend_group_created, \
     backend_group_deleted, backend_group_member_added, \

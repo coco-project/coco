@@ -1,10 +1,10 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_delete, post_save
-from ipynbsrv.conf.helpers import get_internal_ldap_connected, get_storage_backend
 from ipynbsrv.contract.backends import UserBackend
 from ipynbsrv.contract.errors import DirectoryNotFoundError, StorageBackendError, \
     UserBackendError, UserNotFoundError
 from ipynbsrv.core import settings
+from ipynbsrv.core.helpers import get_internal_ldap_connected, get_storage_backend
 from ipynbsrv.core.models import BackendUser
 from ipynbsrv.core.signals.signals import backend_user_created, \
     backend_user_deleted, backend_user_modified

@@ -1,8 +1,8 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group, User
-from ipynbsrv.conf.helpers import get_internal_ldap_connected, get_user_backend_connected
 from ipynbsrv.contract.errors import AuthenticationError, ConnectionError, \
     UserNotFoundError
+from ipynbsrv.core.helpers import get_internal_ldap_connected, get_user_backend_connected
 from ipynbsrv.core.models import BackendGroup, BackendUser, \
     CollaborationGroup
 import logging

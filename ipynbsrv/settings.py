@@ -27,19 +27,19 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = (
-    'ipynbsrv.conf',
+    # Core
     'ipynbsrv.core',
-    'ipynbsrv.web',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'ifnav_templatetag',
-    'rest_framework',
-    'widget_tweaks',
     'django_admin_conf_vars',
+    'rest_framework',
+    # Clients
+    'ipynbsrv.web',
+    'widget_tweaks',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -116,7 +116,7 @@ LOGIN_URL = '/accounts/login'
 LOGIN_REDIRECT_URL = '/accounts/flag'
 
 
-VARS_MODULE_PATH = 'ipynbsrv.conf.conf'
+VARS_MODULE_PATH = 'ipynbsrv.core.conf'
 
 
 AUTHENTICATION_BACKENDS = (

@@ -2,7 +2,7 @@ from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from django_admin_conf_vars.models import ConfigurationVariable
 from ipynbsrv.api.permissions import *
-from ipynbsrv.conf.helpers import get_server_selection_algorithm
+from ipynbsrv.core.helpers import get_server_selection_algorithm
 from ipynbsrv.core.models import *
 from ipynbsrv.api.serializer import *
 from rest_framework import generics, status
