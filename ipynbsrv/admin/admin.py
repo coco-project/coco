@@ -293,7 +293,7 @@ class ContainerImageAdmin(admin.ModelAdmin):
     Admin model for the `ContainerImage` model.
     """
 
-    list_display = ['name', 'description', 'owner', 'is_internal', 'is_public']
+    list_display = ['get_friendly_name', 'description', 'is_internal', 'is_public']
     list_filter = [
         'is_internal',
         'is_public',
@@ -312,6 +312,13 @@ class ContainerImageAdmin(admin.ModelAdmin):
             'fields': ['is_public']
         })
     ]
+
+    def get_friendly_name(self, obj):
+        """
+        Get the container image's friendly name.
+        """
+        return obj.get_friendly_name()
+    get_friendly_name.short_description = 'Friendly name'
 
     def get_readonly_fields(self, request, obj=None):
         """
@@ -502,6 +509,7 @@ class ShareAdmin(admin.ModelAdmin):
             'fields': ['access_groups']
         })
     ]
+    filter_horizontal = ['tags']
 
     def get_readonly_fields(self, request, obj=None):
         """
@@ -511,6 +519,19 @@ class ShareAdmin(admin.ModelAdmin):
             return ['name', 'owner']
         else:
             return []
+
+
+class TagAdmin(admin.ModelAdmin):
+
+    """
+    Admin model for the `Tag` model.
+    """
+
+    fieldsets = [
+        ('General Properties', {
+            'fields': ['label']
+        })
+    ]
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -549,4 +570,5 @@ admin_site.register(Group, GroupAdmin)
 admin_site.register(Notification, NotificationAdmin)
 admin_site.register(Server, ServerAdmin)
 admin_site.register(Share, ShareAdmin)
+admin_site.register(Tag, TagAdmin)
 admin_site.register(User, UserAdmin)
