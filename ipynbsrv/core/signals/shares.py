@@ -27,7 +27,6 @@ def add_user_to_share_groups(sender, group, user, **kwargs):
     """
     if group is not None and user is not None:
         for share in group.shares.all():
-            # TODO: doesn't trigger signal because we're within a group signal already
             share.add_member(user)
 
 
@@ -90,8 +89,8 @@ def remove_group_members_from_share_group(sender, share, group, **kwargs):
     Remove all members from the access group from the share group.
     """
     if share is not None and group is not None:
-        leave = False
         for user in group.get_members():
+            leave = False
             if user == share.owner:
                 leave = True
             else:
@@ -114,8 +113,8 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
     (not the share directly), so we have to make sure he also leaves all the share groups.
     """
     if group is not None and user is not None:
-        leave = False
         for share in group.shares.all():
+            leave = False
             if user == share.owner:
                 leave = True
             else:
@@ -125,7 +124,6 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
                             leave = True
                             break
             if not leave:
-                # TODO: doesn't trigger signal because we're within a group signal already
                 share.remove_member(user)
 
 

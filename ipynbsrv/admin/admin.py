@@ -321,7 +321,7 @@ class ContainerImageAdmin(admin.ModelAdmin):
         if obj:
             return ['backend_pk', 'command', 'name', 'protected_port', 'public_ports', 'owner']
         else:
-            return ['backend_pk']
+            return []
 
 
 class ContainerSnapshotAdmin(admin.ModelAdmin):
@@ -538,6 +538,10 @@ class UserAdmin(admin.ModelAdmin):
     fieldsets = [
         ('General Properties', {
             'fields': ['username', 'is_active', 'is_staff']
+        }),
+        ('Group Memberships', {
+            'classes': ['collapse'],
+            'fields': ['groups']
         })
     ]
 
