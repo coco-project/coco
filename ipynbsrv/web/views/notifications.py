@@ -15,6 +15,7 @@ def index(request):
     """
     client = get_httpclient_instance(request)
     notificationlogs = client.notificationlogs.get()
+    print(notificationlogs)
     notificationtypes = client.notificationtypes.get()
     groups = client.collaborationgroups.get()
 
@@ -32,21 +33,34 @@ def create(request):
         messages.error(request, "Invalid request method.")
         return redirect('notifications')
     # Todo: validate POST params: receiver_group, msg, type, rel objs
-    if 'recipient' not in request.POST or 'message' not in request.POST or 'event_type' not in request.POST:
+    if 'recipient' not in request.POST or 'message' not in request.POST or 'notification_type' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('notifications')
 
-    # Todo: call API to create Notification
+    client = get_httpclient_instance(request)
+
     group_id = request.POST.get('recipient')
-    group = Group.objects.get(id=group_id)
     message = request.POST.get('message', '')
-    event_type = request.POST.get('event_type', '')
-    sender = request.user
-    date = datetime.now()
+    notification_type = request.POST.get('notification_type', '')
+    sender = request.user.id
+    container = request.POST.get('container', None)
+    container_image = request.POST.get('container_image', None)
+    share = request.POST.get('share', None)
+    group = request.POST.get('group', None)
+    receiver_groups = request.POST.get('receiver_groups', None)
 
-    notification = Notification(sender=sender, message=message, event_type=event_type, date=date)
-    notification.save()
+    client.notifications.get()
+    client.notifications.post({
+        "notification_type": notification_type,
+        "message": message,
+        "sender": sender,
+        "container": container,
+        "container_image": container_image,
+        "group": group,
+        "share": share,
+        "receiver_groups": [group_id]
+    })
 
-    messages.success(request, "Notification sucessfully sent.")
+    messages.success(request, "Notification sucessfully created.")
 
     return redirect('notifications')
