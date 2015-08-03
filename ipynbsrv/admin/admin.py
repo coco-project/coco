@@ -3,7 +3,6 @@ from django.contrib import admin, messages
 from django.contrib.auth.models import Group, User
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from ipynbsrv.admin.forms import CollaborationGroupForm
 from ipynbsrv.core.models import *
 
 
