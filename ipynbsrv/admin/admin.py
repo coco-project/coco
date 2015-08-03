@@ -169,6 +169,7 @@ class ContainerAdmin(admin.ModelAdmin):
                     else:
                         ret = obj.create_snapshot(name)
                         url = reverse('admin:core_containersnapshot_change', args=(ret.id,))
+                    self.message_user(request, "Container action completed successfully.")
                     return HttpResponseRedirect(url)
                 except Exception:
                     self.message_user(request, "Operation failed.", messages.ERROR)
