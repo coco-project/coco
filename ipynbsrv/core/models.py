@@ -326,7 +326,7 @@ class CollaborationGroup(models.Model):
 
         :param user: The backend user to add.
         """
-        if self.user_is_member(user):
+        if self.user_is_admin(user):
             return False
         self.admins.add(user)
         return True
@@ -379,6 +379,14 @@ class CollaborationGroup(models.Model):
         """
         self.full_clean()
         super(CollaborationGroup, self).save(*args, **kwargs)
+
+    def user_is_admin(self, user):
+        """
+        Check if the backend user is an admin of this group.
+
+        :param user: The user to check.
+        """
+        return user in self.admins.all()
 
     def user_is_member(self, user):
         """
@@ -841,8 +849,7 @@ class Notification(models.Model):
         related_name='notifications',
         help_text='The user who sent the notification.'
     )
-    message = models.CharField(
-        max_length=255,
+    message = models.TextField(
         help_text='The message body.'
     )
     date = models.DateTimeField(auto_now=True)
@@ -1159,6 +1166,18 @@ class Share(models.Model):
             return False
         self.backend_group.django_group.user_set.add(user.django_user)
         return True
+
+    def clean_fields(self, exclude={}):
+        """
+        :inherit.
+        """
+        if not 'backend_group' in exclude and not hasattr(self, 'backend_group'):
+            django_group = Group(name=settings.SHARE_GROUP_PREFIX + self.name)
+            django_group.save()
+            backend_group = BackendGroup(django_group=django_group)
+            backend_group.save()
+            self.backend_group = backend_group
+        super(Share, self).clean_fields(exclude)
 
     def get_members(self):
         """

@@ -1,8 +1,9 @@
 from django_admin_conf_vars.models import ConfigurationVariable
 from django.contrib import admin, messages
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from ipynbsrv.admin.forms import CollaborationGroupForm
 from ipynbsrv.core.models import *
 
 
@@ -51,19 +52,38 @@ class CollaborationGroupAdmin(admin.ModelAdmin):
     Admin model for the `CollaborationGroup` model.
     """
 
-    # TODO: create internal groups on add
     # TODO: allow adding members in here
 
     list_display = ['django_group']
 
     fieldsets = [
         ('General Properties', {
-            'fields': ['creator', 'admins']
+            'fields': ['django_group', 'creator', 'admins']
         }),
         ('Visibility Options', {
             'fields': ['is_public']
         })
     ]
+
+    def get_readonly_fields(self, request, obj=None):
+        """
+        :inherit.
+        """
+        if obj:
+            return ['creator', 'django_group']
+        else:
+            return []
+
+    def response_change(self, request, obj):
+        """
+        :inherit.
+        """
+        name = request.POST.get('_name', None)
+        if name:
+            django_group = Group(name=name)
+            obj.django_group = django_group
+
+        return super(CollaborationGroupAdmin, self).response_change(request, obj)
 
 
 class ConfigurationVariableAdmin(admin.ModelAdmin):
@@ -122,6 +142,15 @@ class ContainerAdmin(admin.ModelAdmin):
             'fields': ['backend_pk']
         })
     ]
+
+    def get_readonly_fields(self, request, obj=None):
+        """
+        :inherit.
+        """
+        if obj:
+            return ['backend_pk', 'clone_of', 'image', 'name', 'owner', 'server']
+        else:
+            return ['backend_pk']
 
     def response_change(self, request, obj):
         """
@@ -257,15 +286,6 @@ class ContainerAdmin(admin.ModelAdmin):
         )
     suspend_containers.short_description = "Suspend selected containers"
 
-    def get_readonly_fields(self, request, obj=None):
-        """
-        :inherit.
-        """
-        if obj:
-            return ['backend_pk', 'clone_of', 'image', 'name', 'owner', 'server']
-        else:
-            return ['backend_pk']
-
 
 class ContainerImageAdmin(admin.ModelAdmin):
 
@@ -331,6 +351,15 @@ class ContainerSnapshotAdmin(admin.ModelAdmin):
         })
     ]
 
+    def get_readonly_fields(self, request, obj=None):
+        """
+        :inherit.
+        """
+        if obj:
+            return ['backend_pk', 'container', 'name']
+        else:
+            return ['backend_pk']
+
     def response_change(self, request, obj):
         """
         :inherit.
@@ -359,14 +388,27 @@ class ContainerSnapshotAdmin(admin.ModelAdmin):
         )
     restore_snapshots.short_description = "Restore selected container snapshots"
 
+
+class GroupAdmin(admin.ModelAdmin):
+
+    """
+    Admin model for the `Group` model.
+    """
+
+    fieldsets = [
+        ('General Properties', {
+            'fields': ['name']
+        })
+    ]
+
     def get_readonly_fields(self, request, obj=None):
         """
         :inherit.
         """
         if obj:
-            return ['backend_pk', 'container', 'name']
+            return ['name']
         else:
-            return ['backend_pk']
+            return []
 
 
 class NotificationAdmin(admin.ModelAdmin):
@@ -387,7 +429,7 @@ class NotificationAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ('General Properties', {
-            'fields': ['notification_type', 'message', 'date', 'sender']
+            'fields': ['notification_type', 'message', 'sender']
         }),
         ('Related Objects', {
             'classes': ['collapse'],
@@ -446,8 +488,6 @@ class ShareAdmin(admin.ModelAdmin):
     Admin model for the `Share` model.
     """
 
-    # TODO: create backend_group on add
-
     list_display = ['name', 'description', 'owner']
     list_filter = [
         ('owner', admin.RelatedOnlyFieldListFilter),
@@ -468,7 +508,7 @@ class ShareAdmin(admin.ModelAdmin):
         :inherit.
         """
         if obj:
-            return ['name']
+            return ['name', 'owner']
         else:
             return []
 
@@ -505,6 +545,7 @@ admin_site.register(ConfigurationVariable, ConfigurationVariableAdmin)
 admin_site.register(Container, ContainerAdmin)
 admin_site.register(ContainerImage, ContainerImageAdmin)
 admin_site.register(ContainerSnapshot, ContainerSnapshotAdmin)
+admin_site.register(Group, GroupAdmin)
 admin_site.register(Notification, NotificationAdmin)
 admin_site.register(Server, ServerAdmin)
 admin_site.register(Share, ShareAdmin)

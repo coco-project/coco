@@ -11,6 +11,15 @@ from os import path
 storage_backend = get_storage_backend()
 
 
+@receiver(share_created)
+def add_creator_to_share_group(sender, share, **kwargs):
+    """
+    Add the share creator to the share's internal backend group.
+    """
+    if share is not None:
+        share.add_member(share.owner)
+
+
 @receiver(collaboration_group_member_added)
 def add_user_to_share_groups(sender, group, user, **kwargs):
     """

@@ -22,6 +22,8 @@ backend_group_modified = Signal(providing_args=['group', 'fields'])
 """
 Set of signals to be triggered for `CollaborationGroup` model events.
 """
+collaboration_group_admin_added = Signal(providing_args=['group', 'user'])
+collaboration_group_admin_removed = Signal(providing_args=['group', 'user'])
 collaboration_group_created = Signal(providing_args=['group'])
 collaboration_group_deleted = Signal(providing_args=['group'])
 collaboration_group_member_added = Signal(providing_args=['group', 'user'])
