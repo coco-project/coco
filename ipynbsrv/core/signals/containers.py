@@ -94,6 +94,10 @@ def delete_on_server(sender, container, **kwargs):
         try:
             if container.is_suspended():
                 container.resume()
+        except:
+            pass
+        try:
+            if container.is_running():
                 container.stop()
         except:
             pass
