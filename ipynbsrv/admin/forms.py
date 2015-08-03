@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from django.contrib.auth.models import User
-from ipynbsrv.core.models import CollaborationGroup
+from ipynbsrv.core.models import BackendUser, CollaborationGroup
 
 
 class CollaborationGroupAdminForm(forms.ModelForm):
@@ -11,7 +10,7 @@ class CollaborationGroupAdminForm(forms.ModelForm):
     """
 
     users = forms.ModelMultipleChoiceField(
-        queryset=User.objects.all(),
+        queryset=BackendUser.objects.all(),
         widget=FilteredSelectMultiple('Users', False),
         required=False
     )
@@ -24,7 +23,7 @@ class CollaborationGroupAdminForm(forms.ModelForm):
         instance = kwargs.get('instance', None)
         if instance is not None:
             initial = kwargs.get('initial', {})
-            initial['users'] = instance.user_set.all()
+            initial['users'] = instance.get_members()
             kwargs['initial'] = initial
         super(CollaborationGroupAdminForm, self).__init__(*args, **kwargs)
 
@@ -36,14 +35,14 @@ class CollaborationGroupAdminForm(forms.ModelForm):
         if commit:
             group.user_set.clear()
             for user in self.cleaned_data['users']:
-                group.user_set.add(user)
+                group.add_member(user)
         else:
             old_save_m2m = self.save_m2m
             def new_save_m2m():
                 old_save_m2m()
                 group.user_set.clear()
                 for user in self.cleaned_data['users']:
-                    group.user_set.add(user)
+                    group.add_member(user)
             self.save_m2m = new_save_m2m
         return group
 
