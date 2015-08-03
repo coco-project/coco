@@ -214,7 +214,7 @@ class ShareSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
-    members = BackendUserSerializer(source='get_members', many=True)
+    members = BackendUserSerializer(source='get_members', many=True, read_only=True)
 
     class Meta:
         model = Share
