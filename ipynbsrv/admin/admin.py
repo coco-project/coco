@@ -292,7 +292,7 @@ class ContainerImageAdmin(admin.ModelAdmin):
     Admin model for the `ContainerImage` model.
     """
 
-    list_display = ['name', 'description', 'owner']
+    list_display = ['name', 'description', 'owner', 'is_internal', 'is_public']
     list_filter = [
         'is_internal',
         'is_public',
@@ -416,7 +416,7 @@ class NotificationAdmin(admin.ModelAdmin):
     Admin model for the `Notification` model.
     """
 
-    list_display = ['message', 'date', 'sender']
+    list_display = ['message', 'date', 'sender', 'has_related_object']
     list_filter = [
         ('sender', admin.RelatedOnlyFieldListFilter),
         'notification_type',
