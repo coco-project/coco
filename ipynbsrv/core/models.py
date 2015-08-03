@@ -132,7 +132,6 @@ class BackendGroup(models.Model):
     )
     backend_pk = models.CharField(
         unique=True,
-        default=randint(0, 1000),
         max_length=255,
         help_text='Unique identifier for this group used by the backend.'
     )
@@ -154,6 +153,8 @@ class BackendGroup(models.Model):
         """
         if not 'backend_id' in exclude and self.backend_id is None:
             self.backend_id = self.__class__.generate_internal_gid()
+        if not 'backend_pk' in exclude and len(self.backend_pk) == 0:
+            self.backend_pk = self.django_group.name
         super(BackendGroup, self).clean_fields(exclude)
 
     @staticmethod
@@ -238,7 +239,6 @@ class BackendUser(models.Model):
     )
     backend_pk = models.CharField(
         unique=True,
-        default=randint(0, 1000),
         max_length=255,
         help_text='Unique identifier for this user used by the backend.'
     )
@@ -254,6 +254,8 @@ class BackendUser(models.Model):
         """
         if not 'backend_id' in exclude and self.backend_id is None:
             self.backend_id = self.__class__.generate_internal_uid()
+        if not 'backend_pk' in exclude and len(self.backend_pk) == 0:
+            self.backend_pk = self.get_username()
         super(BackendUser, self).clean_fields(exclude)
 
     @staticmethod
@@ -292,18 +294,12 @@ class BackendUser(models.Model):
         return self.__str__()
 
 
-class CollaborationGroup(models.Model):
+class CollaborationGroup(Group):
 
     """
     Collaboration groups can be created by users.
     """
 
-    id = models.AutoField(primary_key=True)
-    django_group = models.OneToOneField(
-        Group,
-        related_name='collaboration_group',
-        help_text='The regular Django group this backend group is associated with.'
-    )
     creator = models.ForeignKey(
         'BackendUser',
         blank=True,
@@ -313,6 +309,8 @@ class CollaborationGroup(models.Model):
     )
     admins = models.ManyToManyField(
         'BackendUser',
+        blank=True,
+        null=True,
         related_name='managed_groups',
         help_text='The users that are allowed to manage the group.'
     )
@@ -340,26 +338,20 @@ class CollaborationGroup(models.Model):
         """
         if self.user_is_member(user):
             return False
-        self.django_group.user_set.add(user.django_user)
+        self.user_set.add(user.django_user)
         return True
 
     def get_members(self):
         """
         Get a list of members for this group.
         """
-        return [user.backend_user for user in self.django_group.user_set.all()]
-
-    def get_name(self):
-        """
-        Get the name of the collaboration group.
-        """
-        return self.django_group.name
+        return [user.backend_user for user in self.user_set.all()]
 
     def get_member_count(self):
         """
         Get the number of users in the group.
         """
-        return self.django_group.user_set.all().count()
+        return self.user_set.all().count()
 
     def remove_member(self, user):
         """
@@ -370,7 +362,7 @@ class CollaborationGroup(models.Model):
         :return bool `True` if the user has been a member and removed.
         """
         if self.user_is_member(user):
-            self.django_group.user_set.remove(user.django_user)
+            self.user_set.remove(user.django_user)
             return True
         return False
 
@@ -398,18 +390,6 @@ class CollaborationGroup(models.Model):
         """
         return user in self.get_members()
     user_is_member.boolean = True
-
-    def __str__(self):
-        """
-        :inherit.
-        """
-        return str(self.django_group)
-
-    def __unicode__(self):
-        """
-        :inherit.
-        """
-        return self.__str__()
 
 
 class Container(models.Model):
@@ -950,28 +930,6 @@ class Notification(models.Model):
         return self.get_related_object() is not None
     has_related_object.boolean = True
 
-    # def get_related_object_url_slug(self):
-    #     """
-    #     Todo: write doc.
-    #     """
-    #     obj = self.get_related_object()
-    #     if obj is None:
-    #         return None
-    #     elif type(obj) is Share:
-    #         # TODO: get url to share
-    #         return "/share/manage/{}".format(obj.id)
-    #     elif type(obj) is Container:
-    #         # TODO: get url to container
-    #         return "/containers/{}".format(obj.id)
-    #     elif type(obj) is ContainerImage:
-    #         # TODO: get url to image
-    #         return "/images/{}".format(obj.id)
-    #     elif type(obj) is Group:
-    #         # TODO: get url to container
-    #         return "/groups/manage/{}".format(obj.id)
-    #     else:
-    #         return None
-
     def save(self, *args, **kwargs):
         """
         :inherit.
@@ -1009,17 +967,6 @@ class NotificationLog(models.Model):
         help_text='The user assigned to this NotificationLog entry.'
     )
     read = models.BooleanField(default=False)
-
-    # @classmethod
-    # def for_user(cls, user):
-    #     """
-    #     TODO: document.
-    #     """
-    #     notifications = None
-    #     try:
-    #         notifications = NotificationLog.objects.filter(user=user.id).order_by("-notification__date")
-    #     finally:
-    #         return notifications
 
     def save(self, *args, **kwargs):
         """
@@ -1161,6 +1108,7 @@ class Share(models.Model):
     access_groups = models.ManyToManyField(
         'CollaborationGroup',
         blank=True,
+        null=True,
         related_name='shares',
         help_text='The groups having access to that share.'
     )
@@ -1172,10 +1120,7 @@ class Share(models.Model):
 
         :param user: The user to add.
         """
-        if self.user_is_member(user):
-            return False
-        self.backend_group.django_group.user_set.add(user.django_user)
-        return True
+        return self.backend_group.add_member(user)
 
     def clean_fields(self, exclude={}):
         """
@@ -1193,7 +1138,7 @@ class Share(models.Model):
         """
         Get a list of members for this share.
         """
-        return [user.backend_user for user in self.backend_group.django_group.user_set.all()]
+        return self.backend_group.get_members()
 
     def remove_member(self, user):
         """
@@ -1203,10 +1148,7 @@ class Share(models.Model):
 
         :return bool `True` if the user has been a member and removed.
         """
-        if self.user_is_member(user):
-            self.backend_group.django_group.user_set.remove(user.django_user)
-            return True
-        return False
+        return self.backend_group.remove_member(user)
 
     def save(self, *args, **kwargs):
         """
@@ -1221,7 +1163,7 @@ class Share(models.Model):
 
         :param user: The user to check for membership.
         """
-        return user in self.get_members()
+        return self.backend_group.user_is_member(user)
     user_is_member.boolean = True
 
     def __str__(self):

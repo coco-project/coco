@@ -40,10 +40,10 @@ def map_to_collaboration_group_member_added(sender, group, user, **kwargs):
     Map the Django group signal to BackendGroup.
     """
     if group is not None and user is not None:
-        if hasattr(group, 'collaboration_group') and hasattr(user, 'backend_user'):
+        if hasattr(group, 'collaborationgroup') and hasattr(user, 'backend_user'):
             collaboration_group_member_added.send(
                 sender=sender,
-                group=group.collaboration_group,
+                group=group.collaborationgroup,
                 user=user.backend_user,
                 kwargs=kwargs
             )
@@ -55,10 +55,10 @@ def map_to_collaboration_group_member_removed(sender, group, user, **kwargs):
     Map the Django group signal to BackendGroup.
     """
     if group is not None and user is not None:
-        if hasattr(group, 'collaboration_group') and hasattr(user, 'backend_user'):
+        if hasattr(group, 'collaborationgroup') and hasattr(user, 'backend_user'):
             collaboration_group_member_removed.send(
                 sender=sender,
-                group=group.collaboration_group,
+                group=group.collaborationgroup,
                 user=user.backend_user,
                 kwargs=kwargs
             )

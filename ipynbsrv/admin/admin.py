@@ -1,8 +1,10 @@
 from django_admin_conf_vars.models import ConfigurationVariable
 from django.contrib import admin, messages
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.admin import GroupAdmin
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from ipynbsrv.admin.forms import CollaborationGroupAdminForm
 from ipynbsrv.core.models import *
 
 
@@ -45,19 +47,22 @@ class BackendAdmin(admin.ModelAdmin):
             return []
 
 
-class CollaborationGroupAdmin(admin.ModelAdmin):
+class CollaborationGroupAdmin(GroupAdmin):
 
     """
     Admin model for the `CollaborationGroup` model.
     """
 
-    # TODO: allow adding members in here
+    list_display = ['name']
+    list_filter = ['creator', 'is_public']
 
-    list_display = ['django_group']
-
+    form = CollaborationGroupAdminForm
     fieldsets = [
         ('General Properties', {
-            'fields': ['django_group', 'creator', 'admins']
+            'fields': ['name', 'creator', 'admins']
+        }),
+        ('Membership Options', {
+            'fields': ['users']
         }),
         ('Visibility Options', {
             'fields': ['is_public']
@@ -69,20 +74,9 @@ class CollaborationGroupAdmin(admin.ModelAdmin):
         :inherit.
         """
         if obj:
-            return ['creator', 'django_group']
+            return ['creator', 'name']
         else:
             return []
-
-    def response_change(self, request, obj):
-        """
-        :inherit.
-        """
-        name = request.POST.get('_name', None)
-        if name:
-            django_group = Group(name=name)
-            obj.django_group = django_group
-
-        return super(CollaborationGroupAdmin, self).response_change(request, obj)
 
 
 class ConfigurationVariableAdmin(admin.ModelAdmin):
@@ -484,6 +478,7 @@ class ServerAdmin(admin.ModelAdmin):
         :inherit.
         """
         if obj:
+            # TODO: make only readonly if hosts containers
             return ['container_backend', 'external_ip', 'internal_ip']
         else:
             return []
@@ -543,9 +538,6 @@ class UserAdmin(admin.ModelAdmin):
     fieldsets = [
         ('General Properties', {
             'fields': ['username', 'is_active', 'is_staff']
-        }),
-        ('Groups Memberships', {
-            'fields': ['groups']
         })
     ]
 

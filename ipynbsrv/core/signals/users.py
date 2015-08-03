@@ -1,8 +1,22 @@
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_delete, post_save
-from ipynbsrv.core.signals.signals import user_created, \
-    user_deleted, user_modified
+from ipynbsrv.core.signals.signals import backend_user_modified, \
+    user_created, user_deleted, user_modified
+
+
+@receiver(user_modified)
+def map_to_backend_user_modified(sender, user, fields, **kwargs):
+    """
+    Method map `User` signals to `BackendUser` signals.
+    """
+    if user is not None and hasattr(user, 'backend_user'):
+        backend_user_modified.send(
+            sender=sender,
+            user=user.backend_user,
+            fields=fields,
+            kwargs=kwargs
+        )
 
 
 @receiver(post_delete, sender=User)
