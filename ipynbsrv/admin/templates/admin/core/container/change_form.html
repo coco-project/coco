@@ -1,0 +1,37 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block after_field_sets %}
+{% if change %}
+    <fieldset class="module aligned ">
+        <h2>Actions</h2>
+        <div class="form-row">
+            <label>Name:</label>
+            <input type="text" name="_container-action-name" />
+            &nbsp;
+            <input type="submit" value="{% trans 'Clone' %}" name="_clone" {{ onclick_attrib }} />
+            or
+            <input type="submit" value="{% trans 'Commit' %}" name="_commit" {{ onclick_attrib }} />
+            or
+            <input type="submit" value="{% trans 'Snapshot' %}" name="_snapshot" {{ onclick_attrib }} />
+        </div>
+    </fieldset>
+    <fieldset class="module aligned ">
+        <h2>Status Actions</h2>
+        <div class="form-row">
+            {% if original.is_suspended %}
+                <input type="submit" value="{% trans 'Resume' %}" name="_resume" {{ onclick_attrib }} />
+            {% else %}
+                <input type="submit" value="{% trans 'Restart' %}" name="_restart" {{ onclick_attrib }} />
+                {% if original.is_running %}
+                    <input type="submit" value="{% trans 'Stop' %}" name="_stop" {{ onclick_attrib }} />
+                    <input type="submit" value="{% trans 'Suspend' %}" name="_suspend" {{ onclick_attrib }} />
+                {% else %}
+                    <input type="submit" value="{% trans 'Start' %}" name="_start" {{ onclick_attrib }} />
+                {% endif %}
+            {% endif %}
+        </div>
+    </fieldset>
+{% endif %}
+{{ block.super }}
+{% endblock %}

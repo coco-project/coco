@@ -1,0 +1,14 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block after_field_sets %}
+{% if change %}
+    <fieldset class="module aligned ">
+        <h2>Actions</h2>
+        <div class="form-row">
+            <input type="submit" value="{% trans 'Restore' %}" name="_restore" {{ onclick_attrib }} />
+        </div>
+    </fieldset>
+{% endif %}
+{{ block.super }}
+{% endblock %}
