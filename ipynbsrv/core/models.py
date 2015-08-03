@@ -201,6 +201,7 @@ class BackendGroup(models.Model):
         :param user: The user to check for membership.
         """
         return user in self.get_members()
+    user_is_member.boolean = True
 
     def __str__(self):
         """
@@ -387,6 +388,7 @@ class CollaborationGroup(models.Model):
         :param user: The user to check.
         """
         return user in self.admins.all()
+    user_is_admin.boolean = True
 
     def user_is_member(self, user):
         """
@@ -395,6 +397,7 @@ class CollaborationGroup(models.Model):
         :param user: The user to check for membership.
         """
         return user in self.get_members()
+    user_is_member.boolean = True
 
     def __str__(self):
         """
@@ -570,18 +573,21 @@ class Container(models.Model):
         Return true if clones of this container exist, false otherwise.
         """
         return Container.objects.filter(clone_of=self).exists()
+    has_clones.boolean = True
 
     def is_clone(self):
         """
         Return true if this container is a clone of another one.
         """
         return self.clone_of is not None
+    is_clone.boolean = True
 
     def is_image_based(self):
         """
         Return either this container was created based on an image or not.
         """
         return self.image is not None
+    is_image_based.boolean = True
 
     def is_running(self):
         """
@@ -590,6 +596,7 @@ class Container(models.Model):
         TODO: store in cache?
         """
         return self.server.get_container_backend().container_is_running(self.backend_pk)
+    is_running.boolean = True
 
     def is_suspended(self):
         """
@@ -598,6 +605,7 @@ class Container(models.Model):
         TODO: store in cache?
         """
         return self.server.get_container_backend().container_is_suspended(self.backend_pk)
+    is_suspended.boolean = True
 
     def restart(self):
         """
@@ -940,6 +948,7 @@ class Notification(models.Model):
         :return bool `True` if the notification has a related object.
         """
         return self.get_related_object() is not None
+    has_related_object.boolean = True
 
     # def get_related_object_url_slug(self):
     #     """
@@ -1099,6 +1108,7 @@ class Server(models.Model):
         Check if this server is configured as a container host (has a container_backend set).
         """
         return self.container_backend is not None
+    is_container_host.boolean = True
 
     def save(self, *args, **kwargs):
         """
@@ -1212,6 +1222,7 @@ class Share(models.Model):
         :param user: The user to check for membership.
         """
         return user in self.get_members()
+    user_is_member.boolean = True
 
     def __str__(self):
         """

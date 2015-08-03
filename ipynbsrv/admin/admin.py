@@ -122,7 +122,7 @@ class ContainerAdmin(admin.ModelAdmin):
         'suspend_containers'
     ]
 
-    list_display = ['name', 'description', 'owner']
+    list_display = ['name', 'description', 'owner', 'is_clone', 'is_running', 'is_suspended']
     list_filter = [
         ('clone_of', admin.RelatedOnlyFieldListFilter),
         ('image', admin.RelatedOnlyFieldListFilter),
@@ -456,7 +456,7 @@ class ServerAdmin(admin.ModelAdmin):
     Admin model for the `Server` model.
     """
 
-    list_display = ['name', 'internal_ip', 'external_ip']
+    list_display = ['name', 'internal_ip', 'external_ip', 'is_container_host']
     list_filter = [
         ('container_backend', admin.RelatedOnlyFieldListFilter),
     ]
