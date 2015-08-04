@@ -533,7 +533,7 @@ class ContainerImageList(generics.ListCreateAPIView):
             queryset = ContainerImage.objects.all()
         else:
             queryset = ContainerImage.objects.filter(
-                Q(owner=self.request.user) | Q(is_public=True)
+                Q(is_internal=False) & (Q(owner=self.request.user) | Q(is_public=True))
             )
         return queryset
 
@@ -550,7 +550,7 @@ class ContainerImageDetail(generics.RetrieveUpdateDestroyAPIView):
             queryset = ContainerImage.objects.all()
         else:
             queryset = ContainerImage.objects.filter(
-                Q(owner=self.request.user) | Q(is_public=True)
+                Q(is_internal=False) & (Q(owner=self.request.user) | Q(is_public=True))
             )
         return queryset
 
