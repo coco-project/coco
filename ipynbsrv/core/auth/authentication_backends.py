@@ -39,8 +39,9 @@ class BackendProxyAuthentication(object):
             user_backend = get_user_backend_connected()
             user_backend.auth_user(username, password)
             if user is not None:  # existing user
-                user.set_password(password)
-                user.save()
+                if not user.check_password(password):
+                    user.set_password(password)
+                    user.save()
             else:  # new user
                 uid = BackendUser.generate_internal_uid()
                 group = self.create_user_groups(username, uid)
