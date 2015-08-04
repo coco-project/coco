@@ -970,6 +970,12 @@ class NotificationLog(models.Model):
         help_text='The user assigned to this NotificationLog entry.'
     )
     read = models.BooleanField(default=False)
+    in_use = models.BooleanField(
+        default=True,
+        help_text="""Because notification logs are never deleted, this flag defines either the log
+            is currently in use (user is still a member of the group through which he received the)
+            notification or not. It should not be changed manually."""
+    )
 
     def save(self, *args, **kwargs):
         """
