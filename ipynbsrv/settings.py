@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'ipynbsrv.admin.apps.MyAdmin',
     'djangocms_admin_style',
     'django.contrib.admin',
+    'django.contrib.admindocs',
     # Web
     'ipynbsrv.web',
     'widget_tweaks',

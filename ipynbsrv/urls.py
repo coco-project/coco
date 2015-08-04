@@ -20,6 +20,7 @@ from ipynbsrv.admin.admin import admin_site
 
 
 urlpatterns = [
+    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin_site.urls)),
     url(r'^api/', include('ipynbsrv.api.urls')),
     url(r'^', include('ipynbsrv.web.urls'))
