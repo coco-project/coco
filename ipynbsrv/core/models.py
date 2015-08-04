@@ -1141,7 +1141,7 @@ class Share(models.Model):
             self.backend_group = backend_group
         super(Share, self).clean_fields(exclude)
 
-    def remove_remove_access_group(self, collab_group):
+    def remove_access_group(self, collab_group):
         """
         Remove the collaboration group from the share.
 
@@ -1160,7 +1160,7 @@ class Share(models.Model):
 
         :param user: The user to check for membership.
         """
-        return collab_group in self.access_groups
+        return collab_group in self.access_groups.all()
 
     def get_members(self):
         """
@@ -1182,7 +1182,14 @@ class Share(models.Model):
         :param user: The user to check for membership.
         """
         return self.backend_group.user_is_member(user)
-    user_is_member.boolean = True
+
+    def add_member(self, user):
+        """
+        Add the user as a member to this share.
+
+        :param user: The user to add.
+        """
+        return self.backend_group.add_member(user)
 
     def __str__(self):
         """

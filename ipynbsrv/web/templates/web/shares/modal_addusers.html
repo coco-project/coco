@@ -7,12 +7,28 @@
                 </button>
                 <h4 class="modal-title">Add share user</h4>
             </div>
-            <form action="{% url 'share_add_user' %}" method="POST" role="form">
+            <form action="{% url 'share_add_access_groups' %}" method="POST" role="form">
                 {% csrf_token %}
                 <input id="modal-share-adduser_id" type="hidden" name="id" value="{{ id }}">
                 <div class="modal-body">
                     <div class="form-group">
-                        <input id="users" type="text" class="form-control" name="users" required>
+                        <label for="recipient">Users</label>
+                            {% for group in groups %}
+                                {% if group.id not in share.access_groups and group.is_single_user_group %}
+                                <div class="checkbox">
+                                  <label><input name="access_groups" type="checkbox" value="{{ group.id }}">{{ group.name }}</label>
+                                </div>
+                                {% endif %}
+
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notify">Notify users?</label>
+                        <div class="checkbox">
+                              <label><input name="notify" type="checkbox" value="notify">Notify users about their share membership.</label>
+                            </div>
                     </div>
                 </div>
                 <div class="modal-footer">

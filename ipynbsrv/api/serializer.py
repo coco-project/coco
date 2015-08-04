@@ -183,6 +183,7 @@ class ShareSerializer(serializers.ModelSerializer):
     """
     members = BackendUserSerializer(source='get_members', many=True, read_only=True)
     tags = TagSerializer(many=True)
+    access_groups = CollaborationGroupSerializer(many=True, read_only=True)
 
     class Meta:
         model = Share
@@ -207,7 +208,6 @@ class ShareSerializer(serializers.ModelSerializer):
         group.save()
         backend_group = BackendGroup(
             django_group=group,
-            backend_id=BackendGroup.generate_internal_guid(),
             backend_pk=name
         )
         backend_group.save()

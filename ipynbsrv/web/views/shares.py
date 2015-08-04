@@ -24,7 +24,7 @@ def index(request):
 @user_passes_test(login_allowed)
 def create(request):
     """
-    Todo: get tags
+    Create a new share.
     """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
@@ -41,22 +41,18 @@ def create(request):
     access_groups = request.POST.getlist('access_groups', [])
 
     client = get_httpclient_instance(request)
-    
+
     tags = []
     for tag in tag_labels:
-    	# see if tag with this label exists already    	
-    	t = client.tags(tag).get()
-    	if not t:
-    		# create a new tag
-    		t = client.tags.get()
-    		t = client.tags.post({ "label": str(tag) })
-    	else:
-    		t = t[0]
-    	tags.append(t.id)
-
-    # Todo: check if name already taken
-    #if Share.objects.filter(name=name).exists():
-    #    messages.error(request, "A share with that name already exists.")
+        # see if tag with this label exists already
+        t = client.tags(tag).get()
+        if not t:
+            # create a new tag
+            t = client.tags.get()
+            t = client.tags.post({ "label": str(tag) })
+        else:
+            t = t[0]
+        tags.append(t.id)
 
     client.shares.get()
     client.shares.post(data={
@@ -71,67 +67,65 @@ def create(request):
 
 
 @user_passes_test(login_allowed)
-def add_user(request):
+def share_add_access_groups(request):
+
+    """
+    Add access groups to the share.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'id' not in request.POST or 'users' not in request.POST:
+    if 'id' not in request.POST or 'access_groups' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    users = request.POST.getlist('users')
+    access_groups = request.POST.getlist('access_groups')
     share_id = request.POST.get('id')
     client = get_httpclient_instance(request)
 
-    user_list = []
+    group_list = []
     # validate existance of users first
-    for u in users:
-        user = client.users(u).get()
-    if user:
-        user_list.append(u)
+    for group_id in access_groups:
+        access_group = client.collaborationgroups(group_id).get()
+    if access_group:
+        group_list.append(group_id)
 
+    print(group_list)
     # then call API to add the users to the group
-    client = get_httpclient_instance(request)
-    client.shares(share_id).add_users.post({"users": user_list})
+    client.shares.get()
+    client.shares(share_id).add_access_groups.post({"access_groups": group_list})
 
-    return redirect('group_manage', group_id)
+    return redirect('share_manage', share_id)
 
 
+@user_passes_test(login_allowed)
+def share_remove_access_group(request):
+
+    """
+    Add access groups to the share.
+    """
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'id' not in request.POST or 'users' not in request.POST:
+    if 'share_id' not in request.POST or 'access_group' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    try:
-        share_id = int(request.POST.get('id'))
-    except ValueError:
-        share_id = -1
-
-    user_ids = request.POST.get('users')
-    origin = request.POST.get('origin', None)
-
+    group_id = request.POST.get('access_group')
+    share_id = request.POST.get('share_id')
     client = get_httpclient_instance(request)
-    share = client.shares(share_id).get()
 
-    if share:
-        if share.owner == request.user.backend_user.id:
-            for user in user_ids.split(","):
-                user = User.objects.filter(username=user)
-                if user.exists() and not share.user_is_member(user.first()):
-                    share.group.user_set.add(user.first())
-            messages.success(request, "Sucessfully added the new member(s) to the share.")
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
-    else:
-        messages.error(request, "Share does not exist.")
+    access_group = client.collaborationgroups(group_id).get()
+    if not access_group:
+        messages.error("Collaboration Group not found.")
+        return redirect('share_manage', group_id)
 
-    if origin:
-        request.method = "GET"
-        return redirect('share_manage', share.id)
+    # then call API to add the users to the group
+    client.shares.get()
+    client.shares(share_id).remove_access_groups.post({"access_groups": [group_id]})
 
-    return redirect('shares')
+    messages.success(request, "Access permission successfully removed.")
+    return redirect('share_manage', share_id)
 
 
 @user_passes_test(login_allowed)
@@ -196,61 +190,16 @@ def manage(request, share_id):
     client = get_httpclient_instance(request)
     share = client.shares(share_id).get()
     users = client.users.get()
+    groups = client.collaborationgroups.get()
     if share:
         if share.owner == request.user.backend_user.id:
             return render(request, 'web/shares/manage.html', {
                 'title': "Manage Share",
                 'share': share,
                 'members': share.members,
-                'users': users
+                'users': users,
+                'groups': groups
             })
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
-    else:
-        messages.error(request, "Share does not exist.")
-
-    return redirect('shares')
-
-
-@user_passes_test(login_allowed)
-def remove_member(request):
-    if request.method != "POST":
-        messages.error(request, "Invalid request method.")
-        return redirect('shares')
-    if 'share_id' not in request.POST or 'user_id' not in request.POST:
-        messages.error(request, "Invalid POST request.")
-        return redirect('shares')
-
-    share_id = int(request.POST.get('share_id'))
-    user_id = int(request.POST.get('user_id'))
-
-    client = get_httpclient_instance(request)
-    share = client.shares(share_id).get()
-    if share:
-        if share.owner == request.user.backend_user.id:
-            messages.error(request, "You cannot leave an owned share. Please delete it instead.")
-        else:
-            client.shares(share_id).remove_users.post({
-                "users": [request.user.id]
-                })
-            messages.success(request, "You successfully left the share.")
-    else:
-        messages.error(request, "Share does not exist.")
-
-    return redirect('shares')
-
-    share = Share.objects.filter(pk=share_id)
-    if share.exists():
-        share = share.first()
-        if share.owner == request.user:
-            user = User.objects.filter(pk=user_id)
-            if user.exists():
-                share.group.user_set.remove(user.first())
-                messages.success(request, "Sucessfully removed the user from the share.")
-                request.method = "GET"
-                return redirect('share_manage', share.id)
-            else:
-                messages.error(request, "User does not exist.")
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
     else:

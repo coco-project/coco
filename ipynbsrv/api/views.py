@@ -649,7 +649,7 @@ class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
             return Share.objects.filter(
                 Q(owner=self.request.user.backend_user)
                 | Q(backend_group__django_group__user=self.request.user)
-                )
+                ).distinct()
 
 
 @api_view(['POST'])

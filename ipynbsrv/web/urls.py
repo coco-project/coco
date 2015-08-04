@@ -38,12 +38,12 @@ urlpatterns = [
 
     # /share(s)/...
     url(r'^shares/$', 'ipynbsrv.web.views.shares.index', name='shares'),
-    url(r'^share/add_user$', 'ipynbsrv.web.views.shares.add_user', name='share_add_user'),
+    url(r'^share/add_access_groups$', 'ipynbsrv.web.views.shares.share_add_access_groups', name='share_add_access_groups'),
+    url(r'^share/remove_access_group$', 'ipynbsrv.web.views.shares.share_remove_access_group', name='share_remove_access_group'),
     url(r'^share/create$', 'ipynbsrv.web.views.shares.create', name='share_create'),
     url(r'^share/delete$', 'ipynbsrv.web.views.shares.delete', name='share_delete'),
     url(r'^share/leave$', 'ipynbsrv.web.views.shares.leave', name='share_leave'),
     url(r'^share/manage/(\d+)$', 'ipynbsrv.web.views.shares.manage', name='share_manage'),
-    url(r'^share/remove_user$', 'ipynbsrv.web.views.shares.remove_member', name='share_remove_user'),
 
     # /notification(s)/...
     url(r'^notifications/$', 'ipynbsrv.web.views.notifications.index', name='notifications'),

@@ -81,7 +81,6 @@
             <div class="alert alert-info">You have no shares yet.</div>
         {% endif %}
 
-        {% include 'web/shares/modal_adduser.html' with csrf_token=csrf_token only %}
         {% include 'web/shares/modal_create.html' with csrf_token=csrf_token only %}
     </div>
 </div>
