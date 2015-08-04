@@ -68,6 +68,7 @@ class CollaborationGroupAdmin(GroupAdmin):
             'fields': ['is_public']
         })
     ]
+    filter_horizontal = ['admins']
 
     def get_readonly_fields(self, request, obj=None):
         """
@@ -504,7 +505,7 @@ class ShareAdmin(admin.ModelAdmin):
             'fields': ['access_groups']
         })
     ]
-    filter_horizontal = ['tags']
+    filter_horizontal = ['access_groups', 'tags']
 
     def get_readonly_fields(self, request, obj=None):
         """
