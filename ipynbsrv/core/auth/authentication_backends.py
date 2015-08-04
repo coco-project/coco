@@ -107,5 +107,5 @@ class BackendProxyAuthentication(object):
         """
         try:
             return User.objects.get(pk=user_id)
-        except Exception:
+        except User.DoesNotExist:
             return None
