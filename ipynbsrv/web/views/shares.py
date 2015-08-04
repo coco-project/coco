@@ -33,14 +33,12 @@ def create(request):
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    print(request.POST)
-
     name = request.POST.get('name')
     desc = request.POST.get('description', '')
     # Todo: get tags properly
-    tags = request.POST.get('tags', [])
+    tags = request.POST.getlist('tags', [])
     owner = request.user.backend_user.id
-    access_groups = request.POST.get('access_groups', [])
+    access_groups = request.POST.getlist('access_groups', [])
 
     client = get_httpclient_instance(request)
     # Todo: check if name already taken
@@ -48,7 +46,7 @@ def create(request):
     #    messages.error(request, "A share with that name already exists.")
 
     client.shares.get()
-    client.shares.post({
+    client.shares.post(data={
         "name": name,
         "description": desc,
         "owner": owner,
@@ -139,7 +137,7 @@ def delete(request):
 
     if share:
         if share.owner == request.user.backend_user.id:
-            share.delete()
+            client.shares(share_id).delete()
             messages.success(request, "Share deleted sucessfully.")
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
@@ -166,8 +164,10 @@ def leave(request):
         if share.owner == request.user.backend_user.id:
             messages.error(request, "You cannot leave an owned share. Please delete it instead.")
         else:
-            share.group.user_set.remove(request.user)
-            messages.success(request, "You successfully leaved the share.")
+            client.shares(share_id).remove_users.post({
+                "users": [request.user.id]
+                })
+            messages.success(request, "You successfully left the share.")
     else:
         messages.error(request, "Share does not exist.")
 
@@ -210,6 +210,21 @@ def remove_user(request):
 
     share_id = int(request.POST.get('share_id'))
     user_id = int(request.POST.get('user_id'))
+
+    client = get_httpclient_instance(request)
+    share = client.shares(share_id).get()
+    if share:
+        if share.owner == request.user.backend_user.id:
+            messages.error(request, "You cannot leave an owned share. Please delete it instead.")
+        else:
+            client.shares(share_id).remove_users.post({
+                "users": [request.user.id]
+                })
+            messages.success(request, "You successfully left the share.")
+    else:
+        messages.error(request, "Share does not exist.")
+
+    return redirect('shares')
 
     share = Share.objects.filter(pk=share_id)
     if share.exists():
