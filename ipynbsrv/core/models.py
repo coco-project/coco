@@ -982,7 +982,7 @@ class NotificationLog(models.Model):
         """
         :inherit.
         """
-        return smart_unicode("@%s: %s (Read: %b)" % (self.user, self.notification, self.read))
+        return smart_unicode("@%s: %s (Read: %s)" % (self.user, self.notification, self.read))
 
     def __unicode__(self):
         """
