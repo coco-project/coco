@@ -18,12 +18,18 @@ def index(request):
     print(notificationlogs)
     notificationtypes = client.notificationtypes.get()
     groups = client.collaborationgroups.get()
+    containers = client.containers.get()
+    container_images = client.images.get()
+    shares = client.shares.get()
 
     return render(request, 'web/notifications/index.html', {
         'title': "Notifications",
         'notifications': notificationlogs,
         'notification_types': notificationtypes,
-        'groups': groups
+        'groups': groups,
+        'containers': containers,
+        'container_images': container_images,
+        'shares': shares
     })
 
 

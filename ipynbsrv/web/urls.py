@@ -18,7 +18,7 @@ urlpatterns = [
     url(r'^groups/create$', 'ipynbsrv.web.views.collaborationgroups.create', name='group_create'),
     url(r'^groups/delete$', 'ipynbsrv.web.views.collaborationgroups.delete', name='group_delete'),
     url(r'^groups/manage/(\d+)$', 'ipynbsrv.web.views.collaborationgroups.manage', name='group_manage'),
-    url(r'^groups/remove_user$', 'ipynbsrv.web.views.collaborationgroups.remove_member', name='group_remove_member'),
+    url(r'^groups/remove_member$', 'ipynbsrv.web.views.collaborationgroups.remove_member', name='group_remove_member'),
     url(r'^groups/add_admin$', 'ipynbsrv.web.views.collaborationgroups.add_admin', name='group_add_admin'),
     url(r'^groups/add_users$', 'ipynbsrv.web.views.collaborationgroups.add_members', name='group_add_members'),
 
@@ -43,7 +43,7 @@ urlpatterns = [
     url(r'^share/delete$', 'ipynbsrv.web.views.shares.delete', name='share_delete'),
     url(r'^share/leave$', 'ipynbsrv.web.views.shares.leave', name='share_leave'),
     url(r'^share/manage/(\d+)$', 'ipynbsrv.web.views.shares.manage', name='share_manage'),
-    url(r'^share/remove_user$', 'ipynbsrv.web.views.shares.remove_user', name='share_remove_user'),
+    url(r'^share/remove_user$', 'ipynbsrv.web.views.shares.remove_member', name='share_remove_user'),
 
     # /notification(s)/...
     url(r'^notifications/$', 'ipynbsrv.web.views.notifications.index', name='notifications'),

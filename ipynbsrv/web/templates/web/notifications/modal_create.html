@@ -23,7 +23,7 @@
                     </div>
                     <div class="form-group">
                         <label for="type">Notification type</label>
-                        <select class="form-control" name="event_type">
+                        <select class="form-control" name="notification_type">
                             <option></option>
                             {% for n1, n2 in notification_types %}
                                 <option value="{{ n1 }}">{{ n2 }}</option>
@@ -32,6 +32,55 @@
                         </select>
 
                     </div>
+                    <div class="form-group">
+                        <label for="type">Container</label>
+                        <select class="form-control" name="container">
+                            <option></option>
+                            {% for c in containers %}
+                                <option value="{{ c.id }}">{{ c.name }}</option>
+
+                            {% endfor %}
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="type">Container Image</label>
+                        <select class="form-control" name="container_image">
+                            <option></option>
+                            {% for ci in container_images %}
+                                <option value="{{ ci.id }}">{{ ci.name }}</option>
+
+                            {% endfor %}
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="type">Group</label>
+                        <select class="form-control" name="group">
+                            <option></option>
+                            {% for g in groups %}
+                                <option value="{{ g.id }}">{{ g.name }}</option>
+
+                            {% endfor %}
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="type">Share</label>
+                        <select class="form-control" name="share">
+                            <option></option>
+                            {% for s in shares %}
+                                <option value="{{ s.id }}">{{ s.name }}</option>
+
+                            {% endfor %}
+                        </select>
+
+                    </div>
+
                     <div class="form-group">
                         <label for="message">Message</label>
                         <textarea class="form-control" name="message" rows="5" placeholder="..."></textarea>

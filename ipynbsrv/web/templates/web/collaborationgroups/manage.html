@@ -67,8 +67,9 @@
                     {% if member.backend_user.id in group.admins %} <span class="label label-info">Admin</span>{% endif %}
                     {% if member.backend_user.id == group.creator %} <span class="label label-info">Creator</span>{% endif %}</td>
                     <td style="text-align: right">
+                    {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator %}
+                    
                         {% if member.backend_user.id != group.creator %} 
-                          {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator %}
                             <form action="{% url 'group_remove_member' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
                                 <input type="hidden" name="group_id" value="{{ group.id }}">
@@ -77,20 +78,19 @@
                                     <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
                                 </button>
                             </form>
-                            {% endif %}
-                            {% if member.backend_user.id not in group.admins %}
-                            <form action="{% url 'group_add_admin' %}" method="POST" role="form" class="form-action">
-                                {% csrf_token %}
-                                <input type="hidden" name="group_id" value="{{ group.id }}">
-                                <input type="hidden" name="user_id" value="{{ member.id }}">
-                                <button class="btn btn-sm btn-danger" title="Make group admin?" data-toggle="confirmation" data-placement="left">
-                                    <i class="glyphicon glyphicon glyphicon-king" aria-hidden="true"></i>
-                                </button>
-                            </form>
-                            {% endif %}
-
-                            
                         {% endif %}
+                        {% if member.backend_user.id not in group.admins and member.backend_user.id != group.creator %}
+                        <form action="{% url 'group_add_admin' %}" method="POST" role="form" class="form-action">
+                            {% csrf_token %}
+                            <input type="hidden" name="group_id" value="{{ group.id }}">
+                            <input type="hidden" name="user_id" value="{{ member.id }}">
+                            <button class="btn btn-sm btn-danger" title="Make group admin?" data-toggle="confirmation" data-placement="left">
+                                <i class="glyphicon glyphicon glyphicon-king" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+
+                    {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

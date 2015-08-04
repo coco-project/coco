@@ -39,7 +39,7 @@
                     <td>{% if not n.notification.related_object_id %}{{ n.notification.event_type }}
                     {% else %} <a href="{{ n.notification.get_related_object_url_slug }}">{{ n.notification.event_type }}</a>{% endif %}{{ n.related_object_id }}</td>
                     <td>{{ n.read }}</td>
-                    <td/>
+                    <td>mark as read</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -48,7 +48,7 @@
             <div class="alert alert-info">You have no notifications yet.</div>
         {% endif %}
 
-        {% include 'web/notifications/modal_create.html' with groups=groups notification_types=notification_types csrf_token=csrf_token only %}
+        {% include 'web/notifications/modal_create.html' with groups=groups notification_types=notification_types containers=containers container_images=container_images shares=shares csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}
