@@ -57,6 +57,7 @@ urlpatterns = patterns('',
     # /api/tag(s)/...
     url(r'^tags/$', views.TagList.as_view(), name="tags"),
     url(r'^tags/(?P<pk>[0-9]+)$', views.TagDetail.as_view(), name="tag_detail"),
+    url(r'^tags/(?P<label_text>.+)/$', views.TagList.as_view(), name="tag_by_name"),
 
     # /api/notification(s)/...
     url(r'^notifications/$', views.NotificationList.as_view(), name="notifications"),

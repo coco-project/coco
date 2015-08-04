@@ -723,8 +723,20 @@ class TagList(generics.ListCreateAPIView):
     """
     Get a list of all the tags.
     """
-    queryset = Tag.objects.all()
     serializer_class = TagSerializer
+
+    def get_queryset(self):
+        """
+        Optionally restricts the returned purchases to a given string,
+        by filtering against a `label_text` query parameter in the URL.
+        """
+        queryset = Tag.objects.all()
+        label_text = self.kwargs.get('label_text', None)
+        print("label_text:" + label_text)
+        if label_text is not None:
+            print("label_text:" + label_text)
+            queryset = queryset.filter(label=label_text)
+        return queryset
 
 
 class TagDetail(generics.RetrieveUpdateDestroyAPIView):
