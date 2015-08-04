@@ -36,11 +36,24 @@ def create(request):
     name = request.POST.get('name')
     desc = request.POST.get('description', '')
     # Todo: get tags properly
-    tags = request.POST.getlist('tags', [])
+    tag_labels = request.POST.get('tags').split(',')
     owner = request.user.backend_user.id
     access_groups = request.POST.getlist('access_groups', [])
 
     client = get_httpclient_instance(request)
+    
+    tags = []
+    for tag in tag_labels:
+    	# see if tag with this label exists already    	
+    	t = client.tags(tag).get()
+    	if not t:
+    		# create a new tag
+    		t = client.tags.get()
+    		t = client.tags.post({ "label": str(tag) })
+    	else:
+    		t = t[0]
+    	tags.append(t.id)
+
     # Todo: check if name already taken
     #if Share.objects.filter(name=name).exists():
     #    messages.error(request, "A share with that name already exists.")
@@ -51,7 +64,7 @@ def create(request):
         "description": desc,
         "owner": owner,
         "access_groups": access_groups,
-        "tags": []
+        "tags": tags
     })
     messages.success(request, "Share created sucessfully.")
     return redirect('shares')
@@ -200,7 +213,7 @@ def manage(request, share_id):
 
 
 @user_passes_test(login_allowed)
-def remove_user(request):
+def remove_member(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')

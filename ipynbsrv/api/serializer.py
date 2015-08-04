@@ -210,11 +210,21 @@ class ContainerSnapshotSerializer(serializers.ModelSerializer):
         model = ContainerSnapshot
 
 
+class TagSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
+
+    class Meta:
+        model = Tag
+
+
 class ShareSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
     members = BackendUserSerializer(source='get_members', many=True, read_only=True)
+    tags = TagSerializer(many=True)
 
     class Meta:
         model = Share
@@ -256,15 +266,6 @@ class ShareSerializer(serializers.ModelSerializer):
         self.set_tags(tags, share)
         self.set_access_groups(access_groups, share)
         return share
-
-
-class TagSerializer(serializers.ModelSerializer):
-    """
-    Todo: write doc.
-    """
-
-    class Meta:
-        model = Tag
 
 
 class NotificationSerializer(serializers.ModelSerializer):

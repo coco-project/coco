@@ -42,7 +42,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% for tag in share.tags.all %}
+                        {% for tag in share.tags %}
                             <span class="label label-default">{{ tag.label }}</span>
                         {% empty %}
                             -

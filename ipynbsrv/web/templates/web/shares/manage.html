@@ -43,7 +43,7 @@
             </tbody>
         </table>
 
-        <h2>Members</h2>
+        <h2>Shared with...</h2>
         <form role="form">
             <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-share-adduser">
                 Add new
@@ -57,7 +57,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for member in members %}
+                {% for group in access_groups %}
                 <tr>
                     <td>{{ member.username }}{% if member == request.user %} <span class="label label-info">That's you!</span>{% endif %}</td>
                     <td style="text-align: right">

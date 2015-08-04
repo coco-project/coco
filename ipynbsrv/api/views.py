@@ -732,9 +732,7 @@ class TagList(generics.ListCreateAPIView):
         """
         queryset = Tag.objects.all()
         label_text = self.kwargs.get('label_text', None)
-        print("label_text:" + label_text)
         if label_text is not None:
-            print("label_text:" + label_text)
             queryset = queryset.filter(label=label_text)
         return queryset
 
