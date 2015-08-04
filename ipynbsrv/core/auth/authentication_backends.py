@@ -1,5 +1,6 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 from ipynbsrv.contract.errors import AuthenticationError, ConnectionError, \
     UserNotFoundError
 from ipynbsrv.core.helpers import get_user_backend_connected
@@ -51,7 +52,7 @@ class BackendProxyAuthentication(object):
             else:
                 return None
         except AuthenticationError:
-            return None
+            raise PermissionDenied
         except UserNotFoundError:
             if user is not None:  # exists locally but not on backend
                 user.delete()
