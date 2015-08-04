@@ -15,7 +15,6 @@ class CollaborationGroupAdminForm(forms.ModelForm):
         required=False
     )
 
-
     def __init__(self, *args, **kwargs):
         """
         :inherit.
@@ -38,6 +37,7 @@ class CollaborationGroupAdminForm(forms.ModelForm):
                 group.add_member(user)
         else:
             old_save_m2m = self.save_m2m
+
             def new_save_m2m():
                 old_save_m2m()
                 group.user_set.clear()

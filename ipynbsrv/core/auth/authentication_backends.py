@@ -1,4 +1,3 @@
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from ipynbsrv.contract.errors import AuthenticationError, ConnectionError, \
@@ -62,7 +61,6 @@ class BackendProxyAuthentication(object):
             return None
         finally:
             try:
-                internal_ldap.disconnect()
                 user_backend.disconnect()
             except:
                 pass

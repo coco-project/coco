@@ -563,7 +563,6 @@ class UserAdmin(admin.ModelAdmin):
         else:
             return ['is_staff']
 
-
     def has_add_permission(self, request):
         """
         :inherit.

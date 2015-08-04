@@ -151,9 +151,9 @@ class BackendGroup(models.Model):
         """
         :inherit.
         """
-        if not 'backend_id' in exclude and self.backend_id is None:
+        if 'backend_id' not in exclude and self.backend_id is None:
             self.backend_id = self.__class__.generate_internal_gid()
-        if not 'backend_pk' in exclude and len(self.backend_pk) == 0:
+        if 'backend_pk' not in exclude and len(self.backend_pk) == 0:
             self.backend_pk = self.django_group.name
         super(BackendGroup, self).clean_fields(exclude)
 
@@ -252,9 +252,9 @@ class BackendUser(models.Model):
         """
         :inherit.
         """
-        if not 'backend_id' in exclude and self.backend_id is None:
+        if 'backend_id' not in exclude and self.backend_id is None:
             self.backend_id = self.__class__.generate_internal_uid()
-        if not 'backend_pk' in exclude and len(self.backend_pk) == 0:
+        if 'backend_pk' not in exclude and len(self.backend_pk) == 0:
             self.backend_pk = self.get_username()
         super(BackendUser, self).clean_fields(exclude)
 
