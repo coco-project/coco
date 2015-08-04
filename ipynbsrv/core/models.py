@@ -1111,6 +1111,7 @@ class Share(models.Model):
     access_groups = models.ManyToManyField(
         'CollaborationGroup',
         blank=True,
+        null=True,
         related_name='shares',
         help_text='The groups having access to that share.'
     )
@@ -1141,32 +1142,32 @@ class Share(models.Model):
             self.backend_group = backend_group
         super(Share, self).clean_fields(exclude)
 
-    def remove_access_group(self, collab_group):
-        """
-        Remove the collaboration group from the share.
-
-        :param collab_group: The collaboration group to remove (if is member).
-
-        :return bool `True` if the group has been a member and removed.
-        """
-        if self.group_is_access_group(collab_group):
-            self.access_groups.remove(collab_group)
-            return True
-        return False
-
-    def group_is_access_group(self, collab_group):
-        """
-        Check if the collaboration group has permission to access this share.
-
-        :param user: The user to check for membership.
-        """
-        return collab_group in self.access_groups.all()
-
     def get_members(self):
         """
         Get a list of members for this share.
         """
         return [user.backend_user for user in self.backend_group.django_group.user_set.all()]
+
+    def group_is_access_group(self, collab_group):
+        """
+        Check if the collaboration group has permission to access this share.
+
+        :param collab_group: The collab_group to check.
+        """
+        return collab_group in self.access_groups.all()
+
+    def remove_access_group(self, collab_group):
+        """
+        Remove the collaboration group from the share.
+
+        :param collab_group: The collaboration group to remove (if has access).
+
+        :return bool `True` if the group had access and been removed.
+        """
+        if self.group_is_access_group(collab_group):
+            self.access_groups.remove(collab_group)
+            return True
+        return False
 
     def save(self, *args, **kwargs):
         """
