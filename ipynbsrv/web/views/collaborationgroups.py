@@ -31,7 +31,7 @@ def manage(request, group_id):
     """
     client = get_httpclient_instance(request)
     group = client.collaborationgroups(group_id).get()
-    members = group.django_group.user_set
+    members = group.members
     users = client.users.get()
 
     return render(request, 'web/collaborationgroups/manage.html', {
