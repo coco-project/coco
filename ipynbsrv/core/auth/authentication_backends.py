@@ -1,8 +1,8 @@
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import User
 from ipynbsrv.contract.errors import AuthenticationError, ConnectionError, \
     UserNotFoundError
-from ipynbsrv.core.helpers import get_internal_ldap_connected, get_user_backend_connected
+from ipynbsrv.core.helpers import get_user_backend_connected
 from ipynbsrv.core.models import BackendGroup, BackendUser, \
     CollaborationGroup
 import logging
@@ -29,28 +29,25 @@ class BackendProxyAuthentication(object):
         user = None
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
-            if not hasattr(user, 'backend_user'):
-                return None  # not allowed, Django only user
-            else:
+            if hasattr(user, 'backend_user'):
                 username = user.backend_user.backend_pk
+            else:
+                return None  # not allowed, Django only user
 
-        internal_ldap = get_internal_ldap_connected()
-        user_backend = get_user_backend_connected()
         try:
+            user_backend = get_user_backend_connected()
             user_backend.auth_user(username, password)
             if user is not None:  # existing user
-                internal_ldap.set_user_password(username, make_password(password))  # FIXME: handle in signals
-                auth = user
+                user.password = make_password(password)
+                user.save()
             else:  # new user
                 uid = BackendUser.generate_internal_uid()
                 group = self.create_user_groups(username, uid)
-                user = self.create_users(username, uid, group.backend_group)
-                # add user to group
-                group.user_set.add(user)
-                auth = user
+                user = self.create_users(username, make_password(password), uid, group.backend_group)
+                group.add_member(user.backend_user)
 
-            if auth.is_active:
-                return auth
+            if user.is_active:
+                return user
             else:
                 return None
         except AuthenticationError:
@@ -70,33 +67,29 @@ class BackendProxyAuthentication(object):
 
     def create_user_groups(self, name, gid):
         """
-        Create the Django groups for the logging-in user.
+        Create the groups for the logging-in user.
 
         :param name: The name of the group to create.
         :param gid: The group's ID (on the backend).
         """
-        group = Group(name=name)
-        group.save()
+        collaboration_group = CollaborationGroup(name=name)
+        collaboration_group.save()
         backend_group = BackendGroup(
-            django_group=group,
+            django_group=collaboration_group,
             backend_id=gid,
             backend_pk=name
         )
         backend_group.save()
-        collaboration_group = CollaborationGroup(
-            django_group=group
-        )
-        collaboration_group.save()
-        return group
+        return collaboration_group
 
-    def create_users(self, username, uid, primary_group):
+    def create_users(self, username, password, uid, primary_group):
         """
         Create the Django users for the logging-in user.
 
         :param username: The user's username.
         :param primary_group: The user's primary group.
         """
-        user = User(username=username)
+        user = User(username=username, password=password)
         user.save()
         backend_user = BackendUser(
             django_user=user,

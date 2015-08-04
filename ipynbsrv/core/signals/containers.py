@@ -94,8 +94,18 @@ def delete_on_server(sender, container, **kwargs):
         try:
             if container.is_suspended():
                 container.resume()
+        except:
+            pass
+        try:
+            if container.is_running():
+                container.stop()
+        except:
+            pass
+
+        try:
             container.server.get_container_backend().delete_container(
-                container.backend_pk
+                container.backend_pk,
+                force=True
             )
         except ContainerNotFoundError as ex:
             pass  # already deleted

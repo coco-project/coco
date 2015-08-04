@@ -49,7 +49,7 @@ def remove_on_server(sender, image, **kwargs):
                 try:
                     if backend.container_image_exists(image.backend_pk):
                         try:
-                            backend.delete_container_image(image.backend_pk)
+                            backend.delete_container_image(image.backend_pk, force=True)
                         except ContainerImageNotFoundError:
                             pass  # already removed
                         except ContainerBackendError as ex:

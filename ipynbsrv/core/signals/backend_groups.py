@@ -15,8 +15,8 @@ def add_member_to_internal_ldap_group(sender, group, user, **kwargs):
     When ever a member is added to a group we need to sync the LDAP group.
     """
     if group is not None and user is not None:
-        internal_ldap = get_internal_ldap_connected()
         try:
+            internal_ldap = get_internal_ldap_connected()
             internal_ldap.add_group_member(group.backend_pk, user.backend_pk)
         finally:
             try:
@@ -31,8 +31,8 @@ def remove_member_from_internal_ldap_group(sender, group, user, **kwargs):
     When ever a member is removed to a group we need to sync the LDAP group.
     """
     if group is not None and user is not None:
-        internal_ldap = get_internal_ldap_connected()
         try:
+            internal_ldap = get_internal_ldap_connected()
             internal_ldap.remove_group_member(group.backend_pk, user.backend_pk)
         finally:
             try:
@@ -49,8 +49,8 @@ def create_on_internal_ldap(sender, group, **kwargs):
     If such a group is created, we should therefor create the group on the backend.
     """
     if group is not None:
-        internal_ldap = get_internal_ldap_connected()
         try:
+            internal_ldap = get_internal_ldap_connected()
             created = internal_ldap.create_group(group.backend_id, group.backend_pk)
             # FIXME: this is the first time we really know the ID/PK given by the backend.
             # all other operations having used to old ones might not be valid anymore...
@@ -73,7 +73,10 @@ def delete_django_group(sender, group, **kwargs):
     Delete the internal Django group on delete.
     """
     if group is not None:
-        group.django_group.delete()
+        try:
+            group.django_group.delete()
+        except:
+            pass  # already deleted?
 
 
 @receiver(backend_group_deleted)
@@ -82,8 +85,8 @@ def delete_on_internal_ldap(sender, group, **kwargs):
     In case the BackendGroup record is deleted, we need to cleanup the internal LDAP server.
     """
     if group is not None:
-        internal_ldap = get_internal_ldap_connected()
         try:
+            internal_ldap = get_internal_ldap_connected()
             internal_ldap.delete_group(group.backend_pk)
         except GroupNotFoundError:
             pass  # already deleted
