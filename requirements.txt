@@ -10,6 +10,7 @@ ipynbsrv-contract==0.0.1
 
 # Admin
 djangocms-admin-style==0.2.7
+docutils==0.12
 
 # Web
 django-widget-tweaks==1.3
