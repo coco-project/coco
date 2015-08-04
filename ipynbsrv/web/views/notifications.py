@@ -39,13 +39,12 @@ def create(request):
         messages.error(request, "Invalid request method.")
         return redirect('notifications')
     # Todo: validate POST params: receiver_group, msg, type, rel objs
-    if 'recipient' not in request.POST or 'message' not in request.POST or 'notification_type' not in request.POST:
+    if 'receiver_groups' not in request.POST or 'message' not in request.POST or 'notification_type' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('notifications')
 
     client = get_httpclient_instance(request)
 
-    group_id = request.POST.get('recipient')
     message = request.POST.get('message', '')
     notification_type = request.POST.get('notification_type', '')
     sender = request.user.id
@@ -53,7 +52,7 @@ def create(request):
     container_image = request.POST.get('container_image', None)
     share = request.POST.get('share', None)
     group = request.POST.get('group', None)
-    receiver_groups = request.POST.get('receiver_groups', None)
+    receiver_groups = [int(request.POST.get('receiver_groups', None))]
 
     client.notifications.get()
     client.notifications.post({
@@ -64,7 +63,7 @@ def create(request):
         "container_image": container_image,
         "group": group,
         "share": share,
-        "receiver_groups": [group_id]
+        "receiver_groups": receiver_groups
     })
 
     messages.success(request, "Notification sucessfully created.")
