@@ -1117,7 +1117,6 @@ class Share(models.Model):
     access_groups = models.ManyToManyField(
         'CollaborationGroup',
         blank=True,
-        null=True,
         related_name='shares',
         help_text='The groups having access to that share.'
     )

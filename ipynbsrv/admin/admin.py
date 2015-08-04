@@ -76,7 +76,7 @@ class CollaborationGroupAdmin(GroupAdmin):
         if obj:
             readonly = ['creator', 'name', 'is_single_user_group']
             if obj.is_single_user_group:
-                readonly += ['admins', 'is_public', 'users']
+                readonly += ['admins', 'is_public']  # FIXME: 'users' -> fails
             return readonly
         return ['is_single_user_group']
 
