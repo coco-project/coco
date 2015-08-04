@@ -808,28 +808,6 @@ class Notification(models.Model):
         """
         return self.get_related_object() is not None
 
-    # def get_related_object_url_slug(self):
-    #     """
-    #     Todo: write doc.
-    #     """
-    #     obj = self.get_related_object()
-    #     if obj is None:
-    #         return None
-    #     elif type(obj) is Share:
-    #         # TODO: get url to share
-    #         return "/share/manage/{}".format(obj.id)
-    #     elif type(obj) is Container:
-    #         # TODO: get url to container
-    #         return "/containers/{}".format(obj.id)
-    #     elif type(obj) is ContainerImage:
-    #         # TODO: get url to image
-    #         return "/images/{}".format(obj.id)
-    #     elif type(obj) is Group:
-    #         # TODO: get url to container
-    #         return "/groups/manage/{}".format(obj.id)
-    #     else:
-    #         return None
-
     def __str__(self):
         """
         :inherit.
@@ -994,35 +972,45 @@ class Share(models.Model):
         help_text='The groups having access to that share.'
     )
 
-    def add_member(self, user):
+    def add_access_group(self, collab_group):
         """
-        Add the user as a member to this share.
+        Add the collaboration group as a access group for this share.
 
-        :param user: The user to add.
+        :param collab_group: The collaboration group to add.
+
+        :return bool `True` if the group has been added.
         """
-        if self.user_is_member(user):
+        if self.group_is_access_group(collab_group):
             return False
-        self.backend_group.django_group.user_set.add(user.django_user)
+        self.access_groups.add(collab_group)
         return True
+
+    def remove_remove_access_group(self, collab_group):
+        """
+        Remove the collaboration group from the share.
+
+        :param collab_group: The collaboration group to remove (if is member).
+
+        :return bool `True` if the group has been a member and removed.
+        """
+        if self.group_is_access_group(collab_group):
+            self.access_groups.remove(collab_group)
+            return True
+        return False
+
+    def group_is_access_group(self, collab_group):
+        """
+        Check if the collaboration group has permission to access this share.
+
+        :param user: The user to check for membership.
+        """
+        return collab_group in self.access_groups
 
     def get_members(self):
         """
         Get a list of members for this share.
         """
         return [user.backend_user for user in self.backend_group.django_group.user_set.all()]
-
-    def remove_member(self, user):
-        """
-        Remove the member `user` from the share.
-
-        :param user: The user to remove (if is member).
-
-        :return bool `True` if the user has been a member and removed.
-        """
-        if self.user_is_member(user):
-            self.backend_group.django_group.user_set.remove(user.django_user)
-            return True
-        return False
 
     def user_is_member(self, user):
         """
@@ -1052,7 +1040,7 @@ class Tag(models.Model):
     """
 
     id = models.AutoField(primary_key=True)
-    label = models.CharField(max_length=75)
+    label = models.CharField(max_length=75, unique=True)
 
     def __str__(self):
         """
