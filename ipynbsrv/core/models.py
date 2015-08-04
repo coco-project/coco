@@ -970,6 +970,12 @@ class NotificationLog(models.Model):
         help_text='The user assigned to this NotificationLog entry.'
     )
     read = models.BooleanField(default=False)
+    in_use = models.BooleanField(
+        default=True,
+        help_text="""Because notification logs are never deleted, this flag defines either the log
+            is currently in use (user is still a member of the group through which he received the)
+            notification or not. It should not be changed manually."""
+    )
 
     def save(self, *args, **kwargs):
         """
@@ -982,7 +988,7 @@ class NotificationLog(models.Model):
         """
         :inherit.
         """
-        return smart_unicode("@%s: %s (Read: %b)" % (self.user, self.notification, self.read))
+        return smart_unicode("@%s: %s (Read: %s)" % (self.user, self.notification, self.read))
 
     def __unicode__(self):
         """
@@ -1130,6 +1136,14 @@ class Share(models.Model):
         self.access_groups.add(collab_group)
         return True
 
+    def add_member(self, user):
+        """
+        Add the user as a member to this share.
+
+        :param user: The user to add.
+        """
+        return self.backend_group.add_member(user)
+
     def clean_fields(self, exclude={}):
         """
         :inherit.
@@ -1183,14 +1197,6 @@ class Share(models.Model):
         :param user: The user to check for membership.
         """
         return self.backend_group.user_is_member(user)
-
-    def add_member(self, user):
-        """
-        Add the user as a member to this share.
-
-        :param user: The user to add.
-        """
-        return self.backend_group.add_member(user)
 
     def __str__(self):
         """

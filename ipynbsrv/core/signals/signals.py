@@ -78,6 +78,9 @@ group_modified = Signal(providing_args=['group', 'fields'])
 Set of signals to be triggered for `Notification` model events.
 """
 notification_created = Signal(providing_args=['notification'])
+notification_deleted = Signal(providing_args=['notification'])
+notification_receiver_group_added = Signal(providing_args=['notification', 'group'])
+notification_receiver_group_removed = Signal(providing_args=['notification', 'group'])
 
 
 """

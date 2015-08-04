@@ -776,7 +776,8 @@ class NotificationLogList(generics.ListAPIView):
         if self.request.user.is_superuser:
             return NotificationLog.objects.all()
         else:
-            return NotificationLog.objects.filter(user=self.request.user.backend_user)
+            return NotificationLog.objects.filter(user=self.request.user.backend_user) \
+                                          .filter(in_use=True)
 
 
 class NotificationLogDetail (generics.RetrieveUpdateDestroyAPIView):
