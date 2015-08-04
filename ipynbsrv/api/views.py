@@ -132,7 +132,7 @@ class CollaborationGroupList(generics.ListCreateAPIView):
             queryset = CollaborationGroup.objects.all()
         else:
             queryset = CollaborationGroup.objects.filter(
-                Q(django_group__user__id=self.request.user.id)
+                Q(user__id=self.request.user.id)
                 | Q(creator=self.request.user.backend_user.id)
                 | Q(is_public=True)
             ).distinct()
@@ -160,7 +160,7 @@ class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
             queryset = CollaborationGroup.objects.all()
         else:
             queryset = CollaborationGroup.objects.filter(
-                Q(django_group__user__id=self.request.user.id)
+                Q(user__id=self.request.user.id)
                 | Q(creator=self.request.user.backend_user.id)
                 | Q(is_public=True)
             ).distinct()
@@ -653,69 +653,64 @@ class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(['POST'])
-def share_add_users(request, pk):
+def share_add_access_groups(request, pk):
     """
-    Add a list of users to the share.
+    Add a list of collaboration groups to the share.
     Todo: show params on OPTIONS call.
     Todo: permissions
     :param pk   pk of the collaboration group
-    :param users list of user ids to add to the group
     """
-    required_params = ["users"]
+    required_params = ["access_groups"]
     params = validate_request_params(required_params, request)
 
-    obj = CollaborationGroup.objects.filter(id=pk)
+    obj = Share.objects.filter(id=pk)
     if not obj:
-        return Response({"error": "CollaborationGroup not found!", "data": request.data})
-    group = obj.first()
+        return Response({"error": "Share not found!", "data": request.data})
+    share = obj.first()
 
-    # validate all the user_ids first before adding them
-    user_list = []
-    for user_id in params.get("users"):
-        obj = User.objects.filter(id=user_id)
+    # validate all the access_groups first before adding them
+    access_groups = []
+    for access_group_id in params.get("access_groups"):
+        obj = CollaborationGroup.objects.filter(id=access_group_id)
         if not obj:
-            return Response({"error": "User not found!", "data": user_id})
-        user = obj.first()
-        if not user.backend_user:
-            return Response({"error": "User has no backend user!", "data": user_id})
-        user_list.append(user.backend_user)
-    for user in user_list:
-        group.add_member(user)
+            return Response({"error": "CollaborationGroup not found!", "data": access_group_id})
+        access_groups.append(obj.first())
+    # add the access groups to the share
+    for access_group in access_groups:
+        share.add_access_group(access_group)
 
-    serializer = CollaborationGroupSerializer(group)
+    serializer = ShareSerializer(share)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST'])
-def share_remove_users(request, pk):
+def share_remove_access_groups(request, pk):
     """
-    Remove a list of users from the share.
+    Remove a list of collaboration groups from the share.
     Todo: show params on OPTIONS call.
     Todo: permissions
     :param pk   pk of the collaboration group
     """
-    required_params = ["users"]
+    required_params = ["access_groups"]
     params = validate_request_params(required_params, request)
 
-    obj = CollaborationGroup.objects.filter(id=pk)
+    obj = Share.objects.filter(id=pk)
     if not obj:
-        return Response({"error": "CollaborationGroup not found!", "data": request.data})
-    group = obj.first()
+        return Response({"error": "Share not found!", "data": request.data})
+    share = obj.first()
 
-    # validate all the user_ids first before adding them
-    user_list = []
-    for user_id in params.get("users"):
-        obj = User.objects.filter(id=user_id)
+    # validate all the access_groups first before adding them
+    access_groups = []
+    for access_group_id in params.get("access_groups"):
+        obj = CollaborationGroup.objects.filter(id=access_group_id)
         if not obj:
-            return Response({"error": "User not found!", "data": user_id})
-        user = obj.first()
-        if not user.backend_user:
-            return Response({"error": "User has no backend user!", "data": user_id})
-        user_list.append(user.backend_user)
-    for user in user_list:
-        group.add_member(user)
+            return Response({"error": "CollaborationGroup not found!", "data": access_group_id})
+        access_groups.append(obj.first())
+    # add the access groups to the share
+    for access_group in access_groups:
+        share.remove_access_group(access_group)
 
-    serializer = CollaborationGroupSerializer(group)
+    serializer = ShareSerializer(share)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

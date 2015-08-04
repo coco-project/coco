@@ -317,6 +317,10 @@ class CollaborationGroup(Group):
         default=False,
         help_text='Indicate if the group should be publicly visible and free to join for everyone.'
     )
+    is_single_user_group = models.BooleanField(
+        default=False,
+        help_text='Indicate if the group belongs to a single user. For internal use only.'
+    )
 
     def add_admin(self, user):
         """

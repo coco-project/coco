@@ -53,6 +53,8 @@ urlpatterns = patterns('',
     # /api/share(s)/...
     url(r'^shares/$', views.ShareList.as_view(), name="shares"),
     url(r'^shares/(?P<pk>[0-9]+)$', views.ShareDetail.as_view(), name="share_detail"),
+    url(r'^shares/(?P<pk>[0-9]+)/add_access_groups$', views.share_add_access_groups, name="share_add_access_groups"),
+    url(r'^shares/(?P<pk>[0-9]+)remove_access_groups$', views.share_remove_access_groups, name="share_remove_access_groups"),
 
     # /api/tag(s)/...
     url(r'^tags/$', views.TagList.as_view(), name="tags"),

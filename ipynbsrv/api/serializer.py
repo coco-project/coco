@@ -96,55 +96,13 @@ class CollaborationGroupSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
-    django_group = GroupSerializer(many=False)
-    name = serializers.CharField(source='get_name', read_only=True)
     member_count = serializers.IntegerField(source='get_member_count', read_only=True)
     members = BackendUserSerializer(source='get_members', read_only=True, many=True)
 
     class Meta:
         model = CollaborationGroup
-        fields = ('id', 'name', 'django_group', 'creator', 'members', 'member_count', 'admins', 'public')
-        read_only_fields = ('admins', )
-
-    def set_admins(self, admins, collab_group, django_group):
-        """
-        Set the admins on the collaboration group,
-        and add them as members of the django_group.
-        """
-        for admin in admins:
-            collab_group.admins.add(admin)
-            django_group.user_set.add(admin.django_user)
-
-    def create(self, validated_data):
-        """
-        Create object from serialized data passed through from views.py.
-        """
-        # django_group need to be created first because the foreign key is in
-        # the CollaborationGroup model
-        group_data = validated_data.pop('django_group')
-        group = Group.objects.create(**group_data)
-        # add creator to group
-        group.user_set.add(validated_data.get('creator').django_user)
-        # create collaboration group
-        collab_group = CollaborationGroup.objects.create(
-            django_group=group,
-            **validated_data
-            )
-        return collab_group
-
-    def update(self, instance, validated_data):
-        group_data = validated_data.pop('django_group')
-        django_group = instance.django_group
-        for attr, value in group_data.items():
-            setattr(django_group, attr, value)
-        django_group.save()
-
-        # always keep creator and admins in the user set
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-
-        return instance
+        fields = ('id', 'name', 'creator', 'members', 'member_count', 'admins', 'is_public', 'is_single_user_group')
+        read_only_fields = ('admins', 'is_single_user_group')
 
 
 class ServerSerializer(serializers.ModelSerializer):

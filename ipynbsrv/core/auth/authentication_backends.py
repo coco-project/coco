@@ -74,7 +74,7 @@ class BackendProxyAuthentication(object):
         :param name: The name of the group to create.
         :param gid: The group's ID (on the backend).
         """
-        collaboration_group = CollaborationGroup(name=name)
+        collaboration_group = CollaborationGroup(name=name, is_single_user_group=True)
         collaboration_group.save()
         backend_group = BackendGroup(
             django_group=collaboration_group,
