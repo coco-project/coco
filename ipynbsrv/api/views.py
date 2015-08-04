@@ -134,7 +134,7 @@ class CollaborationGroupList(generics.ListCreateAPIView):
             queryset = CollaborationGroup.objects.filter(
                 Q(django_group__user__id=self.request.user.id)
                 | Q(creator=self.request.user.backend_user.id)
-                | Q(public=True)
+                | Q(is_public=True)
             ).distinct()
         return queryset
 
@@ -162,7 +162,7 @@ class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
             queryset = CollaborationGroup.objects.filter(
                 Q(django_group__user__id=self.request.user.id)
                 | Q(creator=self.request.user.backend_user.id)
-                | Q(public=True)
+                | Q(is_public=True)
             ).distinct()
         return queryset
 

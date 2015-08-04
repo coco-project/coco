@@ -64,7 +64,7 @@ def create(request):
     client.collaborationgroups.post({
         "django_group": {
             "name": name
-        }, "public": public,
+        }, "is_public": public,
     })
 
     messages.success(request, "Group `{}` created sucessfully.".format(name))
