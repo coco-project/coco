@@ -43,8 +43,7 @@ class BackendAdmin(admin.ModelAdmin):
         """
         if obj:
             return ['kind']
-        else:
-            return []
+        return []
 
 
 class CollaborationGroupAdmin(GroupAdmin):
@@ -53,8 +52,8 @@ class CollaborationGroupAdmin(GroupAdmin):
     Admin model for the `CollaborationGroup` model.
     """
 
-    list_display = ['name']
-    list_filter = ['creator', 'is_public']
+    list_display = ['name', 'is_public', 'is_single_user_group']
+    list_filter = ['creator', 'is_public', 'is_single_user_group']
 
     form = CollaborationGroupAdminForm
     fieldsets = [
@@ -62,7 +61,7 @@ class CollaborationGroupAdmin(GroupAdmin):
             'fields': ['name', 'creator', 'admins']
         }),
         ('Membership Options', {
-            'fields': ['users']
+            'fields': ['users', 'is_single_user_group']
         }),
         ('Visibility Options', {
             'fields': ['is_public']
@@ -75,9 +74,11 @@ class CollaborationGroupAdmin(GroupAdmin):
         :inherit.
         """
         if obj:
-            return ['creator', 'name']
-        else:
-            return []
+            readonly = ['creator', 'name', 'is_single_user_group']
+            if obj.is_single_user_group:
+                readonly += ['admins', 'is_public', 'users']
+            return readonly
+        return ['is_single_user_group']
 
 
 class ConfigurationVariableAdmin(admin.ModelAdmin):
@@ -143,8 +144,7 @@ class ContainerAdmin(admin.ModelAdmin):
         """
         if obj:
             return ['backend_pk', 'clone_of', 'image', 'name', 'owner', 'server']
-        else:
-            return ['backend_pk']
+        return ['backend_pk']
 
     def response_change(self, request, obj):
         """
@@ -321,8 +321,7 @@ class ContainerImageAdmin(admin.ModelAdmin):
         """
         if obj:
             return ['backend_pk', 'command', 'name', 'protected_port', 'public_ports', 'owner']
-        else:
-            return []
+        return []
 
 
 class ContainerSnapshotAdmin(admin.ModelAdmin):
@@ -359,8 +358,7 @@ class ContainerSnapshotAdmin(admin.ModelAdmin):
         """
         if obj:
             return ['backend_pk', 'container', 'name']
-        else:
-            return ['backend_pk']
+        return ['backend_pk']
 
     def response_change(self, request, obj):
         """
@@ -409,8 +407,7 @@ class GroupAdmin(admin.ModelAdmin):
         """
         if obj:
             return ['name']
-        else:
-            return []
+        return []
 
 
 class NotificationAdmin(admin.ModelAdmin):
@@ -449,8 +446,7 @@ class NotificationAdmin(admin.ModelAdmin):
         if obj:
             return ['container', 'container_image', 'date', 'group', 'message',
                     'notification_type', 'receiver_groups', 'sender', 'share']
-        else:
-            return []
+        return []
 
 
 class ServerAdmin(admin.ModelAdmin):
@@ -481,8 +477,7 @@ class ServerAdmin(admin.ModelAdmin):
         if obj:
             # TODO: make only readonly if hosts containers
             return ['container_backend', 'external_ip', 'internal_ip']
-        else:
-            return []
+        return []
 
 
 class ShareAdmin(admin.ModelAdmin):
@@ -513,8 +508,7 @@ class ShareAdmin(admin.ModelAdmin):
         """
         if obj:
             return ['name', 'owner']
-        else:
-            return []
+        return []
 
 
 class TagAdmin(admin.ModelAdmin):
