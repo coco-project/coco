@@ -28,19 +28,24 @@ ALLOWED_HOSTS = []
 # Application definition
 INSTALLED_APPS = (
     # Core
-    'ipynbsrv.api',
     'ipynbsrv.core',
+    'django_admin_conf_vars',
+    # API
+    'ipynbsrv.api',
+    'rest_framework',
+    # Admin
+    'ipynbsrv.admin.apps.MyAdmin',
+    'djangocms_admin_style',
     'django.contrib.admin',
+    # Web
+    'ipynbsrv.web',
+    'widget_tweaks',
+    # Django
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django_admin_conf_vars',
-    'rest_framework',
-    # Clients
-    'ipynbsrv.web',
-    'widget_tweaks',
+    'django.contrib.staticfiles'
 )
 
 MIDDLEWARE_CLASSES = (

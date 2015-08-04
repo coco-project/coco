@@ -11,6 +11,15 @@ from os import path
 storage_backend = get_storage_backend()
 
 
+@receiver(share_created)
+def add_creator_to_share_group(sender, share, **kwargs):
+    """
+    Add the share creator to the share's internal backend group.
+    """
+    if share is not None:
+        share.add_member(share.owner)
+
+
 @receiver(collaboration_group_member_added)
 def add_user_to_share_groups(sender, group, user, **kwargs):
     """
@@ -80,13 +89,16 @@ def remove_group_members_from_share_group(sender, share, group, **kwargs):
     Remove all members from the access group from the share group.
     """
     if share is not None and group is not None:
-        leave = False
         for user in group.get_members():
-            for access_group in share.access_groups.all():
-                if access_group != group:
-                    if access_group.user_is_member(user):
-                        leave = True
-                        break
+            leave = False
+            if user == share.owner:
+                leave = True
+            else:
+                for access_group in share.access_groups.all():
+                    if access_group != group:
+                        if access_group.user_is_member(user):
+                            leave = True
+                            break
             if not leave:
                 share.remove_member(user)
 
@@ -101,13 +113,16 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
     (not the share directly), so we have to make sure he also leaves all the share groups.
     """
     if group is not None and user is not None:
-        leave = False
         for share in group.shares.all():
-            for access_group in share.access_groups.all():
-                if access_group != group:
-                    if access_group.user_is_member(user):
-                        leave = True
-                        break
+            leave = False
+            if user == share.owner:
+                leave = True
+            else:
+                for access_group in share.access_groups.all():
+                    if access_group != group:
+                        if access_group.user_is_member(user):
+                            leave = True
+                            break
             if not leave:
                 share.remove_member(user)
 

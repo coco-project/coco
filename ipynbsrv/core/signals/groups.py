@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Group, User
 from django.dispatch import receiver
 from django.db.models.signals import m2m_changed, post_delete, post_save
+from ipynbsrv.core.models import BackendGroup, CollaborationGroup
 from ipynbsrv.core.signals.signals import *
 
 
@@ -12,7 +13,7 @@ def map_to_backend_group_member_added(sender, group, user, **kwargs):
     if group is not None and user is not None:
         if hasattr(group, 'backend_group') and hasattr(user, 'backend_user'):
             backend_group_member_added.send(
-                sender=sender,
+                sender=BackendGroup,
                 group=group.backend_group,
                 user=user.backend_user,
                 kwargs=kwargs
@@ -27,7 +28,7 @@ def map_to_backend_group_member_removed(sender, group, user, **kwargs):
     if group is not None and user is not None:
         if hasattr(group, 'backend_group') and hasattr(user, 'backend_user'):
             backend_group_member_removed.send(
-                sender=sender,
+                sender=BackendGroup,
                 group=group.backend_group,
                 user=user.backend_user,
                 kwargs=kwargs
@@ -40,10 +41,10 @@ def map_to_collaboration_group_member_added(sender, group, user, **kwargs):
     Map the Django group signal to BackendGroup.
     """
     if group is not None and user is not None:
-        if hasattr(group, 'collaboration_group') and hasattr(user, 'backend_user'):
+        if hasattr(group, 'collaborationgroup') and hasattr(user, 'backend_user'):
             collaboration_group_member_added.send(
-                sender=sender,
-                group=group.collaboration_group,
+                sender=CollaborationGroup,
+                group=group.collaborationgroup,
                 user=user.backend_user,
                 kwargs=kwargs
             )
@@ -55,10 +56,10 @@ def map_to_collaboration_group_member_removed(sender, group, user, **kwargs):
     Map the Django group signal to BackendGroup.
     """
     if group is not None and user is not None:
-        if hasattr(group, 'collaboration_group') and hasattr(user, 'backend_user'):
+        if hasattr(group, 'collaborationgroup') and hasattr(user, 'backend_user'):
             collaboration_group_member_removed.send(
-                sender=sender,
-                group=group.collaboration_group,
+                sender=CollaborationGroup,
+                group=group.collaborationgroup,
                 user=user.backend_user,
                 kwargs=kwargs
             )
@@ -72,7 +73,7 @@ def map_to_share_member_added(sender, group, user, **kwargs):
     if group is not None and user is not None:
         if hasattr(group, 'share') and hasattr(user, 'backend_user'):
             share_member_added.send(
-                sender=sender,
+                sender=BackendGroup,
                 group=group.share,
                 user=user.backend_user,
                 kwargs=kwargs
@@ -87,7 +88,7 @@ def map_to_share_member_removed(sender, group, user, **kwargs):
     if group is not None and user is not None:
         if hasattr(group, 'share') and hasattr(user, 'backend_user'):
             share_member_removed.send(
-                sender=sender,
+                sender=BackendGroup,
                 group=group.share,
                 user=user.backend_user,
                 kwargs=kwargs

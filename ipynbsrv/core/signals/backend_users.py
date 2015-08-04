@@ -17,25 +17,6 @@ storage_backend = get_storage_backend()
 
 
 @receiver(backend_user_created)
-def create_home_directory(sender, user, **kwargs):
-    """
-    Every user needs a home directory. Create it right after user creation.
-    """
-    if user is not None:
-        home_dir = path.join(settings.STORAGE_DIR_HOME, user.backend_pk)
-        if not storage_backend.dir_exists(home_dir):
-            try:
-                storage_backend.mk_dir(home_dir)
-                storage_backend.set_dir_uid(home_dir, user.backend_id)
-                storage_backend.set_dir_gid(home_dir, user.primary_group.backend_id)
-                storage_backend.set_dir_mode(home_dir, 0700)
-            except StorageBackendError as ex:
-                raise ex
-        else:
-            logger.warn("Home directory for user %s already exists." % user.django_user.get_username())
-
-
-@receiver(backend_user_created)
 def create_on_internal_ldap(sender, user, **kwargs):
     """
     BackendUser instances are used to represent external backends (e.g. LDAP) users.
@@ -43,12 +24,11 @@ def create_on_internal_ldap(sender, user, **kwargs):
     If such a user is created, we should therefor create the user on the backend.
     """
     if user is not None:
-        username = user.backend_pk
-        internal_ldap = get_internal_ldap_connected()
         try:
+            internal_ldap = get_internal_ldap_connected()
             created = internal_ldap.create_user(
                 user.backend_id,
-                username,
+                user.backend_pk,
                 user.django_user.password,
                 user.primary_group.backend_id,
                 '/home/user'
@@ -66,6 +46,25 @@ def create_on_internal_ldap(sender, user, **kwargs):
                 internal_ldap.disconnect()
             except:
                 pass
+
+
+@receiver(backend_user_created)
+def create_home_directory(sender, user, **kwargs):
+    """
+    Every user needs a home directory. Create it right after user creation.
+    """
+    if user is not None:
+        home_dir = path.join(settings.STORAGE_DIR_HOME, user.backend_pk)
+        if not storage_backend.dir_exists(home_dir):
+            try:
+                storage_backend.mk_dir(home_dir)
+                storage_backend.set_dir_uid(home_dir, user.backend_id)
+                storage_backend.set_dir_gid(home_dir, user.primary_group.backend_id)
+                storage_backend.set_dir_mode(home_dir, 0700)
+            except StorageBackendError as ex:
+                raise ex
+        else:
+            logger.warn("Home directory for user %s already exists." % user.django_user.get_username())
 
 
 @receiver(backend_user_created)
@@ -88,7 +87,7 @@ def create_public_directory(sender, user, **kwargs):
 
 
 @receiver(backend_user_deleted)
-def delete_django_group(sender, user, **kwargs):
+def delete_django_user(sender, user, **kwargs):
     """
     Delete the internal Django user on delete.
     """
@@ -111,8 +110,8 @@ def delete_on_internal_ldap(sender, user, **kwargs):
     In case the BackendUser record is deleted, we need to cleanup the LDAP server.
     """
     if user is not None:
-        internal_ldap = get_internal_ldap_connected()
         try:
+            internal_ldap = get_internal_ldap_connected()
             internal_ldap.delete_user(user.backend_pk)
         except UserNotFoundError:
             pass  # already deleted
@@ -160,6 +159,24 @@ def remove_public_directory(sender, user, **kwargs):
                 raise ex
         else:
             logger.warn("Public directory for user %s doesn't exist." % user.django_user.get_username())
+
+
+@receiver(backend_user_modified)
+def update_password_on_internal_ldap(sender, user, fields, **kwargs):
+    """
+    Update the password on the internal LDAP server on change.
+    """
+    if user is not None:
+        try:
+            internal_ldap = get_internal_ldap_connected()
+            internal_ldap.set_user_password(user.backend_pk, user.django_user.password)
+        except UserNotFoundError:
+            user.delete()  # XXX: cleanup
+        finally:
+            try:
+                internal_ldap.disconnect()
+            except:
+                pass
 
 
 @receiver(post_delete, sender=BackendUser)

@@ -1,10 +1,12 @@
 from django.contrib.auth.models import Group, User
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.encoding import smart_unicode
-from django.utils.timezone import now
 from ipynbsrv.common.utils import ClassLoader
 from ipynbsrv.contract.backends import ContainerBackend
 from ipynbsrv.core import settings
+from ipynbsrv.core.validators import validate_json_format
 from random import randint
 
 
@@ -55,6 +57,12 @@ class Backend(models.Model):
     )
     module = models.CharField(
         max_length=255,
+        validators=[
+            RegexValidator(
+                regex='^[a-z][A-z\d]+(\.[A-z\d]+)*$',
+                message='Not a valid Python module path.'
+            )
+        ],
         help_text='The full absolute module path (i.e. ipynbsrv.backends.container_backends).'
     )
     klass = models.CharField(
@@ -65,6 +73,7 @@ class Backend(models.Model):
         blank=True,
         null=True,
         max_length=255,
+        validators=[validate_json_format],
         help_text="""Optional arguments to pass to the __init__ method of the class.
             Format: {"arg1": "value", "arg2": "value" }"""
     )
@@ -77,6 +86,13 @@ class Backend(models.Model):
         """
         cl = ClassLoader(self.module, self.klass, self.arguments)
         return cl.get_instance(arguments)
+
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(Backend, self).save(*args, **kwargs)
 
     def __str__(self):
         """
@@ -104,18 +120,6 @@ class BackendGroup(models.Model):
     that there's a server behind.
     """
 
-    @staticmethod
-    def generate_internal_guid():
-        """
-        Generate an unique internal group ID.
-
-        Used for user-created groups. The primary group of each user should use the user's uid as guid.
-        """
-        last_django_id = 0
-        if Group.objects.count() > 0:
-            last_django_id = Group.objects.latest('id').id
-        return settings.GROUP_ID_OFFSET + last_django_id
-
     id = models.AutoField(primary_key=True)
     django_group = models.OneToOneField(
         Group,
@@ -128,7 +132,6 @@ class BackendGroup(models.Model):
     )
     backend_pk = models.CharField(
         unique=True,
-        default=randint(0, 1000),
         max_length=255,
         help_text='Unique identifier for this group used by the backend.'
     )
@@ -143,6 +146,28 @@ class BackendGroup(models.Model):
             return False
         self.django_group.user_set.add(user.django_user)
         return True
+
+    def clean_fields(self, exclude={}):
+        """
+        :inherit.
+        """
+        if not 'backend_id' in exclude and self.backend_id is None:
+            self.backend_id = self.__class__.generate_internal_gid()
+        if not 'backend_pk' in exclude and len(self.backend_pk) == 0:
+            self.backend_pk = self.django_group.name
+        super(BackendGroup, self).clean_fields(exclude)
+
+    @staticmethod
+    def generate_internal_gid():
+        """
+        Generate an unique internal group ID.
+
+        Used for user-created groups. The primary group of each user should use the user's uid as guid.
+        """
+        last_django_id = 0
+        if Group.objects.count() > 0:
+            last_django_id = Group.objects.latest('id').id
+        return settings.GROUP_ID_OFFSET + last_django_id
 
     def get_members(self):
         """
@@ -163,6 +188,13 @@ class BackendGroup(models.Model):
             return True
         return False
 
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(BackendGroup, self).save(*args, **kwargs)
+
     def user_is_member(self, user):
         """
         Check if the user is a member of this group.
@@ -170,6 +202,7 @@ class BackendGroup(models.Model):
         :param user: The user to check for membership.
         """
         return user in self.get_members()
+    user_is_member.boolean = True
 
     def __str__(self):
         """
@@ -194,16 +227,6 @@ class BackendUser(models.Model):
     that there's a server behind.
     """
 
-    @staticmethod
-    def generate_internal_uid():
-        """
-        Generate an unique internal user ID.
-        """
-        last_django_id = 0
-        if BackendUser.objects.count() > 0:
-            last_django_id = BackendUser.objects.latest('id').id
-        return settings.USER_ID_OFFSET + last_django_id
-
     id = models.AutoField(primary_key=True)
     django_user = models.OneToOneField(
         User,
@@ -216,7 +239,6 @@ class BackendUser(models.Model):
     )
     backend_pk = models.CharField(
         unique=True,
-        default=randint(0, 1000),
         max_length=255,
         help_text='Unique identifier for this user used by the backend.'
     )
@@ -226,11 +248,38 @@ class BackendUser(models.Model):
         help_text='The primary backend group this user belongs to.'
     )
 
+    def clean_fields(self, exclude={}):
+        """
+        :inherit.
+        """
+        if not 'backend_id' in exclude and self.backend_id is None:
+            self.backend_id = self.__class__.generate_internal_uid()
+        if not 'backend_pk' in exclude and len(self.backend_pk) == 0:
+            self.backend_pk = self.get_username()
+        super(BackendUser, self).clean_fields(exclude)
+
+    @staticmethod
+    def generate_internal_uid():
+        """
+        Generate an unique internal user ID.
+        """
+        last_django_id = 0
+        if BackendUser.objects.count() > 0:
+            last_django_id = BackendUser.objects.latest('id').id
+        return settings.USER_ID_OFFSET + last_django_id
+
     def get_username(self):
         """
         Get the user's internal username.
         """
         return self.django_user.get_username()
+
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(BackendUser, self).save(*args, **kwargs)
 
     def __str__(self):
         """
@@ -245,18 +294,12 @@ class BackendUser(models.Model):
         return self.__str__()
 
 
-class CollaborationGroup(models.Model):
+class CollaborationGroup(Group):
 
     """
     Collaboration groups can be created by users.
     """
 
-    id = models.AutoField(primary_key=True)
-    django_group = models.OneToOneField(
-        Group,
-        related_name='collaboration_group',
-        help_text='The regular Django group this backend group is associated with.'
-    )
     creator = models.ForeignKey(
         'BackendUser',
         blank=True,
@@ -266,10 +309,12 @@ class CollaborationGroup(models.Model):
     )
     admins = models.ManyToManyField(
         'BackendUser',
+        blank=True,
+        null=True,
         related_name='managed_groups',
         help_text='The users that are allowed to manage the group.'
     )
-    public = models.BooleanField(
+    is_public = models.BooleanField(
         default=False,
         help_text='Indicate if the group should be publicly visible and free to join for everyone.'
     )
@@ -280,7 +325,7 @@ class CollaborationGroup(models.Model):
 
         :param user: The backend user to add.
         """
-        if self.user_is_member(user):
+        if self.user_is_admin(user):
             return False
         self.admins.add(user)
         return True
@@ -293,26 +338,20 @@ class CollaborationGroup(models.Model):
         """
         if self.user_is_member(user):
             return False
-        self.django_group.user_set.add(user.django_user)
+        self.user_set.add(user.django_user)
         return True
 
     def get_members(self):
         """
         Get a list of members for this group.
         """
-        return [user.backend_user for user in self.django_group.user_set.all()]
-
-    def get_name(self):
-        """
-        Get the name of the collaboration group.
-        """
-        return self.django_group.name
+        return [user.backend_user for user in self.user_set.all()]
 
     def get_member_count(self):
         """
         Get the number of users in the group.
         """
-        return self.django_group.user_set.all().count()
+        return self.user_set.all().count()
 
     def remove_member(self, user):
         """
@@ -323,9 +362,25 @@ class CollaborationGroup(models.Model):
         :return bool `True` if the user has been a member and removed.
         """
         if self.user_is_member(user):
-            self.django_group.user_set.remove(user.django_user)
+            self.user_set.remove(user.django_user)
             return True
         return False
+
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(CollaborationGroup, self).save(*args, **kwargs)
+
+    def user_is_admin(self, user):
+        """
+        Check if the backend user is an admin of this group.
+
+        :param user: The user to check.
+        """
+        return user in self.admins.all()
+    user_is_admin.boolean = True
 
     def user_is_member(self, user):
         """
@@ -334,18 +389,7 @@ class CollaborationGroup(models.Model):
         :param user: The user to check for membership.
         """
         return user in self.get_members()
-
-    def __str__(self):
-        """
-        :inherit.
-        """
-        return str(self.django_group)
-
-    def __unicode__(self):
-        """
-        :inherit.
-        """
-        return self.__str__()
+    user_is_member.boolean = True
 
 
 class Container(models.Model):
@@ -360,7 +404,15 @@ class Container(models.Model):
         max_length=255,
         help_text='The primary key the backend uses to identify this container.'
     )
-    name = models.CharField(max_length=75)
+    name = models.CharField(
+        max_length=75,
+        validators=[
+            RegexValidator(
+                regex='^[A-z]\w*$',
+                message='Invalid container name.'
+            )
+        ]
+    )
     description = models.TextField(blank=True, null=True)
     server = models.ForeignKey(
         'Server',
@@ -386,6 +438,17 @@ class Container(models.Model):
         related_name='base_for',
         help_text='The container on which this one is based/was cloned from.'
     )
+
+    def clean(self):
+        """
+        :inherit.
+        """
+        if not self.image and not self.clone_of:
+            raise ValidationError({
+                'image': 'Either "image" or "clone_of" needs to be set.',
+                'clone_of': 'Either "image" or "clone_of" needs to be set.'
+            })
+        super(Container, self).clean()
 
     def clone(self, name, description=None):
         """
@@ -490,18 +553,21 @@ class Container(models.Model):
         Return true if clones of this container exist, false otherwise.
         """
         return Container.objects.filter(clone_of=self).exists()
+    has_clones.boolean = True
 
     def is_clone(self):
         """
         Return true if this container is a clone of another one.
         """
         return self.clone_of is not None
+    is_clone.boolean = True
 
     def is_image_based(self):
         """
         Return either this container was created based on an image or not.
         """
         return self.image is not None
+    is_image_based.boolean = True
 
     def is_running(self):
         """
@@ -510,6 +576,7 @@ class Container(models.Model):
         TODO: store in cache?
         """
         return self.server.get_container_backend().container_is_running(self.backend_pk)
+    is_running.boolean = True
 
     def is_suspended(self):
         """
@@ -518,6 +585,7 @@ class Container(models.Model):
         TODO: store in cache?
         """
         return self.server.get_container_backend().container_is_suspended(self.backend_pk)
+    is_suspended.boolean = True
 
     def restart(self):
         """
@@ -532,6 +600,13 @@ class Container(models.Model):
         """
         from ipynbsrv.core.signals.signals import container_resumed
         container_resumed.send(sender=self, container=self)
+
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(Container, self).save(*args, **kwargs)
 
     def start(self, *args):
         """
@@ -627,6 +702,13 @@ class ContainerImage(models.Model):
         else:
             return self.name
 
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(ContainerImage, self).save(*args, **kwargs)
+
     def __str__(self):
         """
         :inherit.
@@ -656,7 +738,15 @@ class ContainerSnapshot(models.Model):
         max_length=255,
         help_text='The primary key the backend uses to identify this snapshot.'
     )
-    name = models.CharField(max_length=75)
+    name = models.CharField(
+        max_length=75,
+        validators=[
+            RegexValidator(
+                regex='^[A-z]\w*$',
+                message='Invalid container snapshot name.'
+            )
+        ]
+    )
     description = models.TextField(blank=True, null=True)
     container = models.ForeignKey(
         'Container',
@@ -675,6 +765,13 @@ class ContainerSnapshot(models.Model):
         TODO: write doc.
         """
         pass
+
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(ContainerSnapshot, self).save(*args, **kwargs)
 
     def __str__(self):
         """
@@ -740,11 +837,10 @@ class Notification(models.Model):
         related_name='notifications',
         help_text='The user who sent the notification.'
     )
-    message = models.CharField(
-        max_length=255,
+    message = models.TextField(
         help_text='The message body.'
     )
-    date = models.DateTimeField(default=now())
+    date = models.DateTimeField(auto_now=True)
     notification_type = models.CharField(
         choices=NOTIFICATION_TYPES,
         default=MISCELLANEOUS,
@@ -752,7 +848,6 @@ class Notification(models.Model):
     )
     receiver_groups = models.ManyToManyField(
         'CollaborationGroup',
-        blank=True,
         related_name='notifications',
         help_text='The groups that receive that notification.'
     )
@@ -786,6 +881,32 @@ class Notification(models.Model):
         help_text='The share this notification is related to.'
     )
 
+    def clean(self):
+        """
+        :inherit.
+        """
+        if self.notification_type == 'container' and not self.container:
+            raise ValidationError({
+                'notification_type': 'Related container needed for this type.',
+                'container': 'Related container must be choosen.'
+            })
+        elif self.notification_type == 'container_image':
+            raise ValidationError({
+                'notification_type': 'Related container image needed for this type.',
+                'container_image': 'Related container image must be choosen.'
+            })
+        elif self.notification_type == 'group':
+            raise ValidationError({
+                'notification_type': 'Related group needed for this type.',
+                'group': 'Related group must be choosen.'
+            })
+        elif self.notification_type == 'share':
+            raise ValidationError({
+                'notification_type': 'Related share needed for this type.',
+                'share': 'Related share must be choosen.'
+            })
+        super(Notification, self).clean()
+
     def get_related_object(self):
         """
         Get the object related.
@@ -807,28 +928,14 @@ class Notification(models.Model):
         :return bool `True` if the notification has a related object.
         """
         return self.get_related_object() is not None
+    has_related_object.boolean = True
 
-    # def get_related_object_url_slug(self):
-    #     """
-    #     Todo: write doc.
-    #     """
-    #     obj = self.get_related_object()
-    #     if obj is None:
-    #         return None
-    #     elif type(obj) is Share:
-    #         # TODO: get url to share
-    #         return "/share/manage/{}".format(obj.id)
-    #     elif type(obj) is Container:
-    #         # TODO: get url to container
-    #         return "/containers/{}".format(obj.id)
-    #     elif type(obj) is ContainerImage:
-    #         # TODO: get url to image
-    #         return "/images/{}".format(obj.id)
-    #     elif type(obj) is Group:
-    #         # TODO: get url to container
-    #         return "/groups/manage/{}".format(obj.id)
-    #     else:
-    #         return None
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(Notification, self).save(*args, **kwargs)
 
     def __str__(self):
         """
@@ -861,16 +968,12 @@ class NotificationLog(models.Model):
     )
     read = models.BooleanField(default=False)
 
-    # @classmethod
-    # def for_user(cls, user):
-    #     """
-    #     TODO: document.
-    #     """
-    #     notifications = None
-    #     try:
-    #         notifications = NotificationLog.objects.filter(user=user.id).order_by("-notification__date")
-    #     finally:
-    #         return notifications
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(NotificationLog, self).save(*args, **kwargs)
 
     def __str__(self):
         """
@@ -897,7 +1000,6 @@ class Server(models.Model):
         max_length=255,
         help_text='The human-friendly name of this server.'
     )
-    hostname = models.CharField(unique=True, max_length=255)
     internal_ip = models.GenericIPAddressField(
         unique=True,
         protocol='IPv4',
@@ -925,6 +1027,7 @@ class Server(models.Model):
         blank=True,
         null=True,
         max_length=255,
+        validators=[validate_json_format],
         help_text="""Optional arguments to pass to the backend\'s get_instance method.
             Available placeholders: all model fields in the form: %field_name%, e.g. %hostname%.
             Format: {'arg1': \"value\", 'arg2': \"value\"}"""
@@ -943,7 +1046,6 @@ class Server(models.Model):
         if self.container_backend_args:
             return self.container_backend_args \
                 .replace('%name%', self.name) \
-                .replace('%hostname%', self.hostname) \
                 .replace('%internal_ip%', self.internal_ip) \
                 .replace('%external_ip%', self.external_ip)
         return None
@@ -953,6 +1055,14 @@ class Server(models.Model):
         Check if this server is configured as a container host (has a container_backend set).
         """
         return self.container_backend is not None
+    is_container_host.boolean = True
+
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(Server, self).save(*args, **kwargs)
 
     def __str__(self):
         """
@@ -979,20 +1089,30 @@ class Share(models.Model):
         related_name='share',
         help_text='The (backend) group that is used to store membership information.'
     )
-    name = models.CharField(unique=True, max_length=75)
+    name = models.CharField(
+        unique=True,
+        max_length=75,
+        validators=[
+            RegexValidator(
+                regex='^[A-z]\w*$',
+                message='Invalid share name.'
+            )
+        ]
+    )
     description = models.TextField(null=True, blank=True)
     owner = models.ForeignKey(
         'BackendUser',
         related_name='shares',
         help_text='The user owning the share (usually the one that created it).'
     )
-    tags = models.ManyToManyField('Tag', blank=True)
     access_groups = models.ManyToManyField(
         'CollaborationGroup',
         blank=True,
+        null=True,
         related_name='shares',
         help_text='The groups having access to that share.'
     )
+    tags = models.ManyToManyField('Tag', blank=True)
 
     def add_member(self, user):
         """
@@ -1000,16 +1120,25 @@ class Share(models.Model):
 
         :param user: The user to add.
         """
-        if self.user_is_member(user):
-            return False
-        self.backend_group.django_group.user_set.add(user.django_user)
-        return True
+        return self.backend_group.add_member(user)
+
+    def clean_fields(self, exclude={}):
+        """
+        :inherit.
+        """
+        if not 'backend_group' in exclude and not hasattr(self, 'backend_group'):
+            django_group = Group(name=settings.SHARE_GROUP_PREFIX + self.name)
+            django_group.save()
+            backend_group = BackendGroup(django_group=django_group)
+            backend_group.save()
+            self.backend_group = backend_group
+        super(Share, self).clean_fields(exclude)
 
     def get_members(self):
         """
         Get a list of members for this share.
         """
-        return [user.backend_user for user in self.backend_group.django_group.user_set.all()]
+        return self.backend_group.get_members()
 
     def remove_member(self, user):
         """
@@ -1019,10 +1148,14 @@ class Share(models.Model):
 
         :return bool `True` if the user has been a member and removed.
         """
-        if self.user_is_member(user):
-            self.backend_group.django_group.user_set.remove(user.django_user)
-            return True
-        return False
+        return self.backend_group.remove_member(user)
+
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(Share, self).save(*args, **kwargs)
 
     def user_is_member(self, user):
         """
@@ -1030,7 +1163,8 @@ class Share(models.Model):
 
         :param user: The user to check for membership.
         """
-        return user in self.get_members()
+        return self.backend_group.user_is_member(user)
+    user_is_member.boolean = True
 
     def __str__(self):
         """
@@ -1052,7 +1186,22 @@ class Tag(models.Model):
     """
 
     id = models.AutoField(primary_key=True)
-    label = models.CharField(max_length=75)
+    label = models.CharField(
+        max_length=75,
+        validators=[
+            RegexValidator(
+                regex='^[A-z]\w*$',
+                message='Invalid label'
+            )
+        ]
+    )
+
+    def save(self, *args, **kwargs):
+        """
+        :inherit.
+        """
+        self.full_clean()
+        super(Tag, self).save(*args, **kwargs)
 
     def __str__(self):
         """
