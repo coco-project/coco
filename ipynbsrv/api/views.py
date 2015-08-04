@@ -616,10 +616,7 @@ class ShareList(generics.ListCreateAPIView):
         if self.request.user.is_superuser:
             return Share.objects.all()
         else:
-            return Share.objects.filter(
-                Q(owner=self.request.user.backend_user)
-                | Q(backend_group__django_group__user=self.request.user)
-                )
+            return Share.objects.filter(backend_group__django_group__user=self.request.user)
 
     def perform_create(self, serializer):
         print("perform create")
@@ -646,10 +643,7 @@ class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
         if self.request.user.is_superuser:
             return Share.objects.all()
         else:
-            return Share.objects.filter(
-                Q(owner=self.request.user.backend_user)
-                | Q(backend_group__django_group__user=self.request.user)
-                ).distinct()
+            return Share.objects.filter(backend_group__django_group__user=self.request.user)
 
 
 @api_view(['POST'])
