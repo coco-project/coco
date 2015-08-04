@@ -1136,6 +1136,14 @@ class Share(models.Model):
         self.access_groups.add(collab_group)
         return True
 
+    def add_member(self, user):
+        """
+        Add the user as a member to this share.
+
+        :param user: The user to add.
+        """
+        return self.backend_group.add_member(user)
+
     def clean_fields(self, exclude={}):
         """
         :inherit.
@@ -1189,14 +1197,6 @@ class Share(models.Model):
         :param user: The user to check for membership.
         """
         return self.backend_group.user_is_member(user)
-
-    def add_member(self, user):
-        """
-        Add the user as a member to this share.
-
-        :param user: The user to add.
-        """
-        return self.backend_group.add_member(user)
 
     def __str__(self):
         """
