@@ -535,17 +535,39 @@ class UserAdmin(admin.ModelAdmin):
     Admin model for the `User` model.
     """
 
-    fieldsets = [
-        ('General Properties', {
-            'fields': ['username', 'is_active', 'is_staff']
-        }),
-        ('Group Memberships', {
-            'classes': ['collapse'],
-            'fields': ['groups']
-        })
-    ]
+    list_display = ['username', 'is_active', 'is_staff']
+    list_filter = ['is_active', 'is_staff']
 
-    readonly_fields = ['username']
+    def get_fieldsets(self, request, obj=None):
+        """
+        :inherit.
+        """
+        if obj is not None and hasattr(obj, 'backend_user'):
+            return [
+                ('General Properties', {
+                    'fields': ['username', 'is_active', 'is_staff']
+                }),
+                ('Group Memberships', {
+                    'classes': ['collapse'],
+                    'fields': ['groups']
+                })
+            ]
+        else:
+            return [
+                ('General Properties', {
+                    'fields': ['username', 'is_active', 'is_staff']
+                })
+            ]
+
+    def get_readonly_fields(self, request, obj=None):
+        """
+        :inherit.
+        """
+        if obj is not None and hasattr(obj, 'backend_user'):
+            return ['groups', 'is_staff', 'username']
+        else:
+            return ['is_staff']
+
 
     def has_add_permission(self, request):
         """
