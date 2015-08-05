@@ -14,7 +14,7 @@
                     <div class="form-group">
                         <label for="recipient">Users</label>
                             {% for group in groups %}
-                                {% if group.id not in share.access_groups and group.is_single_user_group %}
+                                {% if group not in share.access_groups and group.is_single_user_group %}
                                 <div class="checkbox">
                                   <label><input name="access_groups" type="checkbox" value="{{ group.id }}">{{ group.name }}</label>
                                 </div>

@@ -123,9 +123,12 @@ class CollaborationGroupList(generics.ListCreateAPIView):
     """
     Get a list of all the collaboration groups the user is in.
     """
-
-    serializer_class = CollaborationGroupSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method in ['PATCH', 'POST', 'PUT']:
+            return FlatCollaborationGroupSerializer
+        return NestedCollaborationGroupSerializer
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -151,9 +154,12 @@ class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     Get details of a collaboration group the user is in.
     """
-
-    serializer_class = CollaborationGroupSerializer
     permission_classes = [IsSuperUserOrIsGroupAdminOrReadOnly]
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method in ['PATCH', 'POST', 'PUT']:
+            return FlatCollaborationGroupSerializer
+        return NestedCollaborationGroupSerializer
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -194,10 +200,20 @@ def collaborationgroup_add_members(request, pk):
         if not user.backend_user:
             return Response({"error": "User has no backend user!", "data": user_id})
         user_list.append(user.backend_user)
+
+    n = Notification(
+        notification_type=Notification.GROUP,
+        sender=request.user,
+        message="You have been added to a group.",
+        group=group)
+    n.save()
+
     for user in user_list:
         group.add_member(user)
+        if user.get_collaboration_group():
+            n.receiver_groups.add(user.get_collaboration_group())
 
-    serializer = CollaborationGroupSerializer(group)
+    serializer = NestedCollaborationGroupSerializer(group)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -234,7 +250,7 @@ def collaborationgroup_add_admins(request, pk):
         if not result:
             return Response({"error": "{} is no member of {}".format(user.username, group.name), "data": user_id})
 
-    serializer = CollaborationGroupSerializer(group)
+    serializer = NestedCollaborationGroupSerializer(group)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -268,7 +284,7 @@ def collaborationgroup_remove_members(request, pk):
     for user in user_list:
         group.remove_member(user)
 
-    serializer = CollaborationGroupSerializer(group)
+    serializer = NestedCollaborationGroupSerializer(group)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -620,7 +636,9 @@ class ShareList(generics.ListCreateAPIView):
         if self.request.user.is_superuser:
             return Share.objects.all()
         else:
-            return Share.objects.filter(backend_group__django_group__user=self.request.user)
+            return Share.objects.filter(
+                backend_group__django_group__user=self.request.user
+                )
 
     def perform_create(self, serializer):
 
@@ -637,8 +655,6 @@ class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a share.
     """
 
-    permission_classes = [IsSuperUserOrIsObjectOwner]
-
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method in ['PATCH', 'POST', 'PUT']:
             return FlatShareSerializer
@@ -648,7 +664,9 @@ class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
         if self.request.user.is_superuser:
             return Share.objects.all()
         else:
-            return Share.objects.filter(backend_group__django_group__user=self.request.user)
+            return Share.objects.filter(
+                backend_group__django_group__user=self.request.user
+                )
 
 
 @api_view(['POST'])
@@ -661,6 +679,7 @@ def share_add_access_groups(request, pk):
     """
     required_params = ["access_groups"]
     params = validate_request_params(required_params, request)
+    #notify = request.data.get("notify")
 
     obj = Share.objects.filter(id=pk)
     if not obj:
@@ -674,11 +693,21 @@ def share_add_access_groups(request, pk):
         if not obj:
             return Response({"error": "CollaborationGroup not found!", "data": access_group_id})
         access_groups.append(obj.first())
+
+    print(access_groups)
+    n = Notification(
+        notification_type=Notification.SHARE,
+        sender=request.user,
+        message="You have been added to a share.",
+        share=share)
+    n.save()
+
     # add the access groups to the share
     for access_group in access_groups:
         share.add_access_group(access_group)
+        n.receiver_groups.add(access_group)
 
-    serializer = ShareSerializer(share)
+    serializer = NestedShareSerializer(share)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -692,6 +721,7 @@ def share_remove_access_groups(request, pk):
     """
     required_params = ["access_groups"]
     params = validate_request_params(required_params, request)
+    #notify = request.POST.get("notify")
 
     obj = Share.objects.filter(id=pk)
     if not obj:
@@ -705,11 +735,19 @@ def share_remove_access_groups(request, pk):
         if not obj:
             return Response({"error": "CollaborationGroup not found!", "data": access_group_id})
         access_groups.append(obj.first())
+
+    n = Notification(
+        notification_type=Notification.SHARE,
+        sender=request.user,
+        message="You have been removed from a share.",
+        share=share)
+    n.save()
     # add the access groups to the share
     for access_group in access_groups:
         share.remove_access_group(access_group)
+        n.receiver_groups.add(access_group)
 
-    serializer = ShareSerializer(share)
+    serializer = NestedShareSerializer(share)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -783,6 +821,18 @@ class NotificationLogList(generics.ListAPIView):
         else:
             return NotificationLog.objects.filter(user=self.request.user.backend_user) \
                                           .filter(in_use=True)
+
+
+class NotificationLogUnreadList(generics.ListAPIView):
+    """
+    Get a list of all the notification logs.
+    """
+
+    serializer_class = NotificationLogSerializer
+
+    def get_queryset(self):
+        return NotificationLog.objects.filter(user=self.request.user.backend_user) \
+                                          .filter(in_use=True).filter(read=False)
 
 
 class NotificationLogDetail (generics.RetrieveUpdateDestroyAPIView):

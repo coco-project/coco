@@ -14,16 +14,13 @@
         {% include 'web/snippets/messages.html' with messages=messages only %}
 
         <h1>Group</h1>
-        {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator %}
+        {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator.id %}
         <form action="{% url 'group_delete' %}" method="POST" role="form">
             {% csrf_token %}
             <input type="hidden" name="group_id" value="{{ group.id }}">
             <button type="submit" class="btn btn-primary btn-delete pull-right" data-toggle="modal" data-target="#modal-group-delete">
                 Delete Group
             </button>
-        </form>
-        <form role="form">
-            <button type="button" class="btn btn-primary btn-add pull-right" data-toggle="modal" data-target="#modal-group-addusers">Add Users</button>
         </form>
         {% endif %}
         {% if request.user.backend_user.id in group.admins and request.user.backend_user.id != group.creator %}
@@ -39,7 +36,7 @@
                 <tr>
                     <td>Name:</td><td>{{ group.name }}</td>
                 </tr><tr>
-                    <td>Creator:</td><td>{{ group.creator }}</td>
+                    <td>Creator:</td><td>{{ group.creator.username }}</td>
                 </tr><tr>
                     <td>Public:</td><td>{{ group.is_public }}</td>
                 </tr>
@@ -48,10 +45,10 @@
 
         <h2>Members</h2>
         <form role="form">
-        {% if request.user.backend_user in group.backend_group.admins.all %}
-            <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-share-adduser">
-                Add new
-            </button>
+        {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator.id %}
+            <form role="form">
+            <button type="button" class="btn btn-primary btn-add pull-right" data-toggle="modal" data-target="#modal-group-addusers">Add Users</button>
+        </form>
         {% endif %}
         </form>
         <table class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
@@ -66,26 +63,26 @@
                 <tr>
                     <td>{{ member.username }}
                     {% if member.id == request.user.id %} <span class="label label-info">That's you!</span>{% endif %}
-                    {% if member.backend_user.id in group.admins %} <span class="label label-info">Admin</span>{% endif %}
-                    {% if member.backend_user.id == group.creator %} <span class="label label-info">Creator</span>{% endif %}</td>
+                    {% if member.id in group.admins %} <span class="label label-info">Admin</span>{% endif %}
+                    {% if member.id == group.creator.id %} <span class="label label-info">Creator</span>{% endif %}</td>
                     <td style="text-align: right">
-                    {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator %}
+                    {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator.id %}
                     
-                        {% if member.backend_user.id != group.creator %} 
+                        {% if member.id != group.creator.id %} 
                             <form action="{% url 'group_remove_member' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
                                 <input type="hidden" name="group_id" value="{{ group.id }}">
-                                <input type="hidden" name="user_id" value="{{ member.id }}">
+                                <input type="hidden" name="user_id" value="{{ member.django_user.id }}">
                                 <button class="btn btn-sm btn-danger" title="Remove from group?" data-toggle="confirmation" data-placement="left">
                                     <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
                                 </button>
                             </form>
                         {% endif %}
-                        {% if member.backend_user.id not in group.admins and member.backend_user.id != group.creator %}
+                        {% if member.id not in group.admins and member.id != group.creator.id %}
                         <form action="{% url 'group_add_admin' %}" method="POST" role="form" class="form-action">
                             {% csrf_token %}
                             <input type="hidden" name="group_id" value="{{ group.id }}">
-                            <input type="hidden" name="user_id" value="{{ member.id }}">
+                            <input type="hidden" name="user_id" value="{{ member.django_user.id }}">
                             <button class="btn btn-sm btn-danger" title="Make group admin?" data-toggle="confirmation" data-placement="left">
                                 <i class="glyphicon glyphicon glyphicon-king" aria-hidden="true"></i>
                             </button>

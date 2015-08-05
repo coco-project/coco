@@ -34,10 +34,9 @@
                 {% for n in notifications %}
                 <tr data-id="{{ n.id }}">
                     <td>{{ n.notification.date }}</td>
-                    <td>{{ n.notification.sender }}</td>
+                    <td>{{ n.notification.sender.username }}</td>
                     <td>{{ n.notification.message }}</td>
-                    <td>{% if not n.notification.related_object_id %}{{ n.notification.event_type }}
-                    {% else %} <a href="{{ n.notification.get_related_object_url_slug }}">{{ n.notification.event_type }}</a>{% endif %}{{ n.related_object_id }}</td>
+                    <td>{% if n.notification.url_slug %}<a href="{{ n.notification.url_slug }}">{{ n.notification.notification_type }}</a>{% else %}{{ n.notification.notification_type }}{% endif %}</td>
                     <td>{{ n.read }}</td>
                     <td>mark as read</td>
                 </tr>

@@ -82,7 +82,8 @@ def share_add_access_groups(request):
     access_groups = request.POST.getlist('access_groups')
     share_id = request.POST.get('id')
     client = get_httpclient_instance(request)
-
+    notify = request.POST.get('notify')
+    print("views: " + str(notify))
     group_list = []
     # validate existance of users first
     for group_id in access_groups:
@@ -91,9 +92,15 @@ def share_add_access_groups(request):
         group_list.append(group_id)
 
     print(group_list)
+    params = {}
+    params['access_groups'] = group_list
+    if notify:
+        params['notify'] = True
+    print(params)
     # then call API to add the users to the group
     client.shares.get()
-    client.shares(share_id).add_access_groups.post({"access_groups": group_list})
+    client.shares(share_id).add_access_groups.post(params)
+    messages.success(request, "Access permission successfully added.")
 
     return redirect('share_manage', share_id)
 
@@ -192,7 +199,6 @@ def manage(request, share_id):
     users = client.users.get()
     groups = client.collaborationgroups.get()
     if share:
-        if share.owner == request.user.backend_user.id:
             return render(request, 'web/shares/manage.html', {
                 'title': "Manage Share",
                 'share': share,
@@ -200,8 +206,6 @@ def manage(request, share_id):
                 'users': users,
                 'groups': groups
             })
-        else:
-            messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
         messages.error(request, "Share does not exist.")
 

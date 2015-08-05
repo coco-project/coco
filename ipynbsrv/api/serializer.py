@@ -39,7 +39,7 @@ class ConfigurationVariableSerializer(serializers.ModelSerializer):
         model = ConfigurationVariable
 
 
-class BackendUserSerializer(serializers.ModelSerializer):
+class FlatBackendUserSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
@@ -54,12 +54,24 @@ class UserSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
-    backend_user = BackendUserSerializer()
+    backend_user = FlatBackendUserSerializer()
 
     class Meta:
         model = User
         fields = ('id', 'username', 'backend_user')
         read_only_fields = ('id', 'username', )
+
+
+class NestedBackendUserSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
+    username = serializers.CharField(source='get_username')
+    django_user = UserSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = BackendUser
+        fields = ('id', 'username', 'django_user')
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -92,12 +104,26 @@ class BackendSerializer(serializers.ModelSerializer):
         model = Backend
 
 
-class CollaborationGroupSerializer(serializers.ModelSerializer):
+class NestedCollaborationGroupSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
     member_count = serializers.IntegerField(source='get_member_count', read_only=True)
-    members = BackendUserSerializer(source='get_members', read_only=True, many=True)
+    members = NestedBackendUserSerializer(source='get_members', read_only=True, many=True)
+    creator = NestedBackendUserSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = CollaborationGroup
+        fields = ('id', 'name', 'creator', 'members', 'member_count', 'admins', 'is_public', 'is_single_user_group')
+        read_only_fields = ('admins', 'is_single_user_group')
+
+
+class FlatCollaborationGroupSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
+    member_count = serializers.IntegerField(source='get_member_count', read_only=True)
+    members = FlatBackendUserSerializer(source='get_members', read_only=True, many=True)
 
     class Meta:
         model = CollaborationGroup
@@ -183,8 +209,9 @@ class NestedShareSerializer(serializers.ModelSerializer):
     Used for read_only.
     """
     tags = TagSerializer(many=True, read_only=True)
-    members = BackendUserSerializer(source='get_members', many=True, read_only=True)
-    access_groups = CollaborationGroupSerializer(many=True, read_only=True)
+    members = NestedBackendUserSerializer(source='get_members', many=True, read_only=True)
+    access_groups = NestedCollaborationGroupSerializer(many=True, read_only=True)
+    owner = NestedBackendUserSerializer(many=False, read_only=True)
 
     class Meta:
         model = Share
@@ -242,6 +269,18 @@ class NotificationSerializer(serializers.ModelSerializer):
     Todo: write doc.
     """
     notification_type = serializers.ChoiceField(choices=Notification.NOTIFICATION_TYPES, default='miscellaneous')
+    sender = UserSerializer(many=False)
+    url_slug = serializers.CharField(source='get_related_object_url', read_only=True)
+
+    class Meta:
+        model = Notification
+        read_only_fields = ('date', )
+
+
+class FlatNotificationSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
 
     class Meta:
         model = Notification

@@ -17,10 +17,12 @@ def dashboard(request):
 
     client = get_httpclient_instance(request)
     containers = client.containers.get()
+    new_notifications_count = len(client.notificationlogs.unread.get())
 
     return render(request, 'web/dashboard.html', {
         'title': "Dashboard",
-        'containers': containers
+        'containers': containers,
+        'new_notifications_count': new_notifications_count
     })
 
 

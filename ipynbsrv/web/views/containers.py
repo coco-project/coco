@@ -158,10 +158,13 @@ def index(request):
     # containers = Container.objects.filter(owner=request.user.backend_user)
     containers = client.containers.get()
     images = client.images.get()
+    new_notifications_count = len(client.notificationlogs.unread.get())
+
     return render(request, 'web/containers/index.html', {
         'title': "Containers",
         'containers': containers,
-        'images': images
+        'images': images,
+        'new_notifications_count': new_notifications_count
     })
 
 

@@ -62,9 +62,8 @@ def create(request):
     # stupid create workaround (see containers)
     client.collaborationgroups.get()
     client.collaborationgroups.post({
-        "django_group": {
-            "name": name
-        }, "is_public": public,
+        "name": name,
+        "is_public": public
     })
 
     messages.success(request, "Group `{}` created sucessfully.".format(name))
@@ -111,15 +110,16 @@ def add_admin(request):
     group = client.collaborationgroups(group_id).get()
 
     if group:
-        if request.user.is_superuser or request.user.backend_user.id == group.creator or request.backend_user in group.admins:
-            user = client.users(user_id).get()
-            if user and hasattr(user, 'backend_user'):
-                client.collaborationgroups(group_id).add_admins.post({
-                    "users": [user_id]
-                    })
-                messages.success(request, "{} is now a admin of {}.".format(user.username, group.name))
-                request.method = "GET"
-                return redirect('group_manage', group.id)
+        if request.user.is_superuser or request.user.backend_user.id == group.creator.id or request.user.backend_user.id in group.admins:
+            client.collaborationgroups(group_id).add_admins.post({
+                "users": [user_id]
+                })
+            messages.success(request, "User is now a admin of {}.".format(group.name))
+            request.method = "GET"
+            return redirect('group_manage', group.id)
+        else:
+            messages.error(request, "Not enough permissions to do this.")
+        return redirect('group_manage', group.id)
     else:
         messages.error(request, "Group does not exist.")
         return redirect('group_manage', group.id)
@@ -147,6 +147,7 @@ def add_members(request):
     client = get_httpclient_instance(request)
     client.collaborationgroups(group_id).add_members.post({"users": user_list})
 
+    messages.success(request, "User(s) successfully added to the group.".format(user.username))
     return redirect('group_manage', group_id)
 
 

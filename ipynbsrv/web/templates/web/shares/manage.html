@@ -31,9 +31,13 @@
                     <td>{{ share.description }}</td>
                 </tr>
                 <tr>
+                    <td>Owner</td>
+                    <td>{{ share.owner.username }}</td>
+                </tr>
+                <tr>
                     <td>Tags</td>
                     <td>
-                        {% for tag in share.tags.all %}
+                        {% for tag in share.tags %}
                             <span class="label label-default">{{ tag.label }}</span>
                         {% empty %}
                             -
@@ -65,8 +69,9 @@
                 {% for group in share.access_groups %}
                 {% if not group.is_single_user_group %}
                 <tr>
-                    <td>{{ group.name }}</td>
+                    <td><a href="{% url 'group_manage' group.id %}">{{ group.name }}</a></td>
                     <td style="text-align: right">
+                    {% if request.user == share.owner %}
                         {% if member.backend_user.id != share.owner %}
                             <form action="{% url 'share_remove_access_group' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
@@ -77,6 +82,7 @@
                                 </button>
                             </form>
                         {% endif %}
+                    {% endif %}
                     </td>
                 </tr>
                 {% endif %}

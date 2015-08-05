@@ -12,6 +12,7 @@ def create_notificationlogs_for_receivers(sender, notification, group, **kwargs)
     """
     if notification:
         for user in group.get_members():
+            print("notification sent to {}".format(user))
             log = NotificationLog(notification=notification, user=user)
             log.save()
 
@@ -52,6 +53,7 @@ def m2m_changed_handler(sender, instance, **kwargs):
     """
     Method to map Django m2m_changed model signals to custom ones.
     """
+    print("notification signal")
     action = kwargs.get('action')
     if isinstance(instance, Notification):
         if 'pk_set' in kwargs:  # receiver groups
