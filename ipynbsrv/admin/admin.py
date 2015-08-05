@@ -4,7 +4,7 @@ from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from ipynbsrv.admin.forms import CollaborationGroupAdminForm
+from ipynbsrv.admin.forms import CollaborationGroupAdminForm, ShareAdminForm
 from ipynbsrv.core.models import *
 
 
@@ -492,6 +492,7 @@ class ShareAdmin(admin.ModelAdmin):
         ('tags', admin.RelatedOnlyFieldListFilter),
     ]
 
+    form = ShareAdminForm
     fieldsets = [
         ('General Properties', {
             'fields': ['name', 'description', 'tags', 'owner']
