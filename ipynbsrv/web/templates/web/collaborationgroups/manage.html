@@ -36,7 +36,7 @@
                 <tr>
                     <td>Name:</td><td>{{ group.name }}</td>
                 </tr><tr>
-                    <td>Creator:</td><td>{{ group.creator.username }}</td>
+                    <td>Creator:</td><td>{{ group.creator.username }}{% if group.creator.id == request.user.backend_user.id %} <span class="label label-info">That's you!</span>{% endif %}</td>
                 </tr><tr>
                     <td>Public:</td><td>{{ group.is_public }}</td>
                 </tr>
@@ -62,10 +62,20 @@
                 {% for member in members %}
                 <tr>
                     <td>{{ member.username }}
-                    {% if member.id == request.user.id %} <span class="label label-info">That's you!</span>{% endif %}
+                    {% if member.id == request.user.backend_user.id %} <span class="label label-info">That's you!</span>{% endif %}
                     {% if member.id in group.admins %} <span class="label label-info">Admin</span>{% endif %}
                     {% if member.id == group.creator.id %} <span class="label label-info">Creator</span>{% endif %}</td>
                     <td style="text-align: right">
+                    {% if request.user.backend_user.id != group.creator and group.creator and request.user.backend_user.id == member.id %}
+                    <form action="{% url 'group_remove_member' %}" method="POST" role="form" class="form-action">
+                        {% csrf_token %}
+                        <input type="hidden" name="group_id" value="{{ group.id }}">
+                        <input type="hidden" name="user_id" value="{{ request.user.id }}">
+                        <button class="btn btn-sm btn-warning" title="Leave group?" data-toggle="confirmation" data-placement="left">
+                            <i class="glyphicon glyphicon-minus-sign" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                    {% endif %}
                     {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator.id %}
                     
                         {% if member.id != group.creator.id %} 
@@ -83,7 +93,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="group_id" value="{{ group.id }}">
                             <input type="hidden" name="user_id" value="{{ member.django_user.id }}">
-                            <button class="btn btn-sm btn-danger" title="Make group admin?" data-toggle="confirmation" data-placement="left">
+                            <button class="btn btn-sm btn-success" title="Make group admin?" data-toggle="confirmation" data-placement="left">
                                 <i class="glyphicon glyphicon glyphicon-king" aria-hidden="true"></i>
                             </button>
                         </form>

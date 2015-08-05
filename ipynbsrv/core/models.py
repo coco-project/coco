@@ -942,14 +942,18 @@ class Notification(models.Model):
         """
         Get the url slug for the related object.
         """
-        pk = self.get_related_object().id
-        if self.container is not None:
+        obj = self.get_related_object()
+        if obj:
+            pk = obj.id
+        else:
+            return None
+        if self.notification_type == 'container' and self.container is not None:
             return reverse('containers')
-        if self.container_image is not None:
+        if self.notification_type == 'container_image' and self.container_image is not None:
             return reverse('container_images')
-        if self.group is not None:
+        if self.notification_type == 'group' and self.group is not None:
             return reverse('group_manage', args=[pk])
-        if self.share is not None:
+        if self.notification_type == 'share' and self.share is not None:
             return reverse('share_manage', args=[pk])
         return None
 

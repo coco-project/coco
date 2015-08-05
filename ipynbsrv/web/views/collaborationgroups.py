@@ -16,6 +16,8 @@ def index(request):
     client = get_httpclient_instance(request)
     users = client.users.get()
     collab_groups = client.collaborationgroups.get()
+    for group in collab_groups:
+        group["member_ids"] = [member.id for member in group.members]
 
     return render(request, 'web/collaborationgroups/index.html', {
         'title': "Groups",
@@ -33,12 +35,14 @@ def manage(request, group_id):
     group = client.collaborationgroups(group_id).get()
     members = group.members
     users = client.users.get()
+    member_ids = [member.id for member in members]
 
     return render(request, 'web/collaborationgroups/manage.html', {
         'title': "Group",
         'group': group,
         'members': members,
         'users': users,
+        'member_ids': member_ids
     })
 
 
@@ -147,7 +151,7 @@ def add_members(request):
     client = get_httpclient_instance(request)
     client.collaborationgroups(group_id).add_members.post({"users": user_list})
 
-    messages.success(request, "User(s) successfully added to the group.".format(user.username))
+    messages.success(request, "Users successfully added to the group.".format(user.username))
     return redirect('group_manage', group_id)
 
 
