@@ -19,7 +19,6 @@ def add_admin_to_collaboration_group(sender, group, user, **kwargs):
     Add the admin to the collaboration groups's internal backend group.
     """
     if group is not None and user is not None:
-        # TODO: doesn't trigger signal because we're within a group signal already
         group.add_member(user)
 
 
@@ -30,7 +29,6 @@ def remove_admin_from_collaboration_group(sender, group, user, **kwargs):
     """
     if group is not None and user is not None:
         if not user == group.creator:
-            # TODO: doesn't trigger signal because we're within a group signal already
             group.remove_member(user)
 
 
