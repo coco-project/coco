@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.encoding import smart_unicode
@@ -273,6 +274,19 @@ class BackendUser(models.Model):
         Get the user's internal username.
         """
         return self.django_user.get_username()
+
+    def get_collaboration_group(self):
+        """
+        Return the private collaboration group belonging to this user.
+        """
+        group = CollaborationGroup.objects.filter(
+            is_single_user_group=True,
+            user__id=self.id
+            )
+        if group:
+            return group.first()
+        else:
+            return None
 
     def save(self, *args, **kwargs):
         """
@@ -893,17 +907,17 @@ class Notification(models.Model):
                 'notification_type': 'Related container needed for this type.',
                 'container': 'Related container must be choosen.'
             })
-        elif self.notification_type == 'container_image':
+        elif self.notification_type == 'container_image' and not self.container_image:
             raise ValidationError({
                 'notification_type': 'Related container image needed for this type.',
                 'container_image': 'Related container image must be choosen.'
             })
-        elif self.notification_type == 'group':
+        elif self.notification_type == 'group' and not self.group:
             raise ValidationError({
                 'notification_type': 'Related group needed for this type.',
                 'group': 'Related group must be choosen.'
             })
-        elif self.notification_type == 'share':
+        elif self.notification_type == 'share' and not self.share:
             raise ValidationError({
                 'notification_type': 'Related share needed for this type.',
                 'share': 'Related share must be choosen.'
@@ -922,6 +936,21 @@ class Notification(models.Model):
             return self.group
         if self.share is not None:
             return self.share
+        return None
+
+    def get_related_object_url(self):
+        """
+        Get the url slug for the related object.
+        """
+        pk = self.get_related_object().id
+        if self.container is not None:
+            return reverse('containers')
+        if self.container_image is not None:
+            return reverse('container_images')
+        if self.group is not None:
+            return reverse('group_manage', args=[pk])
+        if self.share is not None:
+            return reverse('share_manage', args=[pk])
         return None
 
     def has_related_object(self):
@@ -1181,6 +1210,16 @@ class Share(models.Model):
             self.access_groups.remove(collab_group)
             return True
         return False
+
+    def remove_member(self, user):
+        """
+        Remove the member `user` from the share.
+
+        :param user: The user to remove (if is member).
+
+        :return bool `True` if the user has been a member and removed.
+        """
+        return self.backend_group.remove_member(user)
 
     def save(self, *args, **kwargs):
         """
