@@ -177,17 +177,28 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
 
 
-class ShareSerializer(serializers.ModelSerializer):
+class NestedShareSerializer(serializers.ModelSerializer):
     """
-    Todo: write doc.
+    Nested ShareSerializer where all related fields are verbose.
+    Used for read_only.
     """
+    tags = TagSerializer(many=True, read_only=True)
     members = BackendUserSerializer(source='get_members', many=True, read_only=True)
-    tags = TagSerializer(many=True)
     access_groups = CollaborationGroupSerializer(many=True, read_only=True)
 
     class Meta:
         model = Share
-        fields = ('id', 'name', 'description', 'owner', 'members', 'tags', 'access_groups')
+
+
+class FlatShareSerializer(serializers.ModelSerializer):
+    """
+    Flat ShareSerializer where all related fields are only represented by their id.
+    Used for write actions.
+    """
+
+    class Meta:
+        model = Share
+        fields = ('id', 'name', 'description', 'owner', 'tags', 'access_groups')
 
     def set_tags(self, tags, instance):
         for tag in tags:

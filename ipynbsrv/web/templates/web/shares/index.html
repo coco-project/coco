@@ -32,7 +32,7 @@
             <tbody>
                 {% for share in shares %}
                 <tr data-id="{{ share.id }}">
-                    <td>{{ share.name }}</td>
+                    <td><a href="{% url 'share_manage' share.id %}">{{ share.name }}</a></td>
                     <td>{{ share.description }}</td>
                     <td>
                         {% if share.owner == request.user %}

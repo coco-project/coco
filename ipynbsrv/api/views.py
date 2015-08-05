@@ -610,7 +610,11 @@ class ShareList(generics.ListCreateAPIView):
     """
     Get a list of all the shares.
     """
-    serializer_class = ShareSerializer
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method in ['PATCH', 'POST', 'PUT']:
+            return FlatShareSerializer
+        return NestedShareSerializer
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -619,9 +623,6 @@ class ShareList(generics.ListCreateAPIView):
             return Share.objects.filter(backend_group__django_group__user=self.request.user)
 
     def perform_create(self, serializer):
-        print("perform create")
-        # TODO: handle tags
-        # if self.request.POST:
 
         if hasattr(self.request.user, 'backend_user'):
             serializer.save(
@@ -636,8 +637,12 @@ class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a share.
     """
 
-    serializer_class = ShareSerializer
     permission_classes = [IsSuperUserOrIsObjectOwner]
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method in ['PATCH', 'POST', 'PUT']:
+            return FlatShareSerializer
+        return NestedShareSerializer
 
     def get_queryset(self):
         if self.request.user.is_superuser:
