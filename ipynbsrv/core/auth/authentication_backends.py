@@ -74,8 +74,7 @@ class BackendProxyAuthentication(object):
         """
         collaboration_group = CollaborationGroup(
             name=name,
-            is_single_user_group=True,
-            is_public=True
+            is_single_user_group=True
         )
         collaboration_group.save()
         backend_group = BackendGroup(

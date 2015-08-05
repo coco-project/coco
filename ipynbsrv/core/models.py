@@ -269,12 +269,6 @@ class BackendUser(models.Model):
             last_django_id = BackendUser.objects.latest('id').id
         return settings.USER_ID_OFFSET + last_django_id
 
-    def get_username(self):
-        """
-        Get the user's internal username.
-        """
-        return self.django_user.get_username()
-
     def get_collaboration_group(self):
         """
         Return the private collaboration group belonging to this user.
@@ -282,11 +276,16 @@ class BackendUser(models.Model):
         group = CollaborationGroup.objects.filter(
             is_single_user_group=True,
             user__id=self.id
-            )
-        if group:
+        )
+        if group.exists():
             return group.first()
-        else:
-            return None
+        return None
+
+    def get_username(self):
+        """
+        Get the user's internal username.
+        """
+        return self.django_user.get_username()
 
     def save(self, *args, **kwargs):
         """
@@ -465,6 +464,12 @@ class Container(models.Model):
                 'image': 'Either "image" or "clone_of" needs to be set.',
                 'clone_of': 'Either "image" or "clone_of" needs to be set.'
             })
+        if not self.pk:  # creational only
+            if self.image and self.clone_of:
+                raise ValidationError({
+                    'image': 'A container can either be bootstrapped from an "image" or as a "clone_of", not both.',
+                    'clone_of': 'A container can either be bootstrapped from an "image" or as a "clone_of", not both.'
+                })
         super(Container, self).clean()
 
     def clone(self, name, description=None):
