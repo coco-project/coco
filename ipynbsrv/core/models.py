@@ -877,6 +877,8 @@ class Notification(models.Model):
     id = models.AutoField(primary_key=True)
     sender = models.ForeignKey(
         User,
+        blank=True,
+        null=True,
         related_name='notifications',
         help_text='The user who sent the notification.'
     )
@@ -923,6 +925,11 @@ class Notification(models.Model):
         related_name='related_notifications',
         help_text='The share this notification is related to.'
     )
+
+    def is_system_notification(self):
+        """
+        """
+        return not self.sender
 
     def clean(self):
         """
@@ -1237,8 +1244,11 @@ class Share(models.Model):
         :return bool `True` if the group had access and been removed.
         """
         if self.group_is_access_group(collab_group):
+            print("%s in access groups" % collab_group)
             self.access_groups.remove(collab_group)
+            print("after remove")
             return True
+        print("not in access groups")
         return False
 
     def remove_member(self, user):
