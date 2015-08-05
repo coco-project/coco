@@ -28,13 +28,16 @@ def delete_internal_image_if_latest(sender, container, **kwargs):
     Delete the internal only image if this is the last container using it.
     """
     if container is not None:
-        if container.is_image_based() and container.image.is_internal and not container.has_clones():
-            if not Container.objects.filter(image=container.image).exists():
-                container.image.delete()
+        try:
+            if container.is_image_based() and container.image.is_internal and not container.has_clones():
+                if not Container.objects.filter(image=container.image).exists():
+                    container.image.delete()
+        except ContainerImage.DoesNotExist:
+            pass
 
 
 @receiver(container_image_deleted)
-def remove_on_server(sender, image, **kwargs):
+def delete_on_server(sender, image, **kwargs):
     """
     When an image is removed from the database, we can remove it from the servers as well.
     """
@@ -42,6 +45,7 @@ def remove_on_server(sender, image, **kwargs):
         for server in Server.objects.all():
             if server.is_container_host():
                 try:
+                    # FIXME: isn't deleted....
                     backend = server.get_container_backend()
                     backend.delete_container_image(image.backend_pk, force=True)
                 except ContainerImageNotFoundError:
@@ -49,8 +53,6 @@ def remove_on_server(sender, image, **kwargs):
                 except ContainerBackendError as ex:
                     # XXX: restore?
                     raise ex
-                except ConnectionError as ex:
-                    pass  # server not reachable
 
 
 @receiver(post_delete, sender=ContainerImage)

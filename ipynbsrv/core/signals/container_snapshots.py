@@ -27,7 +27,7 @@ def create_on_server(sender, snapshot, **kwargs):
 
 
 @receiver(container_snapshot_deleted)
-def remove_on_server(sender, snapshot, **kwargs):
+def delete_on_server(sender, snapshot, **kwargs):
     """
     When a snapshot is removed from the database, we can remove it from the servers as well.
     """
