@@ -47,14 +47,15 @@ def create_share_directory(sender, share, **kwargs):
     """
     if share is not None:
         share_dir = path.join(settings.STORAGE_DIR_SHARES, share.name)
-        try:
-            storage_backend.mk_dir(share_dir)
-            storage_backend.set_dir_owner(share_dir, 'root')
-            storage_backend.set_dir_gid(share_dir, share.backend_group.backend_id)
-            storage_backend.set_dir_mode(share_dir, 0o2770)
-        except StorageBackendError as ex:
-            share.delete()  # XXX: cleanup
-            raise ex
+        if not storage_backend.dir_exists(share_dir):
+            try:
+                storage_backend.mk_dir(share_dir)
+                storage_backend.set_dir_owner(share_dir, 'root')
+                storage_backend.set_dir_gid(share_dir, share.backend_group.backend_id)
+                storage_backend.set_dir_mode(share_dir, 0o2770)
+            except StorageBackendError as ex:
+                share.delete()  # XXX: cleanup
+                raise ex
 
 
 @receiver(share_deleted)
@@ -73,14 +74,13 @@ def delete_share_directory(sender, share, **kwargs):
     """
     if share is not None:
         share_dir = path.join(settings.STORAGE_DIR_SHARES, share.name)
-        if storage_backend.dir_exists(share_dir):
-            try:
-                storage_backend.rm_dir(share_dir, recursive=True)
-            except DirectoryNotFoundError:
-                pass  # already deleted
-            except StorageBackendError as ex:
-                # XXX: restore share?
-                raise ex
+        try:
+            storage_backend.rm_dir(share_dir, recursive=True)
+        except DirectoryNotFoundError:
+            pass  # already deleted
+        except StorageBackendError as ex:
+            # XXX: restore share?
+            raise ex
 
 
 @receiver(share_access_group_removed)

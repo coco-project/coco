@@ -486,6 +486,11 @@ class Container(models.Model):
                     'image': 'A container can either be bootstrapped from an "image" or as a "clone_of", not both.',
                     'clone_of': 'A container can either be bootstrapped from an "image" or as a "clone_of", not both.'
                 })
+            if self.clone_of and self.server != self.clone_of.server:
+                self.server = self.clone_of.server
+                raise ValidationError({
+                    'server': 'A clone can only be created on the same node as it\'s parent.'
+                })
         super(Container, self).clean()
 
     def clone(self, name, description=None):

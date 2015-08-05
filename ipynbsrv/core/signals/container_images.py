@@ -4,10 +4,6 @@ from ipynbsrv.contract.backends import ContainerBackend
 from ipynbsrv.contract.errors import ConnectionError, ContainerBackendError, ContainerImageNotFoundError
 from ipynbsrv.core.models import Container, ContainerImage, Server
 from ipynbsrv.core.signals.signals import *
-import logging
-
-
-logger = logging.getLogger(__name__)
 
 
 @receiver(container_committed)
@@ -45,21 +41,14 @@ def remove_on_server(sender, image, **kwargs):
     if image is not None:
         for server in Server.objects.all():
             if server.is_container_host():
-                backend = server.get_container_backend()
                 try:
-                    if backend.container_image_exists(image.backend_pk):
-                        try:
-                            backend.delete_container_image(image.backend_pk, force=True)
-                        except ContainerImageNotFoundError:
-                            pass  # already removed
-                        except ContainerBackendError as ex:
-                            # XXX: restore?
-                            raise ex
-                    else:
-                        logger.warn(
-                            "Container image %s doesn't exist on server %s. Not removing it."
-                            % (image, server)
-                        )
+                    backend = server.get_container_backend()
+                    backend.delete_container_image(image.backend_pk, force=True)
+                except ContainerImageNotFoundError:
+                    pass  # already removed
+                except ContainerBackendError as ex:
+                    # XXX: restore?
+                    raise ex
                 except ConnectionError as ex:
                     pass  # server not reachable
 
