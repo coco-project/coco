@@ -184,7 +184,6 @@ def collaborationgroup_add_members(request, pk):
     """
     required_params = ["users"]
     params = validate_request_params(required_params, request)
-    notify = request.data.get("notify")
 
     obj = CollaborationGroup.objects.filter(id=pk)
     if not obj:
@@ -202,18 +201,8 @@ def collaborationgroup_add_members(request, pk):
             return Response({"error": "User has no backend user!", "data": user_id})
         user_list.append(user.backend_user)
 
-    if notify:
-        n = Notification(
-            notification_type=Notification.GROUP,
-            sender=request.user,
-            message="You have been added to a group.",
-            group=group)
-        n.save()
-
     for user in user_list:
         group.add_member(user)
-        if notify and user.get_collaboration_group():
-            n.receiver_groups.add(user.get_collaboration_group())
 
     serializer = NestedCollaborationGroupSerializer(group)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
