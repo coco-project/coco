@@ -1,5 +1,5 @@
 from django.dispatch import receiver
-from django.db.models.signals import m2m_changed, post_delete, post_save
+from django.db.models.signals import m2m_changed, post_delete, post_save, pre_delete
 from ipynbsrv.core.models import BackendUser, CollaborationGroup
 from ipynbsrv.core.signals.signals import *
 
@@ -19,7 +19,6 @@ def add_admin_to_collaboration_group(sender, group, user, **kwargs):
     Add the admin to the collaboration groups's internal backend group.
     """
     if group is not None and user is not None:
-        # TODO: doesn't trigger signal because we're within a group signal already
         group.add_member(user)
 
 
@@ -30,7 +29,6 @@ def remove_admin_from_collaboration_group(sender, group, user, **kwargs):
     """
     if group is not None and user is not None:
         if not user == group.creator:
-            # TODO: doesn't trigger signal because we're within a group signal already
             group.remove_member(user)
 
 
@@ -80,6 +78,17 @@ def post_delete_handler(sender, instance, **kwargs):
     Method to map Django post_delete model signals to custom ones.
     """
     collaboration_group_deleted.send(sender=sender, group=instance, kwargs=kwargs)
+
+
+@receiver(pre_delete, sender=CollaborationGroup)
+def pre_delete_handler(sender, instance, **kwargs):
+    """
+    Receiver fired before a CollaborationGroup is actually deleted.
+    """
+    for notification in instance.notifications.all():
+        notification.receiver_groups.remove(instance)
+    for share in instance.shares.all():
+        share.remove_access_group(instance)
 
 
 @receiver(post_save, sender=CollaborationGroup)

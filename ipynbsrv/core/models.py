@@ -372,6 +372,19 @@ class CollaborationGroup(Group):
         """
         return self.user_set.all().count()
 
+    def remove_admin(self, user):
+        """
+        Remove the admin `user` from the group.
+
+        :param user: The user to remove (if is member).
+
+        :return bool `True` if the user has been an admin and removed.
+        """
+        if self.user_is_admin(user):
+            self.admins.remove(user)
+            return True
+        return False
+
     def remove_member(self, user):
         """
         Remove the member `user` from the group.

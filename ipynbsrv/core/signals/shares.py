@@ -51,7 +51,7 @@ def create_share_directory(sender, share, **kwargs):
             storage_backend.mk_dir(share_dir)
             storage_backend.set_dir_owner(share_dir, 'root')
             storage_backend.set_dir_gid(share_dir, share.backend_group.backend_id)
-            storage_backend.set_dir_mode(share_dir, 2770)
+            storage_backend.set_dir_mode(share_dir, 0o2770)
         except StorageBackendError as ex:
             share.delete()  # XXX: cleanup
             raise ex

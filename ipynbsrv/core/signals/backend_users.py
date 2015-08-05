@@ -1,5 +1,5 @@
 from django.dispatch import receiver
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_delete
 from ipynbsrv.contract.backends import UserBackend
 from ipynbsrv.contract.errors import DirectoryNotFoundError, StorageBackendError, \
     UserBackendError, UserNotFoundError
@@ -185,6 +185,15 @@ def post_delete_handler(sender, instance, **kwargs):
     Method to map Django post_delete model signals to custom ones.
     """
     backend_user_deleted.send(sender=sender, user=instance, kwargs=kwargs)
+
+
+@receiver(pre_delete, sender=BackendUser)
+def pre_delete_handler(sender, instance, **kwargs):
+    """
+    Receiver fired before a BackendUser is actually deleted.
+    """
+    for group in instance.managed_groups.all():
+        group.remove_admin(instance)
 
 
 @receiver(post_save, sender=BackendUser)

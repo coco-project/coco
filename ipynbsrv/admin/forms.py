@@ -32,16 +32,22 @@ class CollaborationGroupAdminForm(forms.ModelForm):
         """
         group = super(CollaborationGroupAdminForm, self).save(commit=commit)
         if commit:
-            group.user_set.clear()
-            for user in self.cleaned_data['users']:
+            users = list(self.cleaned_data['admins']) + list(self.cleaned_data['users'])
+            for user in group.get_members():
+                if user not in users:
+                    group.remove_member(user)
+            for user in users:
                 group.add_member(user)
         else:
             old_save_m2m = self.save_m2m
 
             def new_save_m2m():
                 old_save_m2m()
-                group.user_set.clear()
-                for user in self.cleaned_data['users']:
+                users = list(self.cleaned_data['admins']) + list(self.cleaned_data['users'])
+                for user in group.get_members():
+                    if user not in users:
+                        group.remove_member(user)
+                for user in users:
                     group.add_member(user)
             self.save_m2m = new_save_m2m
         return group
