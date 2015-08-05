@@ -5,6 +5,38 @@ from ipynbsrv.core.models import CollaborationGroup, Notification, \
 from ipynbsrv.core.signals.signals import *
 
 
+@receiver(collaboration_group_member_added)
+def create_member_added_group_notification(sender, group, user, **kwargs):
+    """
+    Create a group notification if a member get's added.
+    """
+    if group is not None and user is not None:
+        notification = Notification(
+            sender=user.django_user,
+            message='User %s is now a member of this group.' % user,
+            notification_type=Notification.GROUP,
+            group=group
+        )
+        notification.save()
+        notification.receiver_groups.add(group)
+
+
+@receiver(collaboration_group_member_removed)
+def create_member_leaved_group_notification(sender, group, user, **kwargs):
+    """
+    Create a group notification if one of it's member leaves.
+    """
+    if group is not None and user is not None:
+        notification = Notification(
+            sender=user.django_user,
+            message='User %s is not a member of this group anymore.' % user,
+            notification_type=Notification.GROUP,
+            group=group
+        )
+        notification.save()
+        notification.receiver_groups.add(group)
+
+
 @receiver(notification_receiver_group_added)
 def create_notificationlogs_for_receivers(sender, notification, group, **kwargs):
     """
