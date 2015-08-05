@@ -82,8 +82,7 @@ def share_add_access_groups(request):
     access_groups = request.POST.getlist('access_groups')
     share_id = request.POST.get('id')
     client = get_httpclient_instance(request)
-    notify = request.POST.get('notify')
-    print("views: " + str(notify))
+
     group_list = []
     # validate existance of users first
     for group_id in access_groups:
@@ -94,9 +93,7 @@ def share_add_access_groups(request):
     print(group_list)
     params = {}
     params['access_groups'] = group_list
-    if notify:
-        params['notify'] = True
-    print(params)
+
     # then call API to add the users to the group
     client.shares.get()
     try:

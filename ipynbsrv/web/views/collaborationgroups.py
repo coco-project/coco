@@ -137,7 +137,6 @@ def add_members(request):
 
     users = request.POST.getlist('users')
     group_id = request.POST.get('group_id')
-    notify = request.POST.get('notify')
 
     client = get_httpclient_instance(request)
 
@@ -150,8 +149,6 @@ def add_members(request):
 
     # then call API to add the users to the group
     params = {}
-    if notify:
-        params["notify"] = True
     params["users"] = user_list
     client.collaborationgroups(group_id).add_members.post(params)
 
