@@ -137,6 +137,7 @@ def add_members(request):
 
     users = request.POST.getlist('users')
     group_id = request.POST.get('group_id')
+    notify = request.POST.get('notify')
 
     client = get_httpclient_instance(request)
 
@@ -148,10 +149,13 @@ def add_members(request):
         user_list.append(u)
 
     # then call API to add the users to the group
-    client = get_httpclient_instance(request)
-    client.collaborationgroups(group_id).add_members.post({"users": user_list})
+    params = {}
+    if notify:
+        params["notify"] = True
+    params["users"] = user_list
+    client.collaborationgroups(group_id).add_members.post(params)
 
-    messages.success(request, "Users successfully added to the group.".format(user.username))
+    messages.success(request, "Users successfully added to the group.")
     return redirect('group_manage', group_id)
 
 
@@ -174,9 +178,9 @@ def remove_member(request):
 
     if group:
         if user:
-            client.collaborationgroups(group_id).remove_members.post({
-                "users": [user_id]
-                })
+            params = {}
+            params["users"] = [user_id]
+            client.collaborationgroups(group_id).remove_members.post(params)
             messages.success(request, "Sucessfully removed the user from the group.")
             request.method = "GET"
             return redirect('group_manage', group.id)
@@ -187,16 +191,3 @@ def remove_member(request):
         messages.error(request, "Group does not exist.")
 
     return redirect('group_manage', group_id)
-
-
-def notify_group_members(group, message, sender, request):
-    """
-    Todo: write documentation.
-    """
-    client = get_httpclient_instance(request)
-    client.notifications.post({
-        "sender": sender,
-        "message": message,
-        "event_type": Notification.GROUP,
-        "receiving_groups": [group]
-        })

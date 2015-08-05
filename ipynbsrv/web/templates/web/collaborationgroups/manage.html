@@ -106,7 +106,7 @@
             </tbody>
         </table>
 
-        {% include 'web/collaborationgroups/modal_addusers.html' with users=users origin='manage' group=group csrf_token=csrf_token only %}
+        {% include 'web/collaborationgroups/modal_addusers.html' with users=users origin='manage' group=group member_ids=member_ids csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}
