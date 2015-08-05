@@ -18,15 +18,12 @@ class CurrentBackendUserDefault(object):
     http://www.django-rest-framework.org/api-guide/validators/#currentuserdefault
     """
     def set_context(self, serializer_field):
-        print("set context")
         self.user = serializer_field.context['request'].user
 
     def __call__(self):
-        print("__call__")
         return self.user.backend_user
 
     def __repr__(self):
-        print("__repr__")
         return unicode_to_repr('%s()' % self.__class__.__name__)
 
 
@@ -250,7 +247,6 @@ class FlatShareSerializer(serializers.ModelSerializer):
         )
         backend_group.save()
 
-        print(validated_data)
         tags = validated_data.pop("tags")
         access_groups = validated_data.pop("access_groups")
 

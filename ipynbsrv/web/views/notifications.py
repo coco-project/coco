@@ -15,7 +15,6 @@ def index(request):
     """
     client = get_httpclient_instance(request)
     notificationlogs = client.notificationlogs.get()
-    print(notificationlogs)
     notificationtypes = client.notificationtypes.get()
     groups = client.collaborationgroups.get()
     containers = client.containers.get()

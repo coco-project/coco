@@ -241,7 +241,6 @@ def collaborationgroup_add_admins(request, pk):
         if not obj:
             return Response({"error": "User not found!", "data": user_id})
         user = obj.first()
-        print(user)
         if not user.backend_user:
             return Response({"error": "User has no backend user!", "data": user_id})
         user_list.append(user.backend_user)
@@ -405,7 +404,7 @@ def container_commit(request, pk):
     container = get_container(pk)
     if container:
         image = container.commit(**params)
-        print(image)
+
         serializer = ContainerImageSerializer(image)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
@@ -694,7 +693,6 @@ def share_add_access_groups(request, pk):
             return Response({"error": "CollaborationGroup not found!", "data": access_group_id})
         access_groups.append(obj.first())
 
-    print(access_groups)
     n = Notification(
         notification_type=Notification.SHARE,
         sender=request.user,
