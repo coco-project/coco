@@ -61,8 +61,6 @@ def create_home_directory(sender, user, **kwargs):
                 storage_backend.set_dir_mode(home_dir, 0700)
             except StorageBackendError as ex:
                 raise ex
-        else:
-            logger.warn("Home directory for user %s already exists." % user.django_user.get_username())
 
 
 @receiver(backend_user_created)

@@ -926,11 +926,6 @@ class Notification(models.Model):
         help_text='The share this notification is related to.'
     )
 
-    def is_system_notification(self):
-        """
-        """
-        return not self.sender
-
     def clean(self):
         """
         :inherit.
@@ -998,6 +993,13 @@ class Notification(models.Model):
         """
         return self.get_related_object() is not None
     has_related_object.boolean = True
+
+    def is_system_notification(self):
+        """
+        Return `True` if this notification has been generated automatically.
+        """
+        return not self.sender
+    is_system_notification.boolean = True
 
     def save(self, *args, **kwargs):
         """
@@ -1213,7 +1215,7 @@ class Share(models.Model):
         """
         :inherit.
         """
-        if not 'backend_group' in exclude and not hasattr(self, 'backend_group'):
+        if 'backend_group' not in exclude and not hasattr(self, 'backend_group'):
             django_group = Group(name=settings.SHARE_GROUP_PREFIX + self.name)
             django_group.save()
             backend_group = BackendGroup(django_group=django_group)
