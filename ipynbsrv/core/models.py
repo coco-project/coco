@@ -464,6 +464,11 @@ class Container(models.Model):
                 'image': 'Either "image" or "clone_of" needs to be set.',
                 'clone_of': 'Either "image" or "clone_of" needs to be set.'
             })
+        if self.image and self.clone_of:
+            raise ValidationError({
+                'image': 'A container can either be bootstrapped from an "image" or as a "clone_of", not both.',
+                'clone_of': 'A container can either be bootstrapped from an "image" or as a "clone_of", not both.'
+            })
         super(Container, self).clean()
 
     def clone(self, name, description=None):
