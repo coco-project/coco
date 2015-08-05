@@ -8,11 +8,10 @@ from ipynbsrv.core.signals.signals import *
 @receiver(collaboration_group_member_added)
 def create_member_added_group_notification(sender, group, user, **kwargs):
     """
-    Create a group notification if a member get's added.
+    Create a group notification if a member gets added.
     """
     if group is not None and user is not None:
         notification = Notification(
-            sender=user.django_user,
             message='User %s is now a member of this group.' % user,
             notification_type=Notification.GROUP,
             group=group
@@ -22,19 +21,54 @@ def create_member_added_group_notification(sender, group, user, **kwargs):
 
 
 @receiver(collaboration_group_member_removed)
-def create_member_leaved_group_notification(sender, group, user, **kwargs):
+def create_member_left_group_notification(sender, group, user, **kwargs):
     """
     Create a group notification if one of it's member leaves.
     """
     if group is not None and user is not None:
         notification = Notification(
-            sender=user.django_user,
             message='User %s is not a member of this group anymore.' % user,
             notification_type=Notification.GROUP,
             group=group
         )
         notification.save()
         notification.receiver_groups.add(group)
+
+
+@receiver(share_access_group_added)
+def create_member_share_added(sender, share, group, **kwargs):
+    """
+    Create a share notification if a new access_group gets added.
+    """
+    if share is not None and group is not None:
+        try:
+            notification = Notification(
+                message='Group %s has been added to share.' % group,
+                notification_type=Notification.SHARE,
+                share=share
+            )
+            notification.save()
+            notification.receiver_groups.add(group)
+        except Exception as e:
+            print('create_member_share_added error: %s' % e)    # just for debugging purposes
+
+
+@receiver(share_access_group_removed)
+def create_member_share_removed(sender, share, group, **kwargs):
+    """
+    Create a share notification if a new access_group gets added.
+    """
+    if share is not None and group is not None:
+        try:
+            notification = Notification(
+                message='Group %s has been removed to share.' % group,
+                notification_type=Notification.SHARE,
+                share=share
+            )
+            notification.save()
+            notification.receiver_groups.add(group)
+        except Exception as e:
+            print('create_member_share_removed error: %s' % e)    # just for debugging purposes
 
 
 @receiver(notification_receiver_group_added)

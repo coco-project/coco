@@ -689,7 +689,8 @@ def share_add_access_groups(request, pk):
     """
     required_params = ["access_groups"]
     params = validate_request_params(required_params, request)
-    #notify = request.data.get("notify")
+    print("add access groups")
+    print(params)
 
     obj = Share.objects.filter(id=pk)
     if not obj:
@@ -701,20 +702,16 @@ def share_add_access_groups(request, pk):
     for access_group_id in params.get("access_groups"):
         obj = CollaborationGroup.objects.filter(id=access_group_id)
         if not obj:
-            return Response({"error": "CollaborationGroup not found!", "data": access_group_id})
+            return Response(
+                {"error": "CollaborationGroup not found!", "data": access_group_id},
+                status=status.HTTP_404_NOT_FOUND
+                )
+        print(obj.first())
         access_groups.append(obj.first())
-
-    n = Notification(
-        notification_type=Notification.SHARE,
-        sender=request.user,
-        message="You have been added to a share.",
-        share=share)
-    n.save()
 
     # add the access groups to the share
     for access_group in access_groups:
         share.add_access_group(access_group)
-        n.receiver_groups.add(access_group)
 
     serializer = NestedShareSerializer(share)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -728,10 +725,10 @@ def share_remove_access_groups(request, pk):
     Todo: permissions
     :param pk   pk of the collaboration group
     """
+    print("remove access groups")
     required_params = ["access_groups"]
     params = validate_request_params(required_params, request)
-    #notify = request.POST.get("notify")
-
+    print(params)
     obj = Share.objects.filter(id=pk)
     if not obj:
         return Response({"error": "Share not found!", "data": request.data})
@@ -742,19 +739,18 @@ def share_remove_access_groups(request, pk):
     for access_group_id in params.get("access_groups"):
         obj = CollaborationGroup.objects.filter(id=access_group_id)
         if not obj:
-            return Response({"error": "CollaborationGroup not found!", "data": access_group_id})
+            return Response(
+                {"error": "CollaborationGroup not found!", "data": access_group_id},
+                status=status.HTTP_404_NOT_FOUND
+                )
         access_groups.append(obj.first())
 
-    n = Notification(
-        notification_type=Notification.SHARE,
-        sender=request.user,
-        message="You have been removed from a share.",
-        share=share)
-    n.save()
     # add the access groups to the share
     for access_group in access_groups:
         share.remove_access_group(access_group)
-        n.receiver_groups.add(access_group)
+        print("after remove from model")
+
+    print("after all")
 
     serializer = NestedShareSerializer(share)
     return Response(serializer.data, status=status.HTTP_201_CREATED)

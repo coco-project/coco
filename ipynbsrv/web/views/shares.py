@@ -99,7 +99,12 @@ def share_add_access_groups(request):
     print(params)
     # then call API to add the users to the group
     client.shares.get()
-    client.shares(share_id).add_access_groups.post(params)
+    try:
+        client.shares(share_id).add_access_groups.post(params)
+    except Exception as e:
+        messages.error(request, "{}. Data: {}".format(e, params))
+        return redirect('share_manage', share_id)
+
     messages.success(request, "Access permission successfully added.")
 
     return redirect('share_manage', share_id)
@@ -122,14 +127,15 @@ def share_remove_access_group(request):
     share_id = request.POST.get('share_id')
     client = get_httpclient_instance(request)
 
-    access_group = client.collaborationgroups(group_id).get()
-    if not access_group:
-        messages.error("Collaboration Group not found.")
-        return redirect('share_manage', group_id)
-
     # then call API to add the users to the group
     client.shares.get()
-    client.shares(share_id).remove_access_groups.post({"access_groups": [group_id]})
+    params = {"access_groups": [group_id]}
+
+    try:
+        client.shares(share_id).remove_access_groups.post(params)
+    except Exception as e:
+        messages.error(request, "{}. Data: {}".format(e, params))
+        return(redirect('share_manage', share_id))
 
     messages.success(request, "Access permission successfully removed.")
     return redirect('share_manage', share_id)
