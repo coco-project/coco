@@ -269,12 +269,6 @@ class BackendUser(models.Model):
             last_django_id = BackendUser.objects.latest('id').id
         return settings.USER_ID_OFFSET + last_django_id
 
-    def get_username(self):
-        """
-        Get the user's internal username.
-        """
-        return self.django_user.get_username()
-
     def get_collaboration_group(self):
         """
         Return the private collaboration group belonging to this user.
@@ -282,11 +276,16 @@ class BackendUser(models.Model):
         group = CollaborationGroup.objects.filter(
             is_single_user_group=True,
             user__id=self.id
-            )
-        if group:
+        )
+        if group.exists():
             return group.first()
-        else:
-            return None
+        return None
+
+    def get_username(self):
+        """
+        Get the user's internal username.
+        """
+        return self.django_user.get_username()
 
     def save(self, *args, **kwargs):
         """
