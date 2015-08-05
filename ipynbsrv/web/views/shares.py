@@ -35,7 +35,6 @@ def create(request):
 
     name = request.POST.get('name')
     desc = request.POST.get('description', '')
-    # Todo: get tags properly
     tag_labels = request.POST.get('tags').split(',')
     owner = request.user.backend_user.id
     access_groups = request.POST.getlist('access_groups', [])
@@ -44,15 +43,16 @@ def create(request):
 
     tags = []
     for tag in tag_labels:
-        # see if tag with this label exists already
-        t = client.tags(tag).get()
-        if not t:
-            # create a new tag
-            t = client.tags.get()
-            t = client.tags.post({ "label": str(tag) })
-        else:
-            t = t[0]
-        tags.append(t.id)
+        if tag:
+            # see if tag with this label exists already
+            t = client.tags(tag).get()
+            if not t:
+                # create a new tag
+                t = client.tags.get()
+                t = client.tags.post({ "label": str(tag) })
+            else:
+                t = t[0]
+            tags.append(t.id)
 
     client.shares.get()
     client.shares.post(data={
@@ -174,6 +174,7 @@ def leave(request):
 
     client = get_httpclient_instance(request)
     share = client.shares(share_id).get()
+
     if share:
         if share.owner == request.user.backend_user.id:
             messages.error(request, "You cannot leave an owned share. Please delete it instead.")

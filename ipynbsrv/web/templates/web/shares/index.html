@@ -64,6 +64,8 @@
                                 </button>
                             </form>
                         {% else %}
+                        <!--
+                        do we want to allow single users to leave a share?
                             <form action="{% url 'share_leave' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{ share.id }}">
@@ -71,6 +73,7 @@
                                     <i class="glyphicon glyphicon-minus-sign" aria-hidden="true"></i>
                                 </button>
                             </form>
+                        -->
                         {% endif %}
                     </td>
                 </tr>
