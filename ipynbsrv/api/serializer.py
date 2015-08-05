@@ -260,7 +260,7 @@ class FlatShareSerializer(serializers.ModelSerializer):
         return share
 
 
-class NotificationSerializer(serializers.ModelSerializer):
+class NestedNotificationSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
@@ -288,7 +288,7 @@ class NotificationLogSerializer(serializers.ModelSerializer):
     Todo: write doc.
     """
 
-    notification = NotificationSerializer(read_only=True, many=False)
+    notification = NestedNotificationSerializer(read_only=True, many=False)
 
     class Meta:
         model = NotificationLog

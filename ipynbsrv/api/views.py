@@ -791,7 +791,10 @@ class NotificationList(generics.ListCreateAPIView):
     Get a list of all the notifications.
     """
 
-    serializer_class = NotificationSerializer
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method in ['PATCH', 'POST', 'PUT']:
+            return FlatNotificationSerializer
+        return NestedNotificationSerializer
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -806,7 +809,11 @@ class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a notification.
     """
 
-    serializer_class = NotificationSerializer
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method in ['PATCH', 'POST', 'PUT']:
+            return FlatNotificationSerializer
+        return NestedNotificationSerializer
+
     permission_classes = [IsSuperUserOrReadOnly]
 
     def get_queryset(self):
