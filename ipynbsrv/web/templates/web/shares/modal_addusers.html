@@ -13,11 +13,13 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="recipient">Users</label>
-                            {% for group in groups %}
-                                {% if group not in share.access_groups and group.is_single_user_group %}
-                                <div class="checkbox">
-                                  <label><input name="access_groups" type="checkbox" value="{{ group.id }}">{{ group.name }}</label>
-                                </div>
+                            {% for user in users %}
+                                {% if user.backend_user.collab_group %}
+                                    {% if user.backend_user.collab_group not in share.access_groups %}
+                                    <div class="checkbox">
+                                      <label><input name="access_groups" type="checkbox" value="{{ user.backend_user.collab_group.id }}">{{ user.backend_user.collab_group.name }}</label>
+                                    </div>
+                                    {% endif %}
                                 {% endif %}
 
                             {% endfor %}

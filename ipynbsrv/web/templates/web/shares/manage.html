@@ -67,7 +67,6 @@
             </thead>
             <tbody>
                 {% for group in share.access_groups %}
-                {% if not group.is_single_user_group %}
                 <tr>
                     <td><a href="{% url 'group_manage' group.id %}">{{ group.name }}</a></td>
                     <td style="text-align: right">
@@ -85,12 +84,33 @@
                     {% endif %}
                     </td>
                 </tr>
+                {% endfor %}
+
+                {% for user in users %}
+                {% if user.backend_user.collab_group %}
+                    <tr>
+                        <td><a href="{% url 'group_manage' user.backend_user.collab_group.id %}">{{ user.backend_user.collab_group.name }}</a></td>
+                        <td style="text-align: right">
+                        {% if request.user.backend_user.id == share.owner.id %}
+                            {% if member.backend_user.id != share.owner %}
+                                <form action="{% url 'share_remove_access_group' %}" method="POST" role="form" class="form-action">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="share_id" value="{{ share.id }}">
+                                    <input type="hidden" name="access_group" value="{{ group.id }}">
+                                    <button class="btn btn-sm btn-danger" title="Remove from share?" data-toggle="confirmation" data-placement="left">
+                                        <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                        </td>
+                    </tr>
                 {% endif %}
                 {% endfor %}
             </tbody>
         </table>
 
-        {% include 'web/shares/modal_addusers.html' with id=share.id groups=groups share=share origin='manage' csrf_token=csrf_token only %}
+        {% include 'web/shares/modal_addusers.html' with id=share.id users=users share=share origin='manage' csrf_token=csrf_token only %}
         {% include 'web/shares/modal_addgroups.html' with id=share.id groups=groups share=share origin='manage' csrf_token=csrf_token only %}
     </div>
 </div>

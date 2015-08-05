@@ -275,7 +275,7 @@ class BackendUser(models.Model):
         """
         group = CollaborationGroup.objects.filter(
             is_single_user_group=True,
-            user__id=self.id
+            user__id=self.django_user.id
         )
         if group.exists():
             return group.first()
@@ -353,6 +353,9 @@ class CollaborationGroup(Group):
         :param user: The backend user to add.
         """
         if self.user_is_member(user):
+            return False
+        # single user groups cannot be joined
+        if self.is_single_user_group and self.user_set.count() >= 1:
             return False
         self.user_set.add(user.django_user)
         return True

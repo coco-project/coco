@@ -198,6 +198,7 @@ def manage(request, share_id):
     share = client.shares(share_id).get()
     users = client.users.get()
     groups = client.collaborationgroups.get()
+
     if share:
             return render(request, 'web/shares/manage.html', {
                 'title': "Manage Share",

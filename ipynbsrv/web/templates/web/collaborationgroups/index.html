@@ -30,6 +30,7 @@
             </thead>
             <tbody>
         {% for group in groups %}
+        {% if not group.is_single_user_group %}
         <tr>
             <td><a href="/groups/manage/{{group.id}}">{{group.name}}</a></td>
             <td>{{ group.member_count }}</td>
@@ -71,6 +72,7 @@
             {% endif %}
             </td>
         </tr>
+        {% endif %}
         {% endfor %}
         </tbody>
         </table>
