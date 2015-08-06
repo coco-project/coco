@@ -360,6 +360,16 @@ class CollaborationGroup(Group):
         self.user_set.add(user.django_user)
         return True
 
+    def get_all_users(self):
+        """
+        Get a list of all users belonging to this group (including the creator and admins).
+        """
+        admins = list(self.admins.all())
+        users = admins + self.get_members()
+        if self.creator:
+            users.append(self.creator)
+        return users
+
     def get_members(self):
         """
         Get a list of members for this group.
@@ -405,6 +415,14 @@ class CollaborationGroup(Group):
         self.full_clean()
         super(CollaborationGroup, self).save(*args, **kwargs)
 
+    def user_has_access(self, user):
+        """
+        Check if the user has access to this group.
+
+        :param user: The user to check.
+        """
+        return user == self.creator or self.user_is_admin(user) or self.user_is_member(user)
+
     def user_is_admin(self, user):
         """
         Check if the backend user is an admin of this group.
@@ -412,7 +430,14 @@ class CollaborationGroup(Group):
         :param user: The user to check.
         """
         return user in self.admins.all()
-    user_is_admin.boolean = True
+
+    def user_is_manager(self, user):
+        """
+        Check if the user is allowed to manage this group.
+
+        :param user: The user to check.
+        """
+        return user == self.creator or self.user_is_admin(user)
 
     def user_is_member(self, user):
         """
@@ -421,7 +446,6 @@ class CollaborationGroup(Group):
         :param user: The user to check for membership.
         """
         return user in self.get_members()
-    user_is_member.boolean = True
 
 
 class Container(models.Model):

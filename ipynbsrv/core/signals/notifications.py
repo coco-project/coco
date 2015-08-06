@@ -92,8 +92,7 @@ def deactivate_group_notifications_for_user(sender, group, user, **kwargs):
             leave = False
             for receiver_group in notification.receiver_groups.all():
                 if receiver_group != group:
-                    if user == receiver_group.creator or receiver_group.user_is_admin(user) \
-                            or receiver_group.user_is_member(user):
+                    if receiver_group.user_has_access(user):
                         leave = True
                         break
             if not leave:

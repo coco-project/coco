@@ -44,11 +44,7 @@ def add_group_members_to_share_group(sender, share, group, **kwargs):
     Add all members from the access group to the share group.
     """
     if share is not None and group is not None:
-        if group.creator:
-            share.add_member(group.creator)
-        for admin in group.admins.all():
-            share.add_member(admin)
-        for user in group.get_members():
+        for user in group.get_all_users():
             share.add_member(user)
 
 
@@ -101,18 +97,14 @@ def remove_group_members_from_share_group(sender, share, group, **kwargs):
     Remove all members from the access group from the share group.
     """
     if share is not None and group is not None:
-        user_set = list(group.admins.all()) + list(group.get_members())
-        if group.creator:
-            user_set.append(group.creator)
-        for user in user_set:
+        for user in group.get_all_users():
             leave = False
             if user == share.owner:
                 leave = True
             else:
                 for access_group in share.access_groups.all():
                     if access_group != group:
-                        if user == access_group.creator or access_group.user_is_admin(user) \
-                                or access_group.user_is_member(user):
+                        if access_group.user_has_access(user):
                             leave = True
                             break
             if not leave:
@@ -144,8 +136,7 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
             else:
                 for access_group in share.access_groups.all():
                     if access_group != group:
-                        if user == access_group.creator or access_group.user_is_admin(user) \
-                                or access_group.user_is_member(user):
+                        if access_group.user_has_access(user):
                             leave = True
                             break
             if not leave:
