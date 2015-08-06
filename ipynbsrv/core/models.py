@@ -1004,15 +1004,19 @@ class Notification(models.Model):
         """
         Get the object related.
         """
-        if self.container is not None:
-            return self.container
-        if self.container_image is not None:
-            return self.container_image
-        if self.group is not None:
-            return self.group
-        if self.share is not None:
-            return self.share
-        return None
+        # try / catch in case a ressource does not exist anymore
+        try:
+            if self.container is not None:
+                return self.container
+            if self.container_image is not None:
+                return self.container_image
+            if self.group is not None:
+                return self.group
+            if self.share is not None:
+                return self.share
+            return None
+        except Exception:
+            return None
 
     def get_related_object_url(self):
         """
