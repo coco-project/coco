@@ -91,16 +91,16 @@ def remove_group_members_from_share_group(sender, share, group, **kwargs):
     if share is not None and group is not None:
         for member in group.get_members():
             leave = False
-            if user == share.owner:
+            if member == share.owner:
                 leave = True
             else:
                 for access_group in share.access_groups.all():
                     if access_group != group:
-                        if access_group.has_access(user):
+                        if access_group.has_access(member):
                             leave = True
                             break
             if not leave:
-                share.remove_member(user)
+                share.remove_member(member)
 
 
 @receiver(collaboration_group_member_removed)

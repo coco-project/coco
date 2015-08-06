@@ -45,11 +45,11 @@ class CollaborationGroupAdminForm(forms.ModelForm):
             for admin in self.cleaned_data['admins']:
                 group.add_admin(admin)
             # users
-            for user in group.get_members():
+            for user in group.get_users():
                 if user not in self.cleaned_data['users']:
-                    group.remove_member(user)
+                    group.remove_user(user)
             for user in self.cleaned_data['users']:
-                group.add_member(user)
+                group.add_user(user)
         else:
             old_save_m2m = self.save_m2m
 
@@ -62,11 +62,11 @@ class CollaborationGroupAdminForm(forms.ModelForm):
                 for admin in self.cleaned_data['admins']:
                     group.add_admin(admin)
                 # users
-                for user in group.get_members():
+                for user in group.get_users():
                     if user not in self.cleaned_data['users']:
-                        group.remove_member(user)
+                        group.remove_user(user)
                 for user in self.cleaned_data['users']:
-                    group.add_member(user)
+                    group.add_user(user)
             self.save_m2m = new_save_m2m
         return group
 
