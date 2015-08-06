@@ -28,7 +28,7 @@ class CollaborationGroupAdminForm(forms.ModelForm):
         if instance is not None:
             initial = kwargs.get('initial', {})
             initial['admins'] = instance.admins.all()
-            initial['users'] = instance.get_members()
+            initial['users'] = instance.get_users()
             kwargs['initial'] = initial
         super(CollaborationGroupAdminForm, self).__init__(*args, **kwargs)
 

@@ -433,7 +433,7 @@ class CollaborationGroup(Group):
 
         :return bool `True` if the user has been removed.
         """
-        if self.user_is_admin(user):
+        if self.is_admin(user):
             self.admins.remove(user)
             return True
         return False
