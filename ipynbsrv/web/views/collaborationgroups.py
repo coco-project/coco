@@ -7,6 +7,7 @@ from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import BackendGroup, Notification
 from ipynbsrv.web.api_client_proxy import get_httpclient_instance
 from ipynbsrv.web.views._messages import api_error_message
+from slumber.exceptions import HttpClientError
 
 
 @user_passes_test(login_allowed)
@@ -70,6 +71,8 @@ def create(request):
         client.collaborationgroups.get()
         client.collaborationgroups.post(params)
         messages.success(request, "Group `{}` created sucessfully.".format(params.get("name")))
+    except HttpClientError:
+        messages.error(request, "Bad Request. A group with this name already exists.")
     except Exception as e:
         messages.error(request, api_error_message(e, params))
 

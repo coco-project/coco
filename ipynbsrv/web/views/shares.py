@@ -6,6 +6,8 @@ from ipynbsrv.core import settings
 from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import Share, Tag
 from ipynbsrv.web.api_client_proxy import get_httpclient_instance
+from ipynbsrv.web.views._messages import api_error_message
+from slumber.exceptions import HttpClientError
 
 
 @user_passes_test(login_allowed)
@@ -33,36 +35,49 @@ def create(request):
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    name = request.POST.get('name')
-    desc = request.POST.get('description', '')
-    tag_labels = request.POST.get('tags').split(',')
-    owner = request.user.backend_user.id
-    access_groups = request.POST.getlist('access_groups', [])
-
     client = get_httpclient_instance(request)
+
+    # dict to hold all the params to call the api
+    params = {}
+
+    params["name"] = request.POST.get('name')
+    params["description"] = request.POST.get('description', '')
+    params["owner"] = request.user.backend_user.id
+    params["access_groups"] = request.POST.getlist('access_groups', [])
+
+    tag_labels = request.POST.get('tags').split(',')
 
     tags = []
     for tag in tag_labels:
         if tag:
             # see if tag with this label exists already
-            t = client.tags(tag).get()
+            try:
+                t = client.tags.by_name(tag).get()
+            except Exception as e:
+                t = None
             if not t:
                 # create a new tag
-                t = client.tags.get()
-                t = client.tags.post({ "label": str(tag) })
+                try:
+                    tag_params = {"label": str(tag)}
+                    t = client.tags.get()
+                    t = client.tags.post(tag_params)
+                except Exception as e:
+                    messages.error(request, api_error_message(e, tag_params))
+                    return redirect('shares')
             else:
                 t = t[0]
             tags.append(t.id)
 
+    params["tags"] = tags
+
     client.shares.get()
-    client.shares.post(data={
-        "name": name,
-        "description": desc,
-        "owner": owner,
-        "access_groups": access_groups,
-        "tags": tags
-    })
-    messages.success(request, "Share created sucessfully.")
+    try:
+        client.shares.post(params)
+        messages.success(request, "Share created sucessfully.")
+    except HttpClientError:
+        messages.error(request, "Bad Request. A share with this name already exists.")
+    except Exception as e:
+        messages.error(request, api_error_message(e, params))
     return redirect('shares')
 
 
@@ -87,8 +102,8 @@ def share_add_access_groups(request):
     # validate existance of users first
     for group_id in access_groups:
         access_group = client.collaborationgroups(group_id).get()
-    if access_group:
-        group_list.append(group_id)
+        if access_group:
+            group_list.append(group_id)
 
     print(group_list)
     params = {}
@@ -98,11 +113,9 @@ def share_add_access_groups(request):
     client.shares.get()
     try:
         client.shares(share_id).add_access_groups.post(params)
+        messages.success(request, "The selected groups are now a member of this share.")
     except Exception as e:
-        messages.error(request, "{}. Data: {}".format(e, params))
-        return redirect('share_manage', share_id)
-
-    messages.success(request, "Access permission successfully added.")
+        messages.error(request, api_error_message(e, params))
 
     return redirect('share_manage', share_id)
 
@@ -130,11 +143,11 @@ def share_remove_access_group(request):
 
     try:
         client.shares(share_id).remove_access_groups.post(params)
+        messages.success(request, "The selected groups are now removed from this share.")
     except Exception as e:
-        messages.error(request, "{}. Data: {}".format(e, params))
+        messages.error(request, api_error_message(e, params))
         return(redirect('share_manage', share_id))
 
-    messages.success(request, "Access permission successfully removed.")
     return redirect('share_manage', share_id)
 
 
@@ -154,8 +167,11 @@ def delete(request):
 
     if share:
         if share.owner == request.user.backend_user.id:
-            client.shares(share_id).delete()
-            messages.success(request, "Share deleted sucessfully.")
+            try:
+                client.shares(share_id).delete()
+                messages.success(request, "Share deleted sucessfully.")
+            except Exception as e:
+                messages.error(request, api_error_message(e, ""))
         else:
             messages.error(request, "You don't have enough permissions for the requested operation.")
     else:
@@ -178,14 +194,17 @@ def leave(request):
     client = get_httpclient_instance(request)
     share = client.shares(share_id).get()
 
+    params = {"users": [request.user.id]}
+
     if share:
         if share.owner == request.user.backend_user.id:
             messages.error(request, "You cannot leave an owned share. Please delete it instead.")
         else:
-            client.shares(share_id).remove_users.post({
-                "users": [request.user.id]
-                })
-            messages.success(request, "You successfully left the share.")
+            try:
+                client.shares(share_id).remove_users.post(params)
+                messages.success(request, "You successfully left the share.")
+            except Exception as e:
+                messages.error(request, api_error_message(e, params))
     else:
         messages.error(request, "Share does not exist.")
 

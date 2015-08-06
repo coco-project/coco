@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import Notification, NotificationLog
 from ipynbsrv.web.api_client_proxy import get_httpclient_instance
+from ipynbsrv.web.views._messages import api_error_message
 
 
 @user_passes_test(login_allowed)
@@ -44,27 +45,21 @@ def create(request):
 
     client = get_httpclient_instance(request)
 
-    message = request.POST.get('message', '')
-    notification_type = request.POST.get('notification_type', '')
-    sender = request.user.id
-    container = request.POST.get('container', None)
-    container_image = request.POST.get('container_image', None)
-    share = request.POST.get('share', None)
-    group = request.POST.get('group', None)
-    receiver_groups = [int(request.POST.get('receiver_groups', None))]
+    params = {}
+    params["message"] = request.POST.get('message', '')
+    params["notification_type"] = request.POST.get('notification_type', '')
+    params["sender"] = request.user.id
+    params["container"] = request.POST.get('container', None)
+    params["container_image"] = request.POST.get('container_image', None)
+    params["share"] = request.POST.get('share', None)
+    params["group"] = request.POST.get('group', None)
+    params["receiver_groups"] = [int(request.POST.get('receiver_groups', None))]
 
     client.notifications.get()
-    client.notifications.post({
-        "notification_type": notification_type,
-        "message": message,
-        "sender": sender,
-        "container": container,
-        "container_image": container_image,
-        "group": group,
-        "share": share,
-        "receiver_groups": receiver_groups
-    })
-
-    messages.success(request, "Notification sucessfully created.")
+    try:
+        client.notifications.post(params)
+        messages.success(request, "Notification sucessfully created.")
+    except Exception as e:
+        messages.error(request, api_error_message(e, params))
 
     return redirect('notifications')

@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render, redirect
 from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.web.api_client_proxy import get_httpclient_instance
+from ipynbsrv.web.views._messages import api_error_message
 from slumber.exceptions import HttpNotFoundError
 
 
@@ -28,8 +29,8 @@ def delete(request):
         try:
             client.images(img_id).delete()
             messages.success(request, "Image deleted successfully.")
-        except Exception:
-            messages.error(request, "Whuups, something went wrong :(.")
+        except Exception as e:
+            messages.error(request, api_error_message(e, ""))
     else:
         messages.error(request, "Image does not exist or you don't have the permissions to delete it.")
 

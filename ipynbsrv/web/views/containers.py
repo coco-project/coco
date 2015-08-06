@@ -5,6 +5,7 @@ from django.shortcuts import redirect, render
 from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import Container, ContainerImage, Server
 from ipynbsrv.web.api_client_proxy import get_httpclient_instance
+from ipynbsrv.web.views._messages import api_error_message
 from slumber.exceptions import HttpNotFoundError
 
 
@@ -45,10 +46,11 @@ def commit(request):
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 
+    params = {}
     ct_id = int(request.POST.get('ct_id'))
-    img_name = request.POST.get('img_name')
-    description = request.POST.get('description')
-    public = request.POST.get('public', "")
+    params["img_name"] = request.POST.get('img_name')
+    params["description"] = request.POST.get('description')
+    params["public"] = request.POST.get('public', "") == "on"
 
     client = get_httpclient_instance(request)
     try:
@@ -58,15 +60,14 @@ def commit(request):
     except Exception:
         messages.error(request, "Some other error.")
 
-    print("container found")
 
     if container:
-        client.containers(ct_id).commit.post({
-            "name": img_name,
-            "description": description,
-            "public": (public == "on"),
-            })
-        messages.success(request, "Sucessfully created the image.")
+        try:
+            client.containers(ct_id).commit.post(params)
+            messages.success(request, "Sucessfully created the image.")
+        except Exception as e:
+            messages.error(request, api_error_message(e, params))
+            return redirect('images')
     else:
         messages.error(request, "Selected base container does not exist.")
 
@@ -85,14 +86,15 @@ def create(request):
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 
-    name = request.POST.get('name')
-    description = request.POST.get('description')
-    image_id = int(request.POST.get('image_id'))
+    params = {}
+    params["name"] = request.POST.get('name')
+    params["description"] = request.POST.get('description')
+    params["image_id"] = int(request.POST.get('image_id'))
 
     client = get_httpclient_instance(request)
 
     try:
-        image = client.images(image_id).get()
+        image = client.images(params.get('image_id')).get()
     except HttpNotFoundError:
         messages.error(request, "Container bootstrap image does not exist or you don't have enough permissions for the requested operation.")
 
@@ -103,15 +105,10 @@ def create(request):
             client.containers.get()
 
             # server and owner get set by the core automatically
-            client.containers.post({
-                "name": name,
-                "description": description,
-                "image": image_id
-                })
+            client.containers.post(params)
             messages.success(request, "Image created successfully.")
         except Exception as ex:
-            messages.error(request, ex)
-            messages.error(request, "Whuups, something went wrong :(.")
+            messages.error(request, api_error_message(ex, params))
 
     return redirect('containers')
 
@@ -141,8 +138,8 @@ def delete(request):
         try:
             client.containers(ct_id).delete()
             messages.success(request, "Container deleted successfully.")
-        except Exception:
-            messages.error(request, "Whuups, something went wrong :(.")
+        except Exception as e:
+            messages.error(request, api_error_message(e, ""))
     else:
         messages.error(request, "Container does not exist.")
 
@@ -194,8 +191,7 @@ def restart(request):
             client.containers(ct_id).restart.post()
             messages.success(request, "Container is restarting.")
         except Exception as e:
-            print(e)
-            messages.error(request, "Whuups, something went wrong :(.")
+            messages.error(request,  api_error_message(e, ""))
     else:
         messages.error(request, "Container does not exist.")
 
@@ -227,8 +223,8 @@ def start(request):
         try:
             client.containers(ct_id).start.post()
             messages.success(request, "Container is starting.")
-        except Exception:
-            messages.error(request, "Whuups, something went wrong :(.")
+        except Exception as e:
+            messages.error(request, api_error_message(e, ""))
     else:
         messages.error(request, "Container does not exist.")
 
@@ -260,8 +256,8 @@ def stop(request):
         try:
             client.containers(ct_id).stop.post()
             messages.success(request, "Container stopped successfully.")
-        except Exception:
-            messages.error(request, "Whuups, something went wrong :(.")
+        except Exception as e:
+            messages.error(request, api_error_message(e, ""))
     else:
         messages.error(request, "Container does not exist.")
 
