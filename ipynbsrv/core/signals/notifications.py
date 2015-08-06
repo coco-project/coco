@@ -78,7 +78,6 @@ def create_notificationlogs_for_receivers(sender, notification, group, **kwargs)
     """
     if notification:
         for user in group.get_members():
-            print("notification sent to {}".format(user))
             log = NotificationLog(notification=notification, user=user)
             log.save()
 
