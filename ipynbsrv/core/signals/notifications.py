@@ -11,13 +11,15 @@ def create_member_added_group_notification(sender, group, user, **kwargs):
     Create a group notification if a member gets added.
     """
     if group is not None and user is not None:
-        notification = Notification(
-            message='User %s is now a member of this group.' % user,
-            notification_type=Notification.GROUP,
-            group=group
-        )
-        notification.save()
-        notification.receiver_groups.add(group)
+        # check if group is dedicated user group
+        if not group.is_single_user_group:
+            notification = Notification(
+                message='User %s is now a member of this group.' % user,
+                notification_type=Notification.GROUP,
+                group=group
+            )
+            notification.save()
+            notification.receiver_groups.add(group)
 
 
 @receiver(collaboration_group_member_removed)
