@@ -17,9 +17,11 @@ def index(request):
     """
     client = get_httpclient_instance(request)
     shares = client.shares.get()
+    new_notifications_count = len(client.notificationlogs.unread.get())
     return render(request, 'web/shares/index.html', {
         'title': "Shares",
-        'shares': shares
+        'shares': shares,
+        'new_notifications_count': new_notifications_count
     })
 
 
@@ -98,16 +100,10 @@ def share_add_access_groups(request):
     share_id = request.POST.get('id')
     client = get_httpclient_instance(request)
 
-    group_list = []
-    # validate existance of users first
-    for group_id in access_groups:
-        access_group = client.collaborationgroups(group_id).get()
-        if access_group:
-            group_list.append(group_id)
-
-    print(group_list)
+    # cannot validate existance of groups due to visibility permissions 
+    # i.e. of single_user_groups, let the API handle that
     params = {}
-    params['access_groups'] = group_list
+    params['access_groups'] = access_groups
 
     # then call API to add the users to the group
     client.shares.get()
@@ -221,6 +217,7 @@ def manage(request, share_id):
     share = client.shares(share_id).get()
     users = client.users.get()
     groups = client.collaborationgroups.get()
+    new_notifications_count = len(client.notificationlogs.unread.get())
 
     if share:
             return render(request, 'web/shares/manage.html', {
@@ -228,7 +225,8 @@ def manage(request, share_id):
                 'share': share,
                 'members': share.members,
                 'users': users,
-                'groups': groups
+                'groups': groups,
+                'new_notifications_count': new_notifications_count
             })
     else:
         messages.error(request, "Share does not exist.")

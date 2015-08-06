@@ -18,13 +18,15 @@ def index(request):
     client = get_httpclient_instance(request)
     users = client.users.get()
     collab_groups = client.collaborationgroups.get()
+    new_notifications_count = len(client.notificationlogs.unread.get())
     for group in collab_groups:
         group["member_ids"] = [member.id for member in group.members]
 
     return render(request, 'web/collaborationgroups/index.html', {
         'title': "Groups",
         'groups': collab_groups,
-        'users': users
+        'users': users,
+        'new_notifications_count': new_notifications_count
     })
 
 
@@ -38,12 +40,14 @@ def manage(request, group_id):
     members = group.members
     users = client.users.get()
     group["member_ids"] = [member.id for member in members]
+    new_notifications_count = len(client.notificationlogs.unread.get())
 
     return render(request, 'web/collaborationgroups/manage.html', {
         'title': "Group",
         'group': group,
         'members': members,
-        'users': users
+        'users': users,
+        'new_notifications_count': new_notifications_count
     })
 
 

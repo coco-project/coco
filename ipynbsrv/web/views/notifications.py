@@ -22,6 +22,9 @@ def index(request):
     container_images = client.images.get()
     shares = client.shares.get()
 
+    new_notifications_count = len(client.notificationlogs.unread.get())
+
+
     return render(request, 'web/notifications/index.html', {
         'title': "Notifications",
         'notifications': notificationlogs,
@@ -29,7 +32,8 @@ def index(request):
         'groups': groups,
         'containers': containers,
         'container_images': container_images,
-        'shares': shares
+        'shares': shares,
+        'new_notifications_count': new_notifications_count
     })
 
 

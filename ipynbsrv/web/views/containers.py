@@ -60,7 +60,6 @@ def commit(request):
     except Exception:
         messages.error(request, "Some other error.")
 
-
     if container:
         try:
             client.containers(ct_id).commit.post(params)

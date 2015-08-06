@@ -47,6 +47,7 @@ def index(request):
         selected = client.containers(int(request.GET.get('ct'))).get()
     else:
         selected = None
+    new_notifications_count = len(client.notificationlogs.unread.get())
 
     return render(request, 'web/images/index.html', {
         'title': "Images",
@@ -54,5 +55,6 @@ def index(request):
         'images': images,
         # meta information for the create modal
         'selected': selected,
-        'share': 'share' in request.GET
+        'share': 'share' in request.GET,
+        'new_notifications_count': new_notifications_count
     })

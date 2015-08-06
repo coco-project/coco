@@ -31,7 +31,7 @@
             </button>
         </form>
         {% endif %}
-        {% if request.user.backend_user.id in group.member_ids and request.user.backend_user.id != group.creator.id %}
+        {% if request.user.backend_user.id in group.member_ids and request.user.backend_user.id != group.creator.id and group.creator %}
         <form action="{% url 'group_leave' %}" method="POST" role="form">
             {% csrf_token %}
             <input type="hidden" name="group_id" value="{{ group.id }}">
