@@ -8,11 +8,9 @@ from ipynbsrv.core.helpers import get_internal_ldap_connected, get_storage_backe
 from ipynbsrv.core.models import BackendUser
 from ipynbsrv.core.signals.signals import backend_user_created, \
     backend_user_deleted, backend_user_modified
-import logging
 from os import path
 
 
-logger = logging.getLogger(__name__)
 storage_backend = get_storage_backend()
 
 
@@ -63,8 +61,6 @@ def create_home_directory(sender, user, **kwargs):
                 storage_backend.set_dir_mode(home_dir, 0700)
             except StorageBackendError as ex:
                 raise ex
-        else:
-            logger.warn("Home directory for user %s already exists." % user.django_user.get_username())
 
 
 @receiver(backend_user_created)
@@ -132,15 +128,12 @@ def remove_home_directory(sender, user, **kwargs):
     """
     if user is not None:
         home_dir = path.join(settings.STORAGE_DIR_HOME, user.backend_pk)
-        if storage_backend.dir_exists(home_dir):
-            try:
-                storage_backend.rm_dir(home_dir, recursive=True)
-            except DirectoryNotFoundError:
-                pass  # already deleted
-            except StorageBackendError as ex:
-                raise ex
-        else:
-            logger.warn("Home directory for user %s doesn't exist." % user.django_user.get_username())
+        try:
+            storage_backend.rm_dir(home_dir, recursive=True)
+        except DirectoryNotFoundError:
+            pass  # already deleted
+        except StorageBackendError as ex:
+            raise ex
 
 
 @receiver(backend_user_deleted)
@@ -150,15 +143,12 @@ def remove_public_directory(sender, user, **kwargs):
     """
     if user is not None:
         public_dir = path.join(settings.STORAGE_DIR_PUBLIC, user.backend_pk)
-        if storage_backend.dir_exists(public_dir):
-            try:
-                storage_backend.rm_dir(public_dir, recursive=True)
-            except DirectoryNotFoundError:
-                pass  # already deleted
-            except StorageBackendError as ex:
-                raise ex
-        else:
-            logger.warn("Public directory for user %s doesn't exist." % user.django_user.get_username())
+        try:
+            storage_backend.rm_dir(public_dir, recursive=True)
+        except DirectoryNotFoundError:
+            pass  # already deleted
+        except StorageBackendError as ex:
+            raise ex
 
 
 @receiver(backend_user_modified)

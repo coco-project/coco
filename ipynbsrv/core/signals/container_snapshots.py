@@ -5,10 +5,6 @@ from ipynbsrv.contract.errors import ContainerBackendError, ContainerSnapshotNot
 from ipynbsrv.core.models import ContainerSnapshot
 from ipynbsrv.core.signals.signals import container_snapshot_created, \
     container_snapshot_deleted, container_snapshot_modified, container_snapshot_restored
-import logging
-
-
-logger = logging.getLogger(__name__)
 
 
 @receiver(container_snapshot_created)
@@ -31,22 +27,19 @@ def create_on_server(sender, snapshot, **kwargs):
 
 
 @receiver(container_snapshot_deleted)
-def remove_on_server(sender, snapshot, **kwargs):
+def delete_on_server(sender, snapshot, **kwargs):
     """
     When a snapshot is removed from the database, we can remove it from the servers as well.
     """
     if snapshot is not None:
         backend = snapshot.container.server.get_container_backend()
-        if backend.container_snapshot_exists(snapshot.backend_pk):
-            try:
-                backend.delete_container_snapshot(snapshot.backend_pk)
-            except ContainerSnapshotNotFoundError as ex:
-                pass  # already removed?
-            except ContainerBackendError as ex:
-                # XXX: restore?
-                raise ex
-        else:
-            logger.warn("Container snapshot %s not found." % snapshot)
+        try:
+            backend.delete_container_snapshot(snapshot.backend_pk, force=True)
+        except ContainerSnapshotNotFoundError as ex:
+            pass  # already removed?
+        except ContainerBackendError as ex:
+            # XXX: restore?
+            raise ex
 
 
 @receiver(container_snapshot_restored)

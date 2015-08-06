@@ -29,6 +29,8 @@ collaboration_group_deleted = Signal(providing_args=['group'])
 collaboration_group_member_added = Signal(providing_args=['group', 'user'])
 collaboration_group_member_removed = Signal(providing_args=['group', 'user'])
 collaboration_group_modified = Signal(providing_args=['group', 'fields'])
+collaboration_group_user_added = Signal(providing_args=['group', 'user'])
+collaboration_group_user_removed = Signal(providing_args=['group', 'user'])
 
 
 """

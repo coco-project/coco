@@ -58,10 +58,10 @@ class CollaborationGroupAdmin(GroupAdmin):
     form = CollaborationGroupAdminForm
     fieldsets = [
         ('General Properties', {
-            'fields': ['name', 'creator', 'admins']
+            'fields': ['name', 'creator']
         }),
         ('Membership Options', {
-            'fields': ['users', 'is_single_user_group']
+            'fields': ['admins', 'users', 'is_single_user_group']
         }),
         ('Visibility Options', {
             'fields': ['is_public']
@@ -416,7 +416,7 @@ class NotificationAdmin(admin.ModelAdmin):
     Admin model for the `Notification` model.
     """
 
-    list_display = ['message', 'date', 'sender', 'has_related_object']
+    list_display = ['message', 'date', 'sender', 'has_related_object', 'is_system_notification']
     list_filter = [
         ('sender', admin.RelatedOnlyFieldListFilter),
         'notification_type',
@@ -428,7 +428,7 @@ class NotificationAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ('General Properties', {
-            'fields': ['notification_type', 'message', 'sender']
+            'fields': ['notification_type', 'message', 'sender', 'is_system_notification']
         }),
         ('Related Objects', {
             'classes': ['collapse'],

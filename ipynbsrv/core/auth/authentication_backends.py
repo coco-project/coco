@@ -45,7 +45,7 @@ class BackendProxyAuthentication(object):
                 uid = BackendUser.generate_internal_uid()
                 group = self.create_user_groups(username, uid)
                 user = self.create_users(username, password, uid, group.backend_group)
-                group.add_member(user.backend_user)
+                group.add_user(user.backend_user)
 
             if user.is_active:
                 return user

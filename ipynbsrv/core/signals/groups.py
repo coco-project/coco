@@ -42,7 +42,7 @@ def map_to_collaboration_group_member_added(sender, group, user, **kwargs):
     """
     if group is not None and user is not None:
         if hasattr(group, 'collaborationgroup') and hasattr(user, 'backend_user'):
-            collaboration_group_member_added.send(
+            collaboration_group_user_added.send(
                 sender=CollaborationGroup,
                 group=group.collaborationgroup,
                 user=user.backend_user,
@@ -57,7 +57,7 @@ def map_to_collaboration_group_member_removed(sender, group, user, **kwargs):
     """
     if group is not None and user is not None:
         if hasattr(group, 'collaborationgroup') and hasattr(user, 'backend_user'):
-            collaboration_group_member_removed.send(
+            collaboration_group_user_removed.send(
                 sender=CollaborationGroup,
                 group=group.collaborationgroup,
                 user=user.backend_user,

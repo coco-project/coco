@@ -47,14 +47,15 @@ def create_share_directory(sender, share, **kwargs):
     """
     if share is not None:
         share_dir = path.join(settings.STORAGE_DIR_SHARES, share.name)
-        try:
-            storage_backend.mk_dir(share_dir)
-            storage_backend.set_dir_owner(share_dir, 'root')
-            storage_backend.set_dir_gid(share_dir, share.backend_group.backend_id)
-            storage_backend.set_dir_mode(share_dir, 0o2770)
-        except StorageBackendError as ex:
-            share.delete()  # XXX: cleanup
-            raise ex
+        if not storage_backend.dir_exists(share_dir):
+            try:
+                storage_backend.mk_dir(share_dir)
+                storage_backend.set_dir_owner(share_dir, 'root')
+                storage_backend.set_dir_gid(share_dir, share.backend_group.backend_id)
+                storage_backend.set_dir_mode(share_dir, 0o2770)
+            except StorageBackendError as ex:
+                share.delete()  # XXX: cleanup
+                raise ex
 
 
 @receiver(share_deleted)
@@ -73,14 +74,13 @@ def delete_share_directory(sender, share, **kwargs):
     """
     if share is not None:
         share_dir = path.join(settings.STORAGE_DIR_SHARES, share.name)
-        if storage_backend.dir_exists(share_dir):
-            try:
-                storage_backend.rm_dir(share_dir, recursive=True)
-            except DirectoryNotFoundError:
-                pass  # already deleted
-            except StorageBackendError as ex:
-                # XXX: restore share?
-                raise ex
+        try:
+            storage_backend.rm_dir(share_dir, recursive=True)
+        except DirectoryNotFoundError:
+            pass  # already deleted
+        except StorageBackendError as ex:
+            # XXX: restore share?
+            raise ex
 
 
 @receiver(share_access_group_removed)
@@ -89,18 +89,18 @@ def remove_group_members_from_share_group(sender, share, group, **kwargs):
     Remove all members from the access group from the share group.
     """
     if share is not None and group is not None:
-        for user in group.get_members():
+        for member in group.get_members():
             leave = False
-            if user == share.owner:
+            if member == share.owner:
                 leave = True
             else:
                 for access_group in share.access_groups.all():
                     if access_group != group:
-                        if access_group.user_is_member(user):
+                        if access_group.has_access(member):
                             leave = True
                             break
             if not leave:
-                share.remove_member(user)
+                share.remove_member(member)
 
 
 @receiver(collaboration_group_member_removed)
@@ -120,7 +120,7 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
             else:
                 for access_group in share.access_groups.all():
                     if access_group != group:
-                        if access_group.user_is_member(user):
+                        if access_group.has_access(user):
                             leave = True
                             break
             if not leave:
