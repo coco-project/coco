@@ -14,8 +14,12 @@ def index(request):
     """
     Shares listing/index.
     """
+    dateformat = "%Y-%m-%dT%H:%M:%S.%fZ"
     client = get_httpclient_instance(request)
     notificationlogs = client.notificationlogs.get()
+    # get proper dates
+    for notification in notificationlogs:
+        notification["date"] = datetime.strptime(notification.notification.get('date'), dateformat)
     notificationtypes = client.notificationtypes.get()
     groups = client.collaborationgroups.get()
     containers = client.containers.get()
@@ -23,7 +27,6 @@ def index(request):
     shares = client.shares.get()
 
     new_notifications_count = len(client.notificationlogs.unread.get())
-
 
     return render(request, 'web/notifications/index.html', {
         'title': "Notifications",
@@ -63,6 +66,54 @@ def create(request):
     try:
         client.notifications.post(params)
         messages.success(request, "Notification sucessfully created.")
+    except Exception as e:
+        messages.error(request, api_error_message(e, params))
+
+    return redirect('notifications')
+
+
+@user_passes_test(login_allowed)
+def delete(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('notifications')
+    # Todo: validate POST params: receiver_group, msg, type, rel objs
+    if 'id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('notifications')
+
+    client = get_httpclient_instance(request)
+
+    n_id = request.POST.get('id')
+
+    try:
+        client.notificationlogs(n_id).delete()
+        messages.success(request, "Notification sucessfully deleted.")
+    except Exception as e:
+        messages.error(request, api_error_message(e, ""))
+
+    return redirect('notifications')
+
+
+@user_passes_test(login_allowed)
+def mark_as_read(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('notifications')
+    # Todo: validate POST params: receiver_group, msg, type, rel objs
+    if 'id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('notifications')
+
+    client = get_httpclient_instance(request)
+
+    n_id = request.POST.get('id')
+
+    params = {"read": True}
+
+    try:
+        client.notificationlogs(n_id).patch(params)
+        messages.success(request, "Notification marked as read.")
     except Exception as e:
         messages.error(request, api_error_message(e, params))
 

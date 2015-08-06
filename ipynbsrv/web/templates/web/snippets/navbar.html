@@ -19,7 +19,7 @@
                 <li><a href="/images">Images</a></li>
                 <li><a href="/shares">Shares</a></li>
                 <li><a href="/groups">Groups</a></li>
-                <li><a href="/notifications">Notifications ({{ new_notifications_count }})</a></li>
+                <li><a href="/notifications">Notifications {% if new_notifications_count >= 0 %}<span id="notification_bubble">{{ new_notifications_count }}</span>{% endif %}</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
 

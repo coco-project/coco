@@ -852,10 +852,11 @@ class NotificationLogList(generics.ListAPIView):
 
     def get_queryset(self):
         if self.request.user.is_superuser:
-            return NotificationLog.objects.all()
+            return NotificationLog.objects.all().order_by('-notification__date')
         else:
             return NotificationLog.objects.filter(user=self.request.user.backend_user) \
-                                          .filter(in_use=True)
+                                          .filter(in_use=True) \
+                                          .order_by('-notification__date')
 
 
 class NotificationLogUnreadList(generics.ListAPIView):
@@ -867,10 +868,11 @@ class NotificationLogUnreadList(generics.ListAPIView):
 
     def get_queryset(self):
         return NotificationLog.objects.filter(user=self.request.user.backend_user) \
-                                          .filter(in_use=True).filter(read=False)
+                                          .filter(in_use=True).filter(read=False) \
+                                          .order_by('-notification__date')
 
 
-class NotificationLogDetail (generics.RetrieveUpdateDestroyAPIView):
+class NotificationLogDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     Get details of a notification.
     """

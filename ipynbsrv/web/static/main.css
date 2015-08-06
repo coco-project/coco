@@ -123,3 +123,16 @@ table.dataTable.no-footer {
   margin-left: -1px;
   padding: 0;
 }
+#notification_bubble {
+  background-color: white;
+  color: #3465A4;
+  display: inline-block;
+  width: auto;
+  font-size:90%;
+  font-weight: bold;
+  line-height: 20px;
+  min-width: 20px;
+  border-radius: 50%;
+  text-align: center;
+  padding: 0;
+}

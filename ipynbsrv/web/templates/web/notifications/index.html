@@ -32,13 +32,28 @@
             </thead>
             <tbody>
                 {% for n in notifications %}
-                <tr data-id="{{ n.id }}">
-                    <td>{{ n.notification.date }}</td>
+                <tr data-id="{{ n.id }}" {% if not n.read %} class="unread" {% endif %}>
+                    <td>{{ n.date | date:"d.m.Y, H:i" }}</td>
                     <td>{{ n.notification.sender.username }}</td>
                     <td>{{ n.notification.message }}</td>
                     <td>{% if n.notification.url_slug %}<a href="{{ n.notification.url_slug }}">{{ n.notification.notification_type }}</a>{% else %}{{ n.notification.notification_type }}{% endif %}</td>
                     <td>{{ n.read }}</td>
-                    <td>mark as read</td>
+                    <td>
+                        <form action="{% url 'notification_mark_as_read' %}" method="POST" role="form" class="form-action">
+                            {% csrf_token %}
+                            <input type="hidden" name="id" value="{{ n.id }}">
+                            <button class="btn btn-sm btn-success" title="Mark as read" data-placement="left" {% if n.read %} disabled {% endif %}>
+                                <i class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                        <form action="{% url 'notification_delete' %}" method="POST" role="form" class="form-action">
+                            {% csrf_token %}
+                            <input type="hidden" name="id" value="{{ n.id }}">
+                            <button class="btn btn-sm btn-danger" title="Delete notification?" data-toggle="confirmation" data-placement="left">
+                                <i class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -63,43 +78,19 @@ $(function () {
         popout: true
     });
 
-    var tag_options = {
-        width: '100%',
-        height: 'auto',
-        defaultText: '',
-        removeWithBackspace: true
-    };
-    $('#tags').tagsInput(tag_options);
-    $('#users').tagsInput(tag_options);
-
     var table = $('.js-table-smart');
     table.dataTable({
+        ordering: false,
+        "search": {
+            "search": "False"
+          },
+
         columnDefs: [{
-            aTargets: [ 4 ],
-            bSearchable: false,
-            bSortable: false
+            aTargets: [ 0, 5 ],
+            bSearchable: true,
         }]
     });
 
-    var search_input = $('#notifications-table_filter').find('input');
-    table.find('.label').click(function (e) {
-        var label = $(e.target);
-        search_input.val(label.text());
-	    search_input.submit();
-    });
-
-    $('[data-toggle="modal"]').click(function (e) {
-        var btn   = $(e.target);
-        var modal = btn.data('target');
-
-        switch (modal) {
-            case "#modal-notifications-adduser": {
-                var id = btn.closest('tr').data('id');
-                $(modal).find('#modal-share-adduser_id').val(id);
-                break;
-            }
-        }
-    });
 });
 </script>
 {% endblock %}
