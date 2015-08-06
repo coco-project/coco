@@ -428,7 +428,7 @@ class NotificationAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ('General Properties', {
-            'fields': ['notification_type', 'message', 'sender', 'is_system_notification']
+            'fields': ['notification_type', 'message', 'sender']
         }),
         ('Related Objects', {
             'classes': ['collapse'],
