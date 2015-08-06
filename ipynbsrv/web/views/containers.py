@@ -48,7 +48,7 @@ def commit(request):
 
     params = {}
     ct_id = int(request.POST.get('ct_id'))
-    params["img_name"] = request.POST.get('img_name')
+    params["name"] = request.POST.get('img_name')
     params["description"] = request.POST.get('description')
     params["public"] = request.POST.get('public', "") == "on"
 
@@ -88,7 +88,7 @@ def create(request):
     params = {}
     params["name"] = request.POST.get('name')
     params["description"] = request.POST.get('description')
-    params["image_id"] = int(request.POST.get('image_id'))
+    params["image"] = int(request.POST.get('image_id'))
 
     client = get_httpclient_instance(request)
 
