@@ -11,6 +11,14 @@ from os import path
 storage_backend = get_storage_backend()
 
 
+@receiver(collaboration_group_admin_added)
+def add_admin_to_share_groups(sender, group, user, **kwargs):
+    """
+    Add the admin to all share groups the entered group has access to.
+    """
+    add_user_to_share_groups(sender, group, user, kwargs)
+
+
 @receiver(share_created)
 def add_creator_to_share_group(sender, share, **kwargs):
     """
@@ -89,18 +97,26 @@ def remove_group_members_from_share_group(sender, share, group, **kwargs):
     Remove all members from the access group from the share group.
     """
     if share is not None and group is not None:
-        for user in group.get_members():
+        for member in group.get_members():
             leave = False
             if user == share.owner:
                 leave = True
             else:
                 for access_group in share.access_groups.all():
                     if access_group != group:
-                        if access_group.user_is_member(user):
+                        if access_group.has_access(user):
                             leave = True
                             break
             if not leave:
                 share.remove_member(user)
+
+
+@receiver(collaboration_group_admin_removed)
+def remove_admin_from_share_groups(sender, group, user, **kwargs):
+    """
+    Remove the admin from share groups the group had access to.
+    """
+    remove_user_from_share_groups(sender, group, user, kwargs)
 
 
 @receiver(collaboration_group_member_removed)
@@ -120,7 +136,7 @@ def remove_user_from_share_groups(sender, group, user, **kwargs):
             else:
                 for access_group in share.access_groups.all():
                     if access_group != group:
-                        if access_group.user_is_member(user):
+                        if access_group.has_access(user):
                             leave = True
                             break
             if not leave:

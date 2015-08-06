@@ -4,34 +4,6 @@ from ipynbsrv.core.models import BackendUser, CollaborationGroup
 from ipynbsrv.core.signals.signals import *
 
 
-@receiver(collaboration_group_created)
-def add_creator_to_collaboration_group(sender, group, **kwargs):
-    """
-    Add the group creator to the group's user set.
-    """
-    if group is not None and group.creator is not None:
-        group.add_member(group.creator)
-
-
-@receiver(collaboration_group_admin_added)
-def add_admin_to_collaboration_group(sender, group, user, **kwargs):
-    """
-    Add the admin to the collaboration groups's internal backend group.
-    """
-    if group is not None and user is not None:
-        group.add_member(user)
-
-
-@receiver(collaboration_group_admin_removed)
-def remove_admin_from_collaboration_group(sender, group, user, **kwargs):
-    """
-    Remove the admin to the collaboration groups's internal backend group.
-    """
-    if group is not None and user is not None:
-        if not user == group.creator:
-            group.remove_member(user)
-
-
 @receiver(m2m_changed, sender=CollaborationGroup.admins.through)
 def m2m_changed_handler(sender, instance, **kwargs):
     """

@@ -78,7 +78,6 @@ def create_notificationlogs_for_receivers(sender, notification, group, **kwargs)
     """
     if notification:
         for user in group.get_members():
-            print("notification sent to {}".format(user))
             log = NotificationLog(notification=notification, user=user)
             log.save()
 
@@ -93,7 +92,7 @@ def deactivate_group_notifications_for_user(sender, group, user, **kwargs):
             leave = False
             for receiver_group in notification.receiver_groups.all():
                 if receiver_group != group:
-                    if receiver_group.user_is_member(user):
+                    if receiver_group.has_access(user):
                         leave = True
                         break
             if not leave:

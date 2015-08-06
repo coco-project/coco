@@ -9,6 +9,11 @@ class CollaborationGroupAdminForm(forms.ModelForm):
     :link https://djangosnippets.org/snippets/2452/
     """
 
+    admins = forms.ModelMultipleChoiceField(
+        queryset=BackendUser.objects.all(),
+        widget=FilteredSelectMultiple('Admins', False),
+        required=False
+    )
     users = forms.ModelMultipleChoiceField(
         queryset=BackendUser.objects.all(),
         widget=FilteredSelectMultiple('Users', False),
@@ -22,7 +27,8 @@ class CollaborationGroupAdminForm(forms.ModelForm):
         instance = kwargs.get('instance', None)
         if instance is not None:
             initial = kwargs.get('initial', {})
-            initial['users'] = instance.get_members()
+            initial['admins'] = instance.admins.all()
+            initial['users'] = instance.get_users()
             kwargs['initial'] = initial
         super(CollaborationGroupAdminForm, self).__init__(*args, **kwargs)
 
@@ -32,22 +38,34 @@ class CollaborationGroupAdminForm(forms.ModelForm):
         """
         group = super(CollaborationGroupAdminForm, self).save(commit=commit)
         if commit:
-            users = list(self.cleaned_data['admins']) + list(self.cleaned_data['users'])
+            # admins
+            for admin in group.admins.all():
+                if admin not in self.cleaned_data['admins']:
+                    group.remove_admin(admin)
+            for admin in self.cleaned_data['admins']:
+                group.add_admin(admin)
+            # users
             for user in group.get_members():
-                if user not in users:
+                if user not in self.cleaned_data['users']:
                     group.remove_member(user)
-            for user in users:
+            for user in self.cleaned_data['users']:
                 group.add_member(user)
         else:
             old_save_m2m = self.save_m2m
 
             def new_save_m2m():
                 old_save_m2m()
-                users = list(self.cleaned_data['admins']) + list(self.cleaned_data['users'])
+                # admins
+                for admin in group.admins.all():
+                    if admin not in self.cleaned_data['admins']:
+                        group.remove_admin(admin)
+                for admin in self.cleaned_data['admins']:
+                    group.add_admin(admin)
+                # users
                 for user in group.get_members():
-                    if user not in users:
+                    if user not in self.cleaned_data['users']:
                         group.remove_member(user)
-                for user in users:
+                for user in self.cleaned_data['users']:
                     group.add_member(user)
             self.save_m2m = new_save_m2m
         return group

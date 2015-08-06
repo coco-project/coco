@@ -58,10 +58,10 @@ class CollaborationGroupAdmin(GroupAdmin):
     form = CollaborationGroupAdminForm
     fieldsets = [
         ('General Properties', {
-            'fields': ['name', 'creator', 'admins']
+            'fields': ['name', 'creator']
         }),
         ('Membership Options', {
-            'fields': ['users', 'is_single_user_group']
+            'fields': ['admins', 'users', 'is_single_user_group']
         }),
         ('Visibility Options', {
             'fields': ['is_public']
