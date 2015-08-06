@@ -180,7 +180,7 @@ def collaborationgroup_add_members(request, pk):
     Todo: show params on OPTIONS call.
     Todo: permissions
     :param pk   pk of the collaboration group
-    :param users list of user ids to add to the group
+    :param POST.users list of user ids, i.e. { "users": [1,2,3]}
     """
     required_params = ["users"]
     params = validate_request_params(required_params, request)
@@ -211,11 +211,12 @@ def collaborationgroup_add_members(request, pk):
 @api_view(['POST'])
 def collaborationgroup_add_admins(request, pk):
     """
-    Add a list of users to the group.
+    Make a list of users to group admins.
+    Only users that are already members of the group will be added as admins.
     Todo: show params on OPTIONS call.
     Todo: permissions
     :param pk   pk of the collaboration group
-    :param users list of user ids to add to the group
+    :param POST.users list of user ids, i.e. { "users": [1,2,3]}
     """
     required_params = ["users"]
     params = validate_request_params(required_params, request)
@@ -245,13 +246,13 @@ def collaborationgroup_add_admins(request, pk):
 
 
 @api_view(['POST'])
-def collaborationgroup_remove_members(request, pk):
+def collaborationgroup_remove_admins(request, pk):
     """
-    Remove a list of users from the group.
+    Remove a list of users from group admins.
     Todo: show params on OPTIONS call.
     Todo: permissions
     :param pk   pk of the collaboration group
-    :param users list of user ids to remove from the group
+    :param POST.users list of user ids, i.e. { "users": [1,2,3]}
     """
     required_params = ["users"]
     params = validate_request_params(required_params, request)
@@ -272,16 +273,45 @@ def collaborationgroup_remove_members(request, pk):
             return Response({"error": "User has no backend user!", "data": user_id})
         user_list.append(user.backend_user)
 
-    n = Notification(
-        notification_type=Notification.GROUP,
-        sender=request.user,
-        message="You have been removed from a group.",
-        group=group)
-    n.save()
     for user in user_list:
-        group.remove_member(user)
-        if user.get_collaboration_group():
-            n.receiver_groups.add(user.get_collaboration_group())
+        result = group.remove_admin(user)
+        if not result:
+            return Response({"error": "{} is no member of {}".format(user.username, group.name), "data": user_id})
+
+    serializer = NestedCollaborationGroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+def collaborationgroup_remove_members(request, pk):
+    """
+    Remove a list of users from the group.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    :param POST.users list of user ids, i.e. { "users": [1,2,3]}
+    """
+    required_params = ["users"]
+    params = validate_request_params(required_params, request)
+
+    obj = CollaborationGroup.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "CollaborationGroup not found!", "data": request.data})
+    group = obj.first()
+
+    # validate all the user_ids first before adding them
+    user_list = []
+    for user_id in params.get("users"):
+        obj = User.objects.filter(id=user_id)
+        if not obj:
+            return Response({"error": "User not found!", "data": user_id})
+        user = obj.first()
+        if not user.backend_user:
+            return Response({"error": "User has no backend user!", "data": user_id})
+        user_list.append(user.backend_user)
+
+    for user in user_list:
+        group.remove_member(user)       
 
     serializer = NestedCollaborationGroupSerializer(group)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
