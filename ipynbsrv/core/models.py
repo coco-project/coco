@@ -143,7 +143,7 @@ class BackendGroup(models.Model):
 
         :param user: The user to add.
         """
-        if self.user_is_member(user):
+        if self.is_member(user):
             return False
         self.django_group.user_set.add(user.django_user)
         return True
@@ -176,6 +176,15 @@ class BackendGroup(models.Model):
         """
         return [user.backend_user for user in self.django_group.user_set.all()]
 
+    def is_member(self, user):
+        """
+        Check if the user is a member of this group.
+
+        :param user: The user to check for membership.
+        """
+        return user in self.get_members()
+    is_member.boolean = True
+
     def remove_member(self, user):
         """
         Remove the member `user` from the group.
@@ -184,7 +193,7 @@ class BackendGroup(models.Model):
 
         :return bool `True` if the user has been a member and removed.
         """
-        if self.user_is_member(user):
+        if self.is_member(user):
             self.django_group.user_set.remove(user.django_user)
             return True
         return False
@@ -195,15 +204,6 @@ class BackendGroup(models.Model):
         """
         self.full_clean()
         super(BackendGroup, self).save(*args, **kwargs)
-
-    def user_is_member(self, user):
-        """
-        Check if the user is a member of this group.
-
-        :param user: The user to check for membership.
-        """
-        return user in self.get_members()
-    user_is_member.boolean = True
 
     def __str__(self):
         """
@@ -341,54 +341,97 @@ class CollaborationGroup(Group):
 
         :param user: The backend user to add.
         """
-        if self.user_is_admin(user):
+        if self.is_admin(user):
             return False
         self.admins.add(user)
         return True
 
-    def add_member(self, user):
+    def add_user(self, user):
         """
-        Add the user as a member to this group.
+        Add the user as a regular member to this group.
 
         :param user: The backend user to add.
         """
-        if self.user_is_member(user):
+        if self.is_user(user):
             return False
         # single user groups cannot be joined
-        if self.is_single_user_group and self.user_set.count() >= 1:
+        if self.is_single_user_group and self.user_set.count() != 0:
             return False
         self.user_set.add(user.django_user)
         return True
 
-    def get_all_users(self):
+    def get_managers(self):
         """
-        Get a list of all users belonging to this group (including the creator and admins).
+        Get the list of users allowed to manage this group.
         """
-        admins = list(self.admins.all())
-        users = admins + self.get_members()
+        managers = self.admins.all()
         if self.creator:
-            users.append(self.creator)
-        return users
+            managers.append(self.creator)
+        return managers
 
     def get_members(self):
         """
-        Get a list of members for this group.
+        Get a list of all group members (including the creator and admins).
+        """
+        admins = list(self.admins.all())
+        members = admins + self.get_users()
+        if self.creator:
+            members.append(self.creator)
+        return members
+
+    def get_users(self):
+        """
+        Get a list of regular members for this group.
         """
         return [user.backend_user for user in self.user_set.all()]
 
-    def get_member_count(self):
+    def has_access(self, user):
         """
-        Get the number of users in the group.
+        Check if the user has access to this group.
+
+        :param user: The user to check.
         """
-        return self.user_set.all().count()
+        return user in self.get_members()
+
+    def is_admin(self, user):
+        """
+        Check if the backend user is an admin of this group.
+
+        :param user: The user to check.
+        """
+        return user in self.admins.all()
+
+    def is_manager(self, user):
+        """
+        Check if the user is allowed to manage this group.
+
+        :param user: The user to check.
+        """
+        return user == self.creator or self.is_admin(user)
+
+    def is_member(self, user):
+        """
+        Check if the backend user is a member of this group.
+
+        :param user: The user to check for membership.
+        """
+        return user in self.get_members()
+
+    def is_user(self, user):
+        """
+        Check if the backend user is a regular member of this group.
+
+        :param user: The user to check for membership.
+        """
+        return user in self.get_users()
 
     def remove_admin(self, user):
         """
         Remove the admin `user` from the group.
 
-        :param user: The user to remove (if is member).
+        :param user: The user to remove (if is admin).
 
-        :return bool `True` if the user has been an admin and removed.
+        :return bool `True` if the user has been removed.
         """
         if self.user_is_admin(user):
             self.admins.remove(user)
@@ -401,9 +444,21 @@ class CollaborationGroup(Group):
 
         :param user: The user to remove (if is member).
 
-        :return bool `True` if the user has been a member and removed.
+        :return bool `True` if the user has been removed.
         """
-        if self.user_is_member(user):
+        admin = self.remove_admin(user)
+        user = self.remove_user(user)
+        return admin or user
+
+    def remove_user(self, user):
+        """
+        Remove the regular member `user` from the group.
+
+        :param user: The user to remove (if is user).
+
+        :return bool `True` if the user has been removed.
+        """
+        if self.is_user(user):
             self.user_set.remove(user.django_user)
             return True
         return False
@@ -414,38 +469,6 @@ class CollaborationGroup(Group):
         """
         self.full_clean()
         super(CollaborationGroup, self).save(*args, **kwargs)
-
-    def user_has_access(self, user):
-        """
-        Check if the user has access to this group.
-
-        :param user: The user to check.
-        """
-        return user == self.creator or self.user_is_admin(user) or self.user_is_member(user)
-
-    def user_is_admin(self, user):
-        """
-        Check if the backend user is an admin of this group.
-
-        :param user: The user to check.
-        """
-        return user in self.admins.all()
-
-    def user_is_manager(self, user):
-        """
-        Check if the user is allowed to manage this group.
-
-        :param user: The user to check.
-        """
-        return user == self.creator or self.user_is_admin(user)
-
-    def user_is_member(self, user):
-        """
-        Check if the backend user is a member of this group.
-
-        :param user: The user to check for membership.
-        """
-        return user in self.get_members()
 
 
 class Container(models.Model):
@@ -1222,7 +1245,7 @@ class Share(models.Model):
 
         :return bool `True` if the group has been added.
         """
-        if self.group_is_access_group(collab_group):
+        if self.is_access_group(collab_group):
             return False
         self.access_groups.add(collab_group)
         return True
@@ -1251,15 +1274,23 @@ class Share(models.Model):
         """
         Get a list of members for this share.
         """
-        return [user.backend_user for user in self.backend_group.django_group.user_set.all()]
+        return self.backend_group.get_members()
 
-    def group_is_access_group(self, collab_group):
+    def is_access_group(self, collab_group):
         """
         Check if the collaboration group has permission to access this share.
 
         :param collab_group: The collab_group to check.
         """
         return collab_group in self.access_groups.all()
+
+    def is_member(self, user):
+        """
+        Check if the user is a member of this share.
+
+        :param user: The user to check for membership.
+        """
+        return self.backend_group.is_member(user)
 
     def remove_access_group(self, collab_group):
         """
@@ -1269,12 +1300,9 @@ class Share(models.Model):
 
         :return bool `True` if the group had access and been removed.
         """
-        if self.group_is_access_group(collab_group):
-            print("%s in access groups" % collab_group)
+        if self.is_access_group(collab_group):
             self.access_groups.remove(collab_group)
-            print("after remove")
             return True
-        print("not in access groups")
         return False
 
     def remove_member(self, user):
@@ -1293,14 +1321,6 @@ class Share(models.Model):
         """
         self.full_clean()
         super(Share, self).save(*args, **kwargs)
-
-    def user_is_member(self, user):
-        """
-        Check if the user is a member of this share.
-
-        :param user: The user to check for membership.
-        """
-        return self.backend_group.user_is_member(user)
 
     def __str__(self):
         """
