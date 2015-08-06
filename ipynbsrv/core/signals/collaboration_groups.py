@@ -4,6 +4,58 @@ from ipynbsrv.core.models import BackendUser, CollaborationGroup
 from ipynbsrv.core.signals.signals import *
 
 
+@receiver(collaboration_group_admin_added)
+def map_to_member_added_signal(sender, group, user, **kwargs):
+    """
+    Trigger a member signal as well for admin changes.
+    """
+    collaboration_group_member_added.send(
+        sender=sender,
+        group=group,
+        user=user,
+        kwargs=kwargs
+    )
+
+
+@receiver(collaboration_group_user_added)
+def map_to_member_added_signal_2(sender, group, user, **kwargs):
+    """
+    Trigger a member signal as well for user changes.
+    """
+    collaboration_group_member_added.send(
+        sender=sender,
+        group=group,
+        user=user,
+        kwargs=kwargs
+    )
+
+
+@receiver(collaboration_group_admin_removed)
+def map_to_member_removed_signal(sender, group, user, **kwargs):
+    """
+    Trigger a member signal as well for user changes.
+    """
+    collaboration_group_member_removed.send(
+        sender=sender,
+        group=group,
+        user=user,
+        kwargs=kwargs
+    )
+
+
+@receiver(collaboration_group_user_removed)
+def map_to_member_removed_signal_2(sender, group, user, **kwargs):
+    """
+    Trigger a member signal as well for user changes.
+    """
+    collaboration_group_member_removed.send(
+        sender=sender,
+        group=group,
+        user=user,
+        kwargs=kwargs
+    )
+
+
 @receiver(m2m_changed, sender=CollaborationGroup.admins.through)
 def m2m_changed_handler(sender, instance, **kwargs):
     """

@@ -11,14 +11,6 @@ from os import path
 storage_backend = get_storage_backend()
 
 
-@receiver(collaboration_group_admin_added)
-def add_admin_to_share_groups(sender, group, user, **kwargs):
-    """
-    Add the admin to all share groups the entered group has access to.
-    """
-    add_user_to_share_groups(sender, group, user, kwargs)
-
-
 @receiver(share_created)
 def add_creator_to_share_group(sender, share, **kwargs):
     """
@@ -109,14 +101,6 @@ def remove_group_members_from_share_group(sender, share, group, **kwargs):
                             break
             if not leave:
                 share.remove_member(user)
-
-
-@receiver(collaboration_group_admin_removed)
-def remove_admin_from_share_groups(sender, group, user, **kwargs):
-    """
-    Remove the admin from share groups the group had access to.
-    """
-    remove_user_from_share_groups(sender, group, user, kwargs)
 
 
 @receiver(collaboration_group_member_removed)
