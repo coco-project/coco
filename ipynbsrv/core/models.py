@@ -388,12 +388,15 @@ class CollaborationGroup(Group):
     def remove_member(self, user):
         """
         Remove the member `user` from the group.
+        If the user appears to be a group admin, he/she will also be removed as admin.
 
         :param user: The user to remove (if is member).
 
         :return bool `True` if the user has been a member and removed.
         """
+        print("remove %s" % user)
         if self.user_is_member(user):
+            self.remove_admin(user)
             self.user_set.remove(user.django_user)
             return True
         return False
@@ -412,7 +415,6 @@ class CollaborationGroup(Group):
         :param user: The user to check.
         """
         return user in self.admins.all()
-    user_is_admin.boolean = True
 
     def user_is_member(self, user):
         """
@@ -421,7 +423,6 @@ class CollaborationGroup(Group):
         :param user: The user to check for membership.
         """
         return user in self.get_members()
-    user_is_member.boolean = True
 
 
 class Container(models.Model):

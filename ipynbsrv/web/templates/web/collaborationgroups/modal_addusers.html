@@ -14,7 +14,7 @@
                     <div class="form-group">
                         <label for="recipient">Members</label>
                             {% for user in users %}
-                                {% if user.backend_user and user.backend_user.id not in member_ids %}
+                                {% if user.backend_user and user.backend_user.id not in group.member_ids %}
                                 <div class="checkbox">
                                   <label><input name="users" type="checkbox" value="{{ user.id }}">{{ user.username }}</label>
                                 </div>

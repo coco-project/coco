@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from ipynbsrv.core.auth.checks import login_allowed
 from ipynbsrv.core.models import BackendGroup, Notification
 from ipynbsrv.web.api_client_proxy import get_httpclient_instance
+from ipynbsrv.web.views._messages import api_error_message
 
 
 @user_passes_test(login_allowed)
@@ -35,14 +36,13 @@ def manage(request, group_id):
     group = client.collaborationgroups(group_id).get()
     members = group.members
     users = client.users.get()
-    member_ids = [member.id for member in members]
+    group["member_ids"] = [member.id for member in members]
 
     return render(request, 'web/collaborationgroups/manage.html', {
         'title': "Group",
         'group': group,
         'members': members,
-        'users': users,
-        'member_ids': member_ids
+        'users': users
     })
 
 
@@ -52,25 +52,26 @@ def create(request):
         messages.error(request, "Invalid request method.")
         return redirect('groups')
 
+    params = {}
     if 'name' not in request.POST:
         messages.error(request, "Invalid POST request.")
     else:
-        name = request.POST.get('name')
+        params["name"] = request.POST.get('name')
 
-    public = False
     if 'public' in request.POST:
-        public = True
+        params["is_public"] = True
+    else:
+        params["is_public"] = False
 
     client = get_httpclient_instance(request)
 
-    # stupid create workaround (see containers)
-    client.collaborationgroups.get()
-    client.collaborationgroups.post({
-        "name": name,
-        "is_public": public
-    })
-
-    messages.success(request, "Group `{}` created sucessfully.".format(name))
+    try:
+        # stupid create workaround (see containers)
+        client.collaborationgroups.get()
+        client.collaborationgroups.post(params)
+        messages.success(request, "Group `{}` created sucessfully.".format(params.get("name")))
+    except Exception as e:
+        messages.error(request, api_error_message(e, params))
 
     return redirect('groups')
 
@@ -89,8 +90,11 @@ def delete(request):
     client = get_httpclient_instance(request)
     group = client.collaborationgroups(group_id).get()
     if group:
-        client.collaborationgroups(group_id).delete()
-        messages.success(request, "Group `{}` deleted.".format(group.name))
+        try:
+            client.collaborationgroups(group_id).delete()
+            messages.success(request, "Group `{}` deleted.".format(group.name))
+        except Exception as e:
+            messages.error(request, api_error_message(e, ""))
 
     else:
         messages.error(request, "Group does not exist.")
@@ -112,13 +116,56 @@ def add_admin(request):
 
     client = get_httpclient_instance(request)
     group = client.collaborationgroups(group_id).get()
+    user = client.users(user_id).get()
+
+    params = {}
+    params["users"] = [user_id]
 
     if group:
         if request.user.is_superuser or request.user.backend_user.id == group.creator.id or request.user.backend_user.id in group.admins:
-            client.collaborationgroups(group_id).add_admins.post({
-                "users": [user_id]
-                })
-            messages.success(request, "User is now a admin of {}.".format(group.name))
+            try:
+                client.collaborationgroups(group_id).add_admins.post(params)
+                messages.success(request, "{} is now a admin of {}.".format(user.username, group.name))
+            except Exception as e:
+                messages.error(request, api_error_message(e, params))
+
+            request.method = "GET"
+            return redirect('group_manage', group.id)
+        else:
+            messages.error(request, "Not enough permissions to do this.")
+        return redirect('group_manage', group.id)
+    else:
+        messages.error(request, "Group does not exist.")
+        return redirect('group_manage', group.id)
+
+
+@user_passes_test(login_allowed)
+def remove_admin(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('shares')
+    if 'group_id' not in request.POST or 'user_id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('shares')
+
+    group_id = int(request.POST.get('group_id'))
+    user_id = int(request.POST.get('user_id'))
+
+    client = get_httpclient_instance(request)
+    group = client.collaborationgroups(group_id).get()
+    user = client.users(user_id).get()
+
+    params = {}
+    params["users"] = [user_id]
+
+    if group:
+        if request.user.is_superuser or request.user.backend_user.id == group.creator.id or request.user.backend_user.id in group.admins:
+            try:
+                client.collaborationgroups(group_id).remove_admins.post(params)
+                messages.success(request, "{} is not a admin of {} anymore.".format(user.username, group.name))
+            except Exception as e:
+                messages.error(request, api_error_message(e, params))
+
             request.method = "GET"
             return redirect('group_manage', group.id)
         else:
@@ -138,21 +185,26 @@ def add_members(request):
     users = request.POST.getlist('users')
     group_id = request.POST.get('group_id')
 
+    print(users)
+
     client = get_httpclient_instance(request)
 
     user_list = []
     # validate existance of users first
     for u in users:
         user = client.users(u).get()
-    if user:
-        user_list.append(u)
+        if user:
+            user_list.append(u)
 
     # then call API to add the users to the group
     params = {}
     params["users"] = user_list
-    client.collaborationgroups(group_id).add_members.post(params)
+    try:
+        client.collaborationgroups(group_id).add_members.post(params)
+        messages.success(request, "Users successfully added to the group.")
+    except Exception as e:
+        messages.error(request, api_error_message(e, params))
 
-    messages.success(request, "Users successfully added to the group.")
     return redirect('group_manage', group_id)
 
 
@@ -177,8 +229,13 @@ def remove_member(request):
         if user:
             params = {}
             params["users"] = [user_id]
-            client.collaborationgroups(group_id).remove_members.post(params)
-            messages.success(request, "Sucessfully removed the user from the group.")
+            # API call
+            try:
+                client.collaborationgroups(group_id).remove_members.post(params)
+                messages.success(request, "Sucessfully removed {} from the group.".format(user.username))
+            except Exception as e:
+                messages.error(request, api_error_message(e, params))
+
             request.method = "GET"
             return redirect('group_manage', group.id)
         else:
@@ -188,3 +245,69 @@ def remove_member(request):
         messages.error(request, "Group does not exist.")
 
     return redirect('group_manage', group_id)
+
+
+@user_passes_test(login_allowed)
+def leave(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('groups')
+    if 'group_id' not in request.POST or 'user_id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('groups')
+
+    group_id = int(request.POST.get('group_id'))
+    user_id = int(request.POST.get('user_id'))
+
+    client = get_httpclient_instance(request)
+
+    user = client.users(user_id).get()
+    group = client.collaborationgroups(group_id).get()
+
+    if group:
+        if user:
+            params = {}
+            params["users"] = [user_id]
+            try:
+                client.collaborationgroups(group_id).remove_members.post(params)
+                messages.success(request, "You are no longer a member of group {}.".format(group.name))
+            except Exception as e:
+                messages.error(request, api_error_message(e, params))
+
+            request.method = "GET"
+            return redirect('groups')
+        else:
+            messages.error(request, "User does not exist.")
+            return redirect('group_manage', group.id)
+    else:
+        messages.error(request, "Group does not exist.")
+
+    return redirect('groups')
+
+
+@user_passes_test(login_allowed)
+def join(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('shares')
+    if 'group_id' not in request.POST or 'user_id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('groups')
+
+    user_id = request.POST.get('user_id')
+    group_id = request.POST.get('group_id')
+
+    client = get_httpclient_instance(request)
+
+    group = client.collaborationgroups(group_id).get()
+    user = client.users(user_id).get()
+    if user:
+        params = {}
+        params["users"] = [user_id]
+        try:
+            client.collaborationgroups(group_id).add_members.post(params)
+            messages.success(request, "You are now a member of {}.".format(group.name))
+        except Exception as e:
+            messages.error(request, api_error_message(e, params))
+
+    return redirect('groups')

@@ -19,7 +19,10 @@ urlpatterns = [
     url(r'^groups/delete$', 'ipynbsrv.web.views.collaborationgroups.delete', name='group_delete'),
     url(r'^groups/manage/(\d+)$', 'ipynbsrv.web.views.collaborationgroups.manage', name='group_manage'),
     url(r'^groups/remove_member$', 'ipynbsrv.web.views.collaborationgroups.remove_member', name='group_remove_member'),
+    url(r'^groups/leave$', 'ipynbsrv.web.views.collaborationgroups.leave', name='group_leave'),
+    url(r'^groups/join$', 'ipynbsrv.web.views.collaborationgroups.join', name='group_join'),
     url(r'^groups/add_admin$', 'ipynbsrv.web.views.collaborationgroups.add_admin', name='group_add_admin'),
+    url(r'^groups/remove_admin$', 'ipynbsrv.web.views.collaborationgroups.remove_admin', name='group_remove_admin'),
     url(r'^groups/add_users$', 'ipynbsrv.web.views.collaborationgroups.add_members', name='group_add_members'),
 
     # /container(s)/...

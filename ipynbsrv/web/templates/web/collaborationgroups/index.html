@@ -39,9 +39,9 @@
                 {% else %} {% if request.user.backend_user.id in group.member_ids %}<span class="label label-info">Member</span>{% endif %}{% endif %}
             </td>
             <td>
-            {% if request.user.backend_user.id != group.creator and group.creator %} 
+            {% if request.user.backend_user.id != group.creator.id and group.creator %} 
                 {% if request.user.backend_user.id in group.member_ids %}
-                <form action="{% url 'group_remove_member' %}" method="POST" role="form" class="form-action">
+                <form action="{% url 'group_leave' %}" method="POST" role="form" class="form-action">
                     {% csrf_token %}
                     <input type="hidden" name="group_id" value="{{ group.id }}">
                     <input type="hidden" name="user_id" value="{{ request.user.id }}">
@@ -50,10 +50,10 @@
                     </button>
                 </form>
                 {% else %}
-                <form action="{% url 'group_add_members' %}" method="POST" role="form" class="form-action">
+                <form action="{% url 'group_join' %}" method="POST" role="form" class="form-action">
                     {% csrf_token %}
                     <input type="hidden" name="group_id" value="{{ group.id }}">
-                    <input type="hidden" name="users" value="{{ request.user.id }}">
+                    <input type="hidden" name="user_id" value="{{ request.user.id }}">
                     <button class="btn btn-sm btn-success" title="Join group?" data-toggle="confirmation" data-placement="left">
                         <i class="glyphicon glyphicon-plus-sign" aria-hidden="true"></i>
                     </button>
@@ -61,7 +61,7 @@
                 {% endif %}
             {% endif %}
 
-            {% if request.user.backend_user.id == group.creator or request.user.id in group.admins %}
+            {% if request.user.backend_user.id == group.creator.id or request.user.id in group.admins %}
             <form action="{% url 'group_delete' %}" method="POST" role="form" class="form-action">
                 {% csrf_token %}
                 <input type="hidden" name="group_id" value="{{ group.id }}">
