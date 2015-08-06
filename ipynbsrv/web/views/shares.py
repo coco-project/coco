@@ -156,17 +156,17 @@ def delete(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'id' not in request.POST:
+    if 'share_id' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
-    share_id = int(request.POST.get('id'))
+    share_id = int(request.POST.get('share_id'))
 
     client = get_httpclient_instance(request)
     share = client.shares(share_id).get()
 
     if share:
-        if share.owner == request.user.backend_user.id:
+        if share.owner.id == request.user.backend_user.id:
             try:
                 client.shares(share_id).delete()
                 messages.success(request, "Share deleted sucessfully.")

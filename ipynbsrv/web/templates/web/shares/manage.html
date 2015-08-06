@@ -14,6 +14,14 @@
         {% include 'web/snippets/messages.html' with messages=messages only %}
 
         <h1>Share</h1>
+        {% if request.user.backend_user.id == share.owner.id %}
+        <form action="{% url 'share_delete' %}" method="POST" role="form">
+            {% csrf_token %}
+            <input type="hidden" name="share_id" value="{{ share.id }}">
+            <button class="btn btn-danger btn-delete pull-right" title="Delete this share?" data-toggle="confirmation" data-placement="bottom">Delete Share
+            </button>
+        </form>
+        {% endif %}
         <table class="table table-hover table-striped" cellspacing="0" width="100%">
             <thead>
                 <tr>
@@ -32,7 +40,7 @@
                 </tr>
                 <tr>
                     <td>Owner</td>
-                    <td>{{ share.owner.username }}</td>
+                    <td>{{ share.owner.username }}{% if share.owner.id == request.user.backend_user.id %} <span class="label label-info">That's you!</span>{% endif %}</td>
                 </tr>
                 <tr>
                     <td>Tags</td>

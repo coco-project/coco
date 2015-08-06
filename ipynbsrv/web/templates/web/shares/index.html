@@ -35,7 +35,7 @@
                     <td><a href="{% url 'share_manage' share.id %}">{{ share.name }}</a></td>
                     <td>{{ share.description }}</td>
                     <td>
-                        {% if share.owner == request.user %}
+                        {% if share.owner.id == request.user.backend_user.id %}
                             Owner
                         {% else %}
                             Member
@@ -49,13 +49,7 @@
                         {% endfor %}
                     </td>
                     <td style="text-align: right">
-                        {% if share.owner == request.user.backend_user.id %}
-                            <button type="button" class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-share-adduser" title="Add new member(s)" data-tooltip>
-                                <i class="glyphicon glyphicon-plus"></i>
-                            </button>
-                            <a href="{% url 'share_manage' share.id %}" class="btn btn-sm btn-default" title="Manage members" data-tooltip>
-                                <i class="glyphicon glyphicon-th-list" aria-hidden="true"></i>
-                            </a>
+                        {% if share.owner.id == request.user.backend_user.id %}
                             <form action="{% url 'share_delete' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{ share.id }}">
@@ -63,17 +57,6 @@
                                     <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
                                 </button>
                             </form>
-                        {% else %}
-                        <!--
-                        do we want to allow single users to leave a share?
-                            <form action="{% url 'share_leave' %}" method="POST" role="form" class="form-action">
-                                {% csrf_token %}
-                                <input type="hidden" name="id" value="{{ share.id }}">
-                                <button class="btn btn-sm btn-warning" title="Leave this share?" data-toggle="confirmation" data-placement="left">
-                                    <i class="glyphicon glyphicon-minus-sign" aria-hidden="true"></i>
-                                </button>
-                            </form>
-                        -->
                         {% endif %}
                     </td>
                 </tr>
