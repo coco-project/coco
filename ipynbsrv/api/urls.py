@@ -17,8 +17,9 @@ urlpatterns = patterns('',
     url(r'^collaborationgroups/$', views.CollaborationGroupList.as_view(), name="collaborationgroups"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)$', views.CollaborationGroupDetail.as_view(), name="collaborationgroup_detail"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)/add_members$', views.collaborationgroup_add_members, name="collaborationgroup_add_members"),
-    url(r'^collaborationgroups/(?P<pk>[0-9]+)/add_admins$', views.collaborationgroup_add_admins, name="collaborationgroup_add_admins"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)/remove_members$', views.collaborationgroup_remove_members, name="collaborationgroup_remove_members"),
+    url(r'^collaborationgroups/(?P<pk>[0-9]+)/add_admins$', views.collaborationgroup_add_admins, name="collaborationgroup_add_admins"),
+    url(r'^collaborationgroups/(?P<pk>[0-9]+)/remove_admins$', views.collaborationgroup_remove_admins, name="collaborationgroup_remove_admins"),
 
     # /api/backend(s)/...
     url(r'^backends/$', views.BackendList.as_view(), name="backends"),
