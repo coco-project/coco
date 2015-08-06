@@ -202,7 +202,9 @@ def collaborationgroup_add_members(request, pk):
         user_list.append(user.backend_user)
 
     for user in user_list:
-        group.add_member(user)
+        result = group.add_user(user)
+        if not result:
+            return Response({"error": "{} is already member of {}".format(user.username, group.name), "data": user.id})
 
     serializer = NestedCollaborationGroupSerializer(group)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -239,7 +241,7 @@ def collaborationgroup_add_admins(request, pk):
     for user in user_list:
         result = group.add_admin(user)
         if not result:
-            return Response({"error": "{} is no member of {}".format(user.username, group.name), "data": user_id})
+            return Response({"error": "{} is already admin of {}".format(user.username, group.name), "data": user.id})
 
     serializer = NestedCollaborationGroupSerializer(group)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -276,7 +278,7 @@ def collaborationgroup_remove_admins(request, pk):
     for user in user_list:
         result = group.remove_admin(user)
         if not result:
-            return Response({"error": "{} is no member of {}".format(user.username, group.name), "data": user_id})
+            return Response({"error": "{} is no admin of {}".format(user.username, group.name), "data": user.id})
 
     serializer = NestedCollaborationGroupSerializer(group)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -311,7 +313,9 @@ def collaborationgroup_remove_members(request, pk):
         user_list.append(user.backend_user)
 
     for user in user_list:
-        group.remove_member(user)       
+        result = group.remove_member(user)
+        if not result:
+            return Response({"error": "{} is no member of {}".format(user.username, group.name), "data": user.id})
 
     serializer = NestedCollaborationGroupSerializer(group)
     return Response(serializer.data, status=status.HTTP_201_CREATED)

@@ -376,7 +376,7 @@ class CollaborationGroup(Group):
         members = admins + self.get_users()
         if self.creator:
             members.append(self.creator)
-        return members
+        return set(members)
 
     def get_users(self):
         """
