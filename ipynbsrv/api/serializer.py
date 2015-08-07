@@ -108,6 +108,7 @@ class BackendSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
+    arguments = serializers.CharField(required=False)
 
     class Meta:
         model = Backend
