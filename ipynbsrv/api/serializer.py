@@ -52,24 +52,23 @@ class FlatBackendUserSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
-    username = serializers.CharField(source='get_username')
     collab_group = FlatCollaborationGroupSerializer(source='get_collaboration_group')
 
     class Meta:
         model = BackendUser
-        fields = ('id', 'username', 'collab_group')
+        fields = ('id', 'collab_group',)
 
 
 class UserSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
     """
-    backend_user = FlatBackendUserSerializer()
+    backend_user = FlatBackendUserSerializer(read_only=True, many=False)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'backend_user')
-        read_only_fields = ('id', 'username', )
+        fields = ('id', 'username', 'backend_user', 'is_active', 'is_staff')
+        read_only_fields = ('id', 'username', 'backend_user', 'is_staff')
 
 
 class NestedBackendUserSerializer(serializers.ModelSerializer):

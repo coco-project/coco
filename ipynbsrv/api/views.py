@@ -84,7 +84,7 @@ class UserList(generics.ListAPIView):
     permission_classes = [IsSuperUserOrReadOnly]
 
 
-class UserDetails(generics.RetrieveAPIView):
+class UserDetails(generics.RetrieveUpdateDestroyAPIView):
     """
     Get a list of all users (`django.contrib.auth.models.User`).
     Only visible to authenticated users.
@@ -802,10 +802,13 @@ class TagList(generics.ListCreateAPIView):
         return queryset
 
 
-class TagDetail(generics.RetrieveUpdateDestroyAPIView):
+class TagDetail(generics.RetrieveDestroyAPIView):
     """
     Get details of a tag.
     """
+
+    permission_classes = [IsSuperUserOrReadOnly]
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
