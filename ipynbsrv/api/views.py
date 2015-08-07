@@ -30,20 +30,25 @@ def api_root(request, format=None):
     """
     API Root
     """
-    return Response({'endpoints': {
-        'configurationvariables': 'desc',
-        'users': 'desc',
-        'collaborationgroups': 'desc',
-        'backends': 'desc',
-        'containers': 'desc',
-        'images': 'desc',
-        'snapshots': 'desc',
-        'servers': 'desc',
-        'shares': 'desc',
-        'tags': 'desc',
-        'notifications': 'desc',
-        'notificationlogs': 'desc',
-    }})
+    available_endpoints = {}
+    available_endpoints['users'] = 'desc'
+    available_endpoints['collaborationgroups'] = 'desc'
+    available_endpoints['containers'] = 'desc'
+    available_endpoints['images'] = 'desc'
+    available_endpoints['snapshots'] = 'desc'
+    available_endpoints['shares'] = 'desc'
+    available_endpoints['tags'] = 'desc'
+    available_endpoints['notifications'] = 'desc'
+    available_endpoints['notificationlogs'] = 'desc'
+    available_endpoints['notificationtypes'] = 'desc'
+
+    # additional endpoints for superusers only
+    if request.user.is_superuser:
+        available_endpoints['configurationvariables'] = 'desc'
+        available_endpoints['backends'] = 'desc'
+        available_endpoints['servers'] = 'desc'
+
+    return Response(available_endpoints)
 
 
 class ConfigurationVariableList(generics.ListCreateAPIView):

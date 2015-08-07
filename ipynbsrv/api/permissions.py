@@ -84,14 +84,24 @@ class IsSuperUser(
 
 class IsSuperUserOrReadOnly(
         permissions.BasePermission,
+        IsAuthenticatedMixin,
         IsSuperUserMixin,
         IsSafeMethodMixin):
 
+    def has_permission(self, request, view):
+        if self.is_authenticated(request):
+            if self.is_safe_method(request):
+                return True
+            if self.is_superuser(request.user):
+                return True
+        return False
+
     def has_object_permission(self, request, view, obj):
-        if self.is_safe_method(request):
-            return True
-        if self.is_superuser(request.user):
-            return True
+        if self.is_authenticated(request):
+            if self.is_safe_method(request):
+                return True
+            if self.is_superuser(request.user):
+                return True
         return False
 
 
