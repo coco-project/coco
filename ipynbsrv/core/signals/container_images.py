@@ -37,6 +37,15 @@ def delete_internal_image_if_latest(sender, container, **kwargs):
 
 
 @receiver(container_image_deleted)
+def delete_related_notifications(sender, image, **kwargs):
+    """
+    Delete the container image's related notifications upon deletion.
+    """
+    if image is not None and hasattr(image, 'related_notifications'):
+        image.related_notifications.all().delete()
+
+
+@receiver(container_image_deleted)
 def delete_on_server(sender, image, **kwargs):
     """
     When an image is removed from the database, we can remove it from the servers as well.

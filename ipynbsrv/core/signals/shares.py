@@ -68,6 +68,15 @@ def delete_backend_group(sender, share, **kwargs):
 
 
 @receiver(share_deleted)
+def delete_related_notifications(sender, share, **kwargs):
+    """
+    Delete all the share's related notifications.
+    """
+    if share is not None and hasattr(share, 'related_notifications'):
+        share.related_notifications.all().delete()
+
+
+@receiver(share_deleted)
 def delete_share_directory(sender, share, **kwargs):
     """
     Remove the share directory from the storage backend.

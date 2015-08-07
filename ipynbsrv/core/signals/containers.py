@@ -86,6 +86,15 @@ def create_on_server(sender, container, **kwargs):
 
 
 @receiver(container_deleted)
+def delete_related_notifications(sender, container, **kwargs):
+    """
+    Delete the container's related notifications upon deletion.
+    """
+    if container is not None and hasattr(container, 'related_notifications'):
+        container.related_notifications.all().delete()
+
+
+@receiver(container_deleted)
 def delete_on_server(sender, container, **kwargs):
     """
     Delete the destroyed container on the container_backend.

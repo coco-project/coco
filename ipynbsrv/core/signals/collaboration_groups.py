@@ -4,6 +4,15 @@ from ipynbsrv.core.models import BackendUser, CollaborationGroup
 from ipynbsrv.core.signals.signals import *
 
 
+@receiver(collaboration_group_deleted)
+def delete_related_notifications(sender, group, **kwargs):
+    """
+    Delete the groups's related notifications upon deletion.
+    """
+    if group is not None and hasattr(group, 'related_notifications'):
+        group.related_notifications.all().delete()
+
+
 @receiver(collaboration_group_admin_added)
 def map_to_member_added_signal(sender, group, user, **kwargs):
     """
