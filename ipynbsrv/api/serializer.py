@@ -266,6 +266,7 @@ class NestedNotificationSerializer(serializers.ModelSerializer):
     notification_type = serializers.ChoiceField(choices=Notification.NOTIFICATION_TYPES, default='miscellaneous')
     sender = UserSerializer(many=False)
     url_slug = serializers.CharField(source='get_related_object_url', read_only=True)
+    has_related_object = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Notification

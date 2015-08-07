@@ -36,7 +36,7 @@
                     <td>{{ n.date | date:"d.m.Y, H:i" }}</td>
                     <td>{{ n.notification.sender.username }}</td>
                     <td>{{ n.notification.message }}</td>
-                    <td>{% if n.notification.url_slug %}<a href="{{ n.notification.url_slug }}">{{ n.notification.notification_type }}</a>{% else %}{{ n.notification.notification_type }}{% endif %}</td>
+                    <td>{% if n.notification.has_related_object %}<a href="{% if n.notification.notification_type == 'container'%}{% url 'containers' %}{% elif n.notification.notification_type == 'container_image'%}{% url 'images' %}{% elif n.notification.notification_type == 'group' %}{% url 'group_manage' n.notification.group %}{% elif n.notification.notification_type == 'share' %}{% url 'share_manage' n.notification.share %}{% endif %}">{{ n.notification.notification_type }}</a>{% else %}{{ n.notification.notification_type }}{% endif %}</td>
                     <td>{{ n.read }}</td>
                     <td>
                         <form action="{% url 'notification_mark_as_read' %}" method="POST" role="form" class="form-action">
