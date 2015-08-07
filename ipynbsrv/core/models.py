@@ -1030,7 +1030,7 @@ class Notification(models.Model):
         if self.notification_type == 'container' and self.container is not None:
             return reverse('containers')
         if self.notification_type == 'container_image' and self.container_image is not None:
-            return reverse('container_images')
+            return reverse('images')
         if self.notification_type == 'group' and self.group is not None:
             return reverse('group_manage', args=[pk])
         if self.notification_type == 'share' and self.share is not None:

@@ -830,6 +830,16 @@ class NotificationList(generics.ListCreateAPIView):
             queryset = Notification.objects.filter(sender=self.request.user)
         return queryset
 
+    def perform_create(self, serializer):
+        sender = serializer.context.get('request').POST.getlist('sender')
+        # check if sender has been provided in POST data
+        sender_provided = filter(None, sender)
+
+        if self.request.user.is_superuser and sender_provided:
+            serializer.save()
+        else:
+            serializer.save(sender=self.request.user)
+
 
 class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
     """
