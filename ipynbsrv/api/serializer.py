@@ -293,3 +293,18 @@ class NotificationLogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NotificationLog
+        fields = ('id', 'notification', 'read', 'user')
+        read_only_fields = ('id', 'notification', 'user')
+
+
+class SuperUserNotificationLogSerializer(serializers.ModelSerializer):
+    """
+    Special NotificationLogSerializer for superusers, that additionally shows the in_use field.
+    """
+
+    notification = NestedNotificationSerializer(read_only=True, many=False)
+
+    class Meta:
+        model = NotificationLog
+        fields = ('id', 'notification', 'in_use', 'read', 'user')
+        read_only_fields = ('id', 'notification', 'in_use', 'user')

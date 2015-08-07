@@ -1,6 +1,24 @@
 from django.contrib.auth.models import User
 from ipynbsrv.core.models import BackendUser
 from rest_framework import permissions
+from rest_framework.exceptions import PermissionDenied
+
+
+def has_object_permission(permission_class, request, obj):
+    """
+    Helper function to use permission classes in @api_view functions
+    """
+    instance = permission_class()
+    return instance.has_object_permission(request, None, obj)
+
+
+def validate_object_permission(permission_class, request, obj):
+    """
+    Decorator function that calls has_object_permission and raises
+    a PermissionDenied exception if permission is denied.
+    """
+    if not has_object_permission(CollaborationGroupDetailPermission, request, group):
+        raise PermissionDenied
 
 
 class IsAuthenticatedMixin(object):
@@ -9,10 +27,16 @@ class IsAuthenticatedMixin(object):
         return request.user and request.user.is_authenticated()
 
 
-class IsGroupAdminMixin(object):
+class IsManagerMixin(object):
 
-    def is_group_admin(self, user, group):
-        return user in group.admins.all()
+    def is_manager(self, user, obj):
+        return obj.is_manager(user)
+
+
+class IsMemberMixin(object):
+
+    def is_member(self, user, obj):
+        return obj.is_member(user)
 
 
 class IsPublicMixin(object):
@@ -51,13 +75,10 @@ class IsObjectCreatorMixin(object):
             return obj.creator == user.backend_user
 
 
-class IsObjectSenderMixin(object):
+class HasAccessMixin(object):
 
-    def is_sender(self, user, obj):
-        if type(obj.sender) == User:
-            return obj.sender == user
-        elif type(obj.sender) == BackendUser:
-            return obj.sender == user.backend_user
+    def has_access(self, user, obj):
+        return obj.has_access(user)
 
 
 class IsSuperUserMixin(object):
@@ -70,6 +91,9 @@ class IsAuthenticatedAndReadOnly(
         permissions.BasePermission,
         IsAuthenticatedMixin,
         IsSafeMethodMixin):
+    """
+    Allow all safe methods, as long as user is authenticated.
+    """
 
     def has_permission(self, request, view):
         if self.is_authenticated(request):
@@ -83,6 +107,9 @@ class IsAuthenticatedAndReadOnly(
 class IsSuperUser(
         permissions.BasePermission,
         IsSuperUserMixin):
+    """
+    Allow all, if user is superuser.
+    """
 
     def has_permission(self, request, view):
         return self.is_superuser(request.user)
@@ -91,11 +118,14 @@ class IsSuperUser(
         return self.is_superuser(request.user)
 
 
-class IsSuperUserOrReadOnly(
+class IsSuperUserOrAuthenticatedAndReadOnly(
         permissions.BasePermission,
         IsAuthenticatedMixin,
         IsSuperUserMixin,
         IsSafeMethodMixin):
+    """
+    Allow all for superusers. Allow readonly for authenticated users.
+    """
 
     def has_permission(self, request, view):
         if self.is_authenticated(request):
@@ -131,23 +161,22 @@ class IsSuperUserOrIsObjectOwner(
         return False
 
 
-class IsSuperUserOrSender(
+class NotificationDetailPermission(
         permissions.BasePermission,
-        IsObjectSenderMixin,
+        HasAccessMixin,
         IsBackendUserMixin,
         IsSuperUserMixin):
     """
-    Only allow access to User which is set as sender of the object.
-    Created for permissions on notifications.
+    Only allow access if user is superuser or has access.
     """
 
     def has_object_permission(self, request, view, obj):
         if self.is_superuser(request.user):
             return True
-        return self.is_sender(request.user, obj)
+        return self.has_access(request.user, obj)
 
 
-class IsSuperUserOrIsObjectOwnerOrReadOnlyIfPublic(
+class ContainerImageDetailPermission(
         IsSuperUserOrIsObjectOwner,
         IsPublicMixin,
         IsSafeMethodMixin):
@@ -165,23 +194,71 @@ class IsSuperUserOrIsObjectOwnerOrReadOnlyIfPublic(
         return False
 
 
-class IsSuperUserOrIsGroupAdminOrReadOnly(
+class ContainerDetailPermission(IsSuperUserOrIsObjectOwner):
+    """
+    """
+    pass
+
+
+class CollaborationGroupDetailPermission(
         permissions.BasePermission,
         IsSuperUserMixin,
-        IsGroupAdminMixin,
         IsSafeMethodMixin,
-        IsBackendUserMixin,
-        IsObjectCreatorMixin):
+        IsMemberMixin,
+        IsManagerMixin,
+        IsObjectCreatorMixin,
+        IsPublicMixin,
+        IsAuthenticatedMixin):
     """
-    Todo: write doc.
+    Permission specific for collaborationgroups.
+    Only allow write actions to superusers and managers of the group,
+    only allow read actions to members or authenticated users if the group is public.
     """
 
     def has_object_permission(self, request, view, obj):
         if self.is_safe_method(request):
-            return True
+            if self.is_member(request.user.backend_user, obj):
+                return True
+            if self.is_authenticated(request) and self.is_public(obj):
+                return True
         if self.is_superuser(request.user):
             return True
-        if self.is_backend_user(request.user):
-            return self.is_creator(request.user, obj) \
-                or self.is_group_admin(request.user.backend_user, obj)
+        if self.is_manager(request.user.backend_user, obj):
+            return True
+        return False
+
+
+class NotificationLogDetailPermission(
+        permissions.BasePermission,
+        IsSuperUserMixin):
+    """
+    Todo: document
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if self.is_superuser:
+            return True
+        if obj.in_use and obj.user == request.user.backend_user:
+            return True
+        return False
+
+
+class ShareDetailPermissions(
+        permissions.BasePermission,
+        IsObjectOwnerMixin,
+        IsSafeMethodMixin,
+        IsSuperUserMixin,
+        ):
+    """
+    Todo: document.
+    """
+
+    def has_object_permission(self, request, view, share):
+        if self.is_superuser(request.user):
+            return True
+        if self.is_owner(request.user, share):
+            return True
+        if self.is_safe_method(request):
+            if request.user in share.backend_group.django_group.user_set.all():
+                return True
         return False

@@ -10,8 +10,8 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import *
 from rest_framework.response import Response
 
-# TODO: check for unique names before creation of objects !
 
+# TODO: check for unique names before creation of objects !
 
 def validate_request_params(required_params, request):
     """
@@ -81,18 +81,18 @@ class UserList(generics.ListAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsSuperUserOrReadOnly]
+    permission_classes = [IsSuperUserOrAuthenticatedAndReadOnly]
 
 
-class UserDetails(generics.RetrieveUpdateDestroyAPIView):
+class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     """
-    Get a list of all users (`django.contrib.auth.models.User`).
+    Get details about a user (`django.contrib.auth.models.User`).
     Only visible to authenticated users.
     """
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsSuperUserOrReadOnly]
+    permission_classes = [IsSuperUserOrAuthenticatedAndReadOnly]
 
 
 class GroupList(generics.ListAPIView):
@@ -128,7 +128,6 @@ class CollaborationGroupList(generics.ListCreateAPIView):
     """
     Get a list of all the collaboration groups the user is in.
     """
-    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method in ['PATCH', 'POST', 'PUT']:
@@ -159,23 +158,13 @@ class CollaborationGroupDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     Get details of a collaboration group the user is in.
     """
-    permission_classes = [IsSuperUserOrIsGroupAdminOrReadOnly]
+    permission_classes = [CollaborationGroupDetailPermission]
+    queryset = CollaborationGroup.objects.all()
 
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method in ['PATCH', 'POST', 'PUT']:
             return FlatCollaborationGroupSerializer
         return NestedCollaborationGroupSerializer
-
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            queryset = CollaborationGroup.objects.all()
-        else:
-            queryset = CollaborationGroup.objects.filter(
-                Q(user__id=self.request.user.id)
-                | Q(creator=self.request.user.backend_user.id)
-                | Q(is_public=True)
-            ).distinct()
-        return queryset
 
 
 @api_view(['POST'])
@@ -194,6 +183,9 @@ def collaborationgroup_add_members(request, pk):
     if not obj:
         return Response({"error": "CollaborationGroup not found!", "data": request.data})
     group = obj.first()
+
+    # check permissions
+    validate_object_permission(CollaborationGroupDetailPermission, request, group)
 
     # validate all the user_ids first before adding them
     user_list = []
@@ -233,6 +225,9 @@ def collaborationgroup_add_admins(request, pk):
         return Response({"error": "CollaborationGroup not found!", "data": request.data})
     group = obj.first()
 
+    # check permissions
+    validate_object_permission(CollaborationGroupDetailPermission, request, group)
+
     # validate all the user_ids first before adding them
     user_list = []
     for user_id in params.get("users"):
@@ -268,6 +263,9 @@ def collaborationgroup_remove_admins(request, pk):
     if not obj:
         return Response({"error": "CollaborationGroup not found!", "data": request.data})
     group = obj.first()
+
+    # check permissions
+    validate_object_permission(CollaborationGroupDetailPermission, request, group)
 
     # validate all the user_ids first before adding them
     user_list = []
@@ -305,6 +303,9 @@ def collaborationgroup_remove_members(request, pk):
     if not obj:
         return Response({"error": "CollaborationGroup not found!", "data": request.data})
     group = obj.first()
+
+    # check permissions
+    validate_object_permission(CollaborationGroupDetailPermission, request, group)
 
     # validate all the user_ids first before adding them
     user_list = []
@@ -367,14 +368,8 @@ class ContainerDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a container.
     """
     serializer_class = ContainerSerializer
-    permission_classes = [IsSuperUserOrIsObjectOwner]
-
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            queryset = Container.objects.all()
-        else:
-            queryset = Container.objects.filter(owner=self.request.user.backend_user.id)
-        return queryset
+    permission_classes = [ContainerDetailPermission]
+    queryset = Container.objects.all()
 
 
 def get_container(pk):
@@ -411,6 +406,10 @@ def container_clone(request, pk):
         params['description'] = data.get('description')
 
     origin = get_container(pk)
+
+    # validate permissions
+    validate_object_permission(ContainerDetailPermission, request, origin)
+
     if origin:
         clone = origin.clone(**params)
         clone.save()
@@ -441,6 +440,10 @@ def container_commit(request, pk):
         params[param] = request.data.get(param)
 
     container = get_container(pk)
+
+    # validate permissions
+    validate_object_permission(ContainerDetailPermission, request, container)
+
     if container:
         image = container.commit(**params)
 
@@ -472,6 +475,10 @@ def container_create_snapshot(request, pk):
         params['description'] = data.get('description')
 
     origin = get_container(pk)
+
+    # validate permissions
+    validate_object_permission(ContainerDetailPermission, request, origin)
+
     if origin:
         snapshot = origin.create_snapshot(**params)
         snapshot.save()
@@ -484,10 +491,14 @@ def container_create_snapshot(request, pk):
 @api_view(['GET'])
 def container_clones(request, pk):
     container = get_container(pk)
+
+    # validate permissions
+    validate_object_permission(ContainerDetailPermission, request, container)
+
     if container:
         clones = container.get_clones()
         serializer = ContainerSerializer(clones, many=True)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     else:
         return Response({"error": "Container not found!", "pk": pk})
 
@@ -502,8 +513,12 @@ def container_restart(request, pk):
 
     if containers:
         container = containers.first()
+
+        # validate permissions
+        validate_object_permission(ContainerDetailPermission, request, container)
+
         container.restart()
-        return Response({"message": "container rebooting"}, status=status.HTTP_201_CREATED)
+        return Response({"message": "container rebooting"}, status=status.HTTP_200_OK)
     else:
         return Response({"error": "Container not found!", "data": data})
 
@@ -518,8 +533,10 @@ def container_resume(request, pk):
 
     if containers:
         container = containers.first()
+        # validate permissions
+        validate_object_permission(ContainerDetailPermission, request, container)
         container.resume()
-        return Response({"message": "container resuming"}, status=status.HTTP_201_CREATED)
+        return Response({"message": "container resuming"}, status=status.HTTP_200_OK)
     else:
         return Response({"error": "Container not found!", "data": data})
     pass
@@ -535,8 +552,10 @@ def container_start(request, pk):
 
     if containers:
         container = containers.first()
+        # validate permissions
+        validate_object_permission(ContainerDetailPermission, request, container)
         container.start()
-        return Response({"message": "container booting"}, status=status.HTTP_201_CREATED)
+        return Response({"message": "container booting"}, status=status.HTTP_200_OK)
     else:
         return Response({"error": "Container not found!", "data": data})
     pass
@@ -552,8 +571,10 @@ def container_stop(request, pk):
 
     if containers:
         container = containers.first()
+        # validate permissions
+        validate_object_permission(ContainerDetailPermission, request, container)
         container.stop()
-        return Response({"message": "container stopping"}, status=status.HTTP_201_CREATED)
+        return Response({"message": "container stopping"}, status=status.HTTP_200_OK)
     else:
         return Response({"error": "Container not found!", "data": data})
     pass
@@ -569,8 +590,10 @@ def container_suspend(request, pk):
 
     if containers:
         container = containers.first()
+        # validate permissions
+        validate_object_permission(ContainerDetailPermission, request, container)
         container.suspend()
-        return Response({"message": "container suspending"}, status=status.HTTP_201_CREATED)
+        return Response({"message": "container suspending"}, status=status.HTTP_200_OK)
     else:
         return Response({"error": "Container not found!", "data": data})
     pass
@@ -597,16 +620,8 @@ class ContainerImageDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a container image.
     """
     serializer_class = ContainerImageSerializer
-    permission_classes = [IsSuperUserOrIsObjectOwnerOrReadOnlyIfPublic]
-
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            queryset = ContainerImage.objects.all()
-        else:
-            queryset = ContainerImage.objects.filter(
-                Q(is_internal=False) & (Q(owner=self.request.user) | Q(is_public=True))
-            )
-        return queryset
+    permission_classes = [ContainerImageDetailPermission]
+    queryset = ContainerImage.objects.all()
 
 
 class ContainerSnapshotList(generics.ListCreateAPIView):
@@ -630,16 +645,8 @@ class ContainerSnapshotDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a container snapshot.
     """
     serializer_class = ContainerSnapshotSerializer
-    # TODO: permissions
-
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            queryset = ContainerSnapshot.objects.all()
-        else:
-            queryset = ContainerSnapshot.objects.filter(
-                container__owner=self.request.user.backend_user
-            )
-            return queryset
+    permission_classes = [ContainerDetailPermission]
+    queryset = queryset = ContainerSnapshot.objects.all()
 
 
 class ServerList(generics.ListCreateAPIView):
@@ -693,18 +700,8 @@ class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a share.
     """
 
-    def get_serializer_class(self, *args, **kwargs):
-        if self.request.method in ['PATCH', 'POST', 'PUT']:
-            return FlatShareSerializer
-        return NestedShareSerializer
-
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            return Share.objects.all()
-        else:
-            return Share.objects.filter(
-                backend_group__django_group__user=self.request.user
-                )
+    permission_classes = [ShareDetailPermissions]
+    queryset = Share.objects.all()
 
 
 @api_view(['POST'])
@@ -724,6 +721,9 @@ def share_add_access_groups(request, pk):
     if not obj:
         return Response({"error": "Share not found!", "data": request.data})
     share = obj.first()
+
+    # validate permissions
+    validate_object_permission(ShareDetailPermissions, request, share)
 
     # validate all the access_groups first before adding them
     access_groups = []
@@ -761,6 +761,9 @@ def share_remove_access_groups(request, pk):
     if not obj:
         return Response({"error": "Share not found!", "data": request.data})
     share = obj.first()
+
+    # validate permissions
+    validate_object_permission(ShareDetailPermissions, request, share)
 
     # validate all the access_groups first before adding them
     access_groups = []
@@ -807,8 +810,7 @@ class TagDetail(generics.RetrieveDestroyAPIView):
     Get details of a tag.
     """
 
-    permission_classes = [IsSuperUserOrReadOnly]
-
+    permission_classes = [IsSuperUserOrAuthenticatedAndReadOnly]
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
@@ -846,19 +848,13 @@ class NotificationDetail(generics.RetrieveDestroyAPIView):
     Get details of a notification.
     """
 
+    permission_classes = [NotificationDetailPermission]
+    queryset = Notification.objects.all()
+
     def get_serializer_class(self, *args, **kwargs):
         if self.request.method in ['PATCH', 'POST', 'PUT']:
             return FlatNotificationSerializer
         return NestedNotificationSerializer
-
-    permission_classes = [IsSuperUserOrSender]
-
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            queryset = Notification.objects.all()
-        else:
-            queryset = Notification.objects.filter(sender=self.request.user)
-        return queryset
 
 
 class NotificationLogList(generics.ListAPIView):
@@ -867,6 +863,11 @@ class NotificationLogList(generics.ListAPIView):
     """
 
     serializer_class = NotificationLogSerializer
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.user.is_superuser:
+            return SuperUserNotificationLogSerializer
+        return NotificationLogSerializer
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -890,17 +891,13 @@ class NotificationLogUnreadList(generics.ListAPIView):
                                           .order_by('-notification__date')
 
 
-class NotificationLogDetail(generics.RetrieveUpdateDestroyAPIView):
+class NotificationLogDetail(generics.RetrieveUpdateAPIView):
     """
     Get details of a notification.
     """
     serializer_class = NotificationLogSerializer
-
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            return NotificationLog.objects.all()
-        else:
-            return NotificationLog.objects.filter(user=self.request.user.backend_user)
+    permission_classes = [NotificationLogDetailPermission]
+    queryset = NotificationLog.objects.all()
 
 
 @api_view(('GET',))
