@@ -51,6 +51,15 @@ class IsObjectCreatorMixin(object):
             return obj.creator == user.backend_user
 
 
+class IsObjectSenderMixin(object):
+
+    def is_sender(self, user, obj):
+        if type(obj.sender) == User:
+            return obj.sender == user
+        elif type(obj.sender) == BackendUser:
+            return obj.sender == user.backend_user
+
+
 class IsSuperUserMixin(object):
 
     def is_superuser(self, user):
@@ -120,6 +129,22 @@ class IsSuperUserOrIsObjectOwner(
         if self.is_backend_user(request.user):
             return self.is_owner(request.user, obj)
         return False
+
+
+class IsSuperUserOrSender(
+        permissions.BasePermission,
+        IsObjectSenderMixin,
+        IsBackendUserMixin,
+        IsSuperUserMixin):
+    """
+    Only allow access to User which is set as sender of the object.
+    Created for permissions on notifications.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if self.is_superuser(request.user):
+            return True
+        return self.is_sender(request.user, obj)
 
 
 class IsSuperUserOrIsObjectOwnerOrReadOnlyIfPublic(

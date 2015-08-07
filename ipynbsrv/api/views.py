@@ -841,7 +841,7 @@ class NotificationList(generics.ListCreateAPIView):
             serializer.save(sender=self.request.user)
 
 
-class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
+class NotificationDetail(generics.RetrieveDestroyAPIView):
     """
     Get details of a notification.
     """
@@ -851,7 +851,7 @@ class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
             return FlatNotificationSerializer
         return NestedNotificationSerializer
 
-    permission_classes = [IsSuperUserOrReadOnly]
+    permission_classes = [IsSuperUserOrSender]
 
     def get_queryset(self):
         if self.request.user.is_superuser:
