@@ -1,3 +1,7 @@
+"""
+Settings related to containers.
+"""
+CONTAINER_ACCESS_BASE_URI = '/ct/'
 
 """
 Settings storing the paths (relative to STORAGE_DIR_BASE) under which (user) directories should be created.

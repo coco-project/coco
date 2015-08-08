@@ -607,11 +607,16 @@ class Container(models.Model):
         snapshot.save()
         return snapshot
 
-    def get_clones(self):
+    def get_backend_base_url(self):
         """
-        Get all containers that are clones of the one this method is called on.
+        Returns the base URL under which proxied services should listen within the container.
         """
-        return Container.objects.filter(clone_of=self)
+        base_url = None
+        if self.is_image_based() and self.image.protected_port:
+            base_url = settings.CONTAINER_ACCESS_BASE_URI + self.server.internal_ip + PortMapping
+        elif self.is_clone() and self.clone_of.is_image_based() and self.clone_of.image.protected_port:
+            base_url = settings.CONTAINER_ACCESS_BASE_URI + self.server.internal_ip + PortMapping
+        return base_url
 
     def get_backend_name(self):
         """
@@ -619,30 +624,17 @@ class Container(models.Model):
         """
         return 'u%i-%s' % (self.owner.backend_id, self.name)
 
+    def get_clones(self):
+        """
+        Get all containers that are clones of the one this method is called on.
+        """
+        return Container.objects.filter(clone_of=self)
+
     def get_friendly_name(self):
         """
         Return the human-friendly name of this container.
         """
         return self.owner.django_user.get_username() + '_' + self.name
-
-    def get_port_mappings(self, tuples=False):
-        """
-        Return the port mappings for this container.
-
-        :param tuples: If `True`, tuples in the form (internal, exposed) are returned.
-        """
-        mappings = []
-        reported_mappings = self.server.get_container_backend().get_container(self.backend_pk) \
-                                .get(ContainerBackend.CONTAINER_KEY_PORT_MAPPINGS)
-        if tuples:
-            for reported_mapping in reported_mappings:
-                mappings.append((
-                    reported_mapping.get(ContainerBackend.PORT_MAPPING_KEY_INTERNAL),
-                    reported_mapping.get(ContainerBackend.PORT_MAPPING_KEY_EXTERNAL)
-                ))
-        else:
-            mappings = reported_mappings
-        return mappings
 
     def has_clones(self):
         """
@@ -1068,6 +1060,30 @@ class Notification(models.Model):
         :inherit.
         """
         return self.__str__()
+
+
+class PortMapping(models.Model):
+
+    """
+    TODO: write doc.
+    """
+
+    container = models.ForeignKey(
+        'container',
+        related_name='port_mappings',
+        help_text='The container for which this port mapping is.'
+    )
+    external_port = models.PositiveIntegerField(
+        help_text='The public port for this port mapping (e.g. the one under which it can be accessed).'
+    )
+    internal_port = models.PositiveIntegerField(
+        help_text='The container internal port.'
+    )
+
+    class Meta:
+        unique_together = (
+            ('container', 'external_port', 'internal_port')
+        )
 
 
 class NotificationLog(models.Model):

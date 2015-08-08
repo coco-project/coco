@@ -55,6 +55,7 @@ def create_on_server(sender, container, **kwargs):
                     }
                 ],
                 cmd=cmd,
+                base_url=container.get_backend_base_url(),
                 image=image,
                 clone_of=clone_of
             )
