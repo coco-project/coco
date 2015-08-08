@@ -34,7 +34,7 @@ def delete_on_server(sender, snapshot, **kwargs):
     if snapshot is not None:
         backend = snapshot.container.server.get_container_backend()
         try:
-            backend.delete_container_snapshot(snapshot.backend_pk, force=True)
+            backend.delete_container_snapshot(snapshot.backend_pk, True)
         except ContainerSnapshotNotFoundError as ex:
             pass  # already removed?
         except ContainerBackendError as ex:

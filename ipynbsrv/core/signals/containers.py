@@ -112,10 +112,7 @@ def delete_on_server(sender, container, **kwargs):
             pass
 
         try:
-            container.server.get_container_backend().delete_container(
-                container.backend_pk,
-                force=True
-            )
+            container.server.get_container_backend().delete_container(container.backend_pk, True)
         except ContainerNotFoundError as ex:
             pass  # already deleted
         except ContainerBackendError as ex:
@@ -149,7 +146,7 @@ def restart_on_server(sender, container, **kwargs):
     """
     if container is not None:
         try:
-            container.server.get_container_backend().restart_container(container.backend_pk)
+            container.server.get_container_backend().restart_container(container.backend_pk, True)
         except ContainerBackendError as ex:
             raise ex
 
@@ -161,7 +158,7 @@ def resume_on_server(sender, container, **kwargs):
     """
     if container is not None:
         try:
-            container.server.get_container_backend().resume_container(container.backend_pk)
+            container.server.get_container_backend().resume_container(container.backend_pk, True)
         except ContainerBackendError as ex:
             raise ex
 
@@ -185,7 +182,7 @@ def stop_on_server(sender, container, **kwargs):
     """
     if container is not None:
         try:
-            container.server.get_container_backend().stop_container(container.backend_pk)
+            container.server.get_container_backend().stop_container(container.backend_pk, True)
         except ContainerBackendError as ex:
             raise ex
 
@@ -197,7 +194,7 @@ def suspend_on_server(sender, container, **kwargs):
     """
     if container is not None:
         try:
-            container.server.get_container_backend().suspend_container(container.backend_pk)
+            container.server.get_container_backend().suspend_container(container.backend_pk, True)
         except ContainerBackendError as ex:
             raise ex
 
