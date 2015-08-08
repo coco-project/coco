@@ -17,7 +17,7 @@ def validate_object_permission(permission_class, request, obj):
     Decorator function that calls has_object_permission and raises
     a PermissionDenied exception if permission is denied.
     """
-    if not has_object_permission(CollaborationGroupDetailPermission, request, group):
+    if not has_object_permission(permission_class, request, obj):
         raise PermissionDenied
 
 
