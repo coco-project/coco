@@ -36,7 +36,9 @@ def create_on_server(sender, container, **kwargs):
         result = None
         try:
             result = container.server.get_container_backend().create_container(
-                container.get_backend_name(),
+                container.owner.backend_pk,
+                container.owner.backend_id,
+                container.name,
                 ports,
                 [
                     {   # home directory
