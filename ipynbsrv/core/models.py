@@ -378,6 +378,12 @@ class CollaborationGroup(Group):
             members.append(self.creator)
         return list(set(members))
 
+    def get_member_count(self):
+        """
+        Get the number of members in the group.
+        """
+        return len(self.get_members())
+
     def get_users(self):
         """
         Get a list of regular members for this group.
