@@ -39,13 +39,13 @@ urlpatterns = patterns('',
     url(r'^containers/(?P<pk>[0-9]+)/stop$', views.container_stop, name="container_stop"),
     url(r'^containers/(?P<pk>[0-9]+)/suspend$', views.container_suspend, name="container_suspend"),
 
-    # /api/images(/)...
-    url(r'^images/?$', views.ContainerImageList.as_view(), name="images"),
-    url(r'^images/(?P<pk>[0-9]+)$', views.ContainerImageDetail.as_view(), name="image_detail"),
+    # /api/container/images(/)...
+    url(r'^container/images/?$', views.ContainerImageList.as_view(), name="images"),
+    url(r'^container/images/(?P<pk>[0-9]+)$', views.ContainerImageDetail.as_view(), name="image_detail"),
 
-    # /api/snapshots(/)...
-    url(r'^snapshots/?$', views.ContainerSnapshotList.as_view(), name="snapshot"),
-    url(r'^snapshots/(?P<pk>[0-9]+)$', views.ContainerSnapshotDetail.as_view(), name="snapshot_detail"),
+    # /api/container/snapshots(/)...
+    url(r'^container/snapshots/?$', views.ContainerSnapshotList.as_view(), name="snapshot"),
+    url(r'^container/snapshots/(?P<pk>[0-9]+)$', views.ContainerSnapshotDetail.as_view(), name="snapshot_detail"),
 
     # /api/servers(/)...
     url(r'^servers/?$', views.ServerList.as_view(), name="servers"),

@@ -93,7 +93,7 @@ def create(request):
     client = get_httpclient_instance(request)
 
     try:
-        image = client.images(params.get('image_id')).get()
+        image = client.container.images(params.get('image_id')).get()
     except HttpNotFoundError:
         messages.error(request, "Container bootstrap image does not exist or you don't have enough permissions for the requested operation.")
 
@@ -153,7 +153,7 @@ def index(request):
     client = get_httpclient_instance(request)
     # containers = Container.objects.filter(owner=request.user.backend_user)
     containers = client.containers.get()
-    images = client.images.get()
+    images = client.container.images.get()
     new_notifications_count = len(client.notificationlogs.unread.get())
 
     return render(request, 'web/containers/index.html', {

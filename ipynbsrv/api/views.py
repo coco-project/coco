@@ -34,8 +34,10 @@ def api_root(request, format=None):
     available_endpoints['users'] = 'desc'
     available_endpoints['collaborationgroups'] = 'desc'
     available_endpoints['containers'] = 'desc'
-    available_endpoints['images'] = 'desc'
-    available_endpoints['snapshots'] = 'desc'
+    available_endpoints['container'] = {
+        'images': 'desc',
+        'snapshots': 'desc'
+    }
     available_endpoints['shares'] = 'desc'
     available_endpoints['tags'] = 'desc'
     available_endpoints['notifications'] = 'desc'

@@ -220,6 +220,20 @@ class FlatShareSerializer(serializers.ModelSerializer):
     Used for write actions.
     """
 
+    # make access_groups optional
+    # access_groups = serializers.ListField(
+    #     child=serializers.IntegerField(),
+    #     required=False
+    # )
+    # make tags optional
+    # tags = serializers.ListField(
+    #     child=serializers.IntegerField(),
+    #     required=False
+    # )
+    # owner = serializers.HiddenField(
+    #     default=CurrentBackendUserDefault()
+    # )
+
     class Meta:
         model = Share
         fields = ('id', 'name', 'description', 'owner', 'tags', 'access_groups')
@@ -247,16 +261,21 @@ class FlatShareSerializer(serializers.ModelSerializer):
         )
         backend_group.save()
 
-        tags = validated_data.pop("tags")
-        access_groups = validated_data.pop("access_groups")
+        tags = access_groups = []
+        if 'tags' in validated_data:
+            tags = validated_data.pop("tags")
+        if 'access_groups' in validated_data:
+            access_groups = validated_data.pop("access_groups")
 
         # create share
         share = Share.objects.create(
             backend_group=backend_group,
             **validated_data
             )
-        self.set_tags(tags, share)
-        self.set_access_groups(access_groups, share)
+        if tags:
+            self.set_tags(tags, share)
+        if access_groups:
+            self.set_access_groups(access_groups, share)
         return share
 
 
