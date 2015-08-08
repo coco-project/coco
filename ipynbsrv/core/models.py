@@ -740,7 +740,6 @@ class Container(models.Model):
 
     class Meta:
         unique_together = (
-            ('backend_pk', 'server'),
             ('name', 'owner')
         )
 
