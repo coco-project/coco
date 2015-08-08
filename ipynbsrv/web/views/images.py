@@ -21,13 +21,13 @@ def delete(request):
     client = get_httpclient_instance(request)
 
     try:
-        image = client.container.images(img_id).get()
+        image = client.containers.images(img_id).get()
     except HttpNotFoundError:
         messages.error(request, "Image does not exist or you don't have the permissions to delete it.")
 
     if image:
         try:
-            client.container.images(img_id).delete()
+            client.containers.images(img_id).delete()
             messages.success(request, "Image deleted successfully.")
         except Exception as e:
             messages.error(request, api_error_message(e, ""))
@@ -42,7 +42,7 @@ def index(request):
     client = get_httpclient_instance(request)
 
     containers = client.containers.get()
-    images = client.container.images.get()
+    images = client.containers.images.get()
     if request.GET.get('ct'):
         selected = client.containers(int(request.GET.get('ct'))).get()
     else:

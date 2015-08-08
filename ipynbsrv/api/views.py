@@ -31,24 +31,73 @@ def api_root(request, format=None):
     API Root
     """
     available_endpoints = {}
-    available_endpoints['users'] = 'desc'
-    available_endpoints['collaborationgroups'] = 'desc'
-    available_endpoints['containers'] = 'desc'
-    available_endpoints['container'] = {
-        'images': 'desc',
-        'snapshots': 'desc'
+    available_endpoints['users'] = {
+        '': 'Get a list of all users.',
+        '{id}': 'Get details about a user.'
     }
-    available_endpoints['shares'] = 'desc'
-    available_endpoints['tags'] = 'desc'
-    available_endpoints['notifications'] = 'desc'
-    available_endpoints['notificationlogs'] = 'desc'
-    available_endpoints['notificationtypes'] = 'desc'
+    available_endpoints['collaborationgroups'] = {
+        '': 'Get a list of all collaborationgroups.',
+        '{id}': {
+            '': 'Get details about a collaborationgroup.',
+            'add_members': 'Add members to a collaborationgroup.',
+            'remove_members': 'Remove members from a collaborationgroup.',
+            'add_admins': 'Add admins to a collaborationgroup.',
+            'remove_admins': 'Remove admins from a collaborationgroup.'
+        }
+    }
+    available_endpoints['containers'] = {
+        '': 'Get a list of all containers available to your user.',
+        'images': 'Get a list of all container images available to your user.',
+        'snapshots': 'Get a list of all container snapshots available to your user.',
+        '{id}': {
+            '': 'Get details about a container.',
+            'commit': 'Create an image from the container.',
+            'clone': 'Clone the container.',
+            'clones': 'Get a list of all clones of the container',
+            'create_snapshot': 'Create a snapshot of the container.',
+            'restart': 'Restart the container.',
+            'resume': 'Resume the container.',
+            'start': 'Start the container.',
+            'stop': 'Stop the container.',
+            'suspend': 'Suspend the container.'
+        }
+    }
+    available_endpoints['shares'] = {
+        '': 'Get a list of all available shares.',
+        '{id}': {
+            '': 'Get details about a share.',
+            'add_access_groups': 'Add access_groups to the share.',
+            'remove_access_groups': 'Remove access_groups from the share.'
+        }
+    }
+    available_endpoints['tags'] = {
+        '': 'Get a list of all available tags.',
+        '{id}': 'Get details about a tag.'
+    }
+    available_endpoints['notifications'] = {
+        '': 'Get a list of all available notifications.',
+        '{id}': 'Get details about a notification.'
+    }
+    available_endpoints['notificationlogs'] = {
+        '': 'Get a list of all available notificationlogs.',
+        '{id}': 'Get details about a notificationlog.'
+    }
+    available_endpoints['notificationtypes'] = 'Get a list of all available notificationtypes.'
 
     # additional endpoints for superusers only
     if request.user.is_superuser:
-        available_endpoints['configurationvariables'] = 'desc'
-        available_endpoints['backends'] = 'desc'
-        available_endpoints['servers'] = 'desc'
+        available_endpoints['configurationvariables'] = {
+            '': 'Get a list of all available configurationvariables.',
+            '{id}': 'Get details about a configurationvariable.'
+        }
+        available_endpoints['backends'] = {
+            '': 'Get a list of all available backends.',
+            '{id}': 'Get details about a backend.'
+        }
+        available_endpoints['servers'] = {
+            '': 'Get a list of all available servers.',
+            '{id}': 'Get details about a server.'
+        }
 
     return Response(available_endpoints)
 

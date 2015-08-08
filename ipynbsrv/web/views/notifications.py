@@ -23,7 +23,7 @@ def index(request):
     notificationtypes = client.notificationtypes.get()
     groups = client.collaborationgroups.get()
     containers = client.containers.get()
-    container_images = client.container.images.get()
+    container_images = client.containers.images.get()
     shares = client.shares.get()
 
     new_notifications_count = len(client.notificationlogs.unread.get())
