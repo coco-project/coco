@@ -73,29 +73,6 @@ def create(request):
 
 
 @user_passes_test(login_allowed)
-def delete(request):
-    if request.method != "POST":
-        messages.error(request, "Invalid request method.")
-        return redirect('notifications')
-    # Todo: validate POST params: receiver_group, msg, type, rel objs
-    if 'id' not in request.POST:
-        messages.error(request, "Invalid POST request.")
-        return redirect('notifications')
-
-    client = get_httpclient_instance(request)
-
-    n_id = request.POST.get('id')
-
-    try:
-        client.notificationlogs(n_id).delete()
-        messages.success(request, "Notification sucessfully deleted.")
-    except Exception as e:
-        messages.error(request, api_error_message(e, ""))
-
-    return redirect('notifications')
-
-
-@user_passes_test(login_allowed)
 def mark_as_read(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")

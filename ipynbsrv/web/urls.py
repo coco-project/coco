@@ -51,7 +51,6 @@ urlpatterns = [
     # /notification(s)/...
     url(r'^notifications/$', 'ipynbsrv.web.views.notifications.index', name='notifications'),
     url(r'^notifications/create$', 'ipynbsrv.web.views.notifications.create', name='notification_create'),
-    url(r'^notifications/delete$', 'ipynbsrv.web.views.notifications.delete', name='notification_delete'),
     url(r'^notifications/mark_as_read$', 'ipynbsrv.web.views.notifications.mark_as_read', name='notification_mark_as_read'),
 
     # internal

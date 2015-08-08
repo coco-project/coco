@@ -46,13 +46,6 @@
                                 <i class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></i>
                             </button>
                         </form>
-                        <form action="{% url 'notification_delete' %}" method="POST" role="form" class="form-action">
-                            {% csrf_token %}
-                            <input type="hidden" name="id" value="{{ n.id }}">
-                            <button class="btn btn-sm btn-danger" title="Delete notification?" data-toggle="confirmation" data-placement="left">
-                                <i class="glyphicon glyphicon glyphicon-trash" aria-hidden="true"></i>
-                            </button>
-                        </form>
                     </td>
                 </tr>
                 {% endfor %}
