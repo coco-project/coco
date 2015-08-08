@@ -52,7 +52,7 @@
                         {% if share.owner.id == request.user.backend_user.id %}
                             <form action="{% url 'share_delete' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
-                                <input type="hidden" name="id" value="{{ share.id }}">
+                                <input type="hidden" name="share_id" value="{{ share.id }}">
                                 <button class="btn btn-sm btn-danger" title="Delete this share?" data-toggle="confirmation" data-placement="left">
                                     <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
                                 </button>

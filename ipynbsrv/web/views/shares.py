@@ -165,7 +165,7 @@ def delete(request):
         if share.owner.id == request.user.backend_user.id:
             try:
                 client.shares(share_id).delete()
-                messages.success(request, "Share deleted sucessfully.")
+                messages.success(request, "Share `{}` deleted sucessfully.".format(share.name))
             except Exception as e:
                 messages.error(request, api_error_message(e, ""))
         else:
