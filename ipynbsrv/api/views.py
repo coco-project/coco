@@ -754,6 +754,11 @@ class ShareDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [ShareDetailPermissions]
     queryset = Share.objects.all()
 
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method in ['PATCH', 'POST', 'PUT']:
+            return FlatShareSerializer
+        return NestedShareSerializer
+
 
 @api_view(['POST'])
 def share_add_access_groups(request, pk):
