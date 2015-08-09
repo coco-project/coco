@@ -4,7 +4,7 @@ from ipynbsrv.contract.backends import ContainerBackend
 from ipynbsrv.contract.errors import ContainerBackendError, ContainerNotFoundError
 from ipynbsrv.core import settings
 from ipynbsrv.core.helpers import get_storage_backend
-from ipynbsrv.core.models import Container, ContainerImage
+from ipynbsrv.core.models import Container, ContainerImage, PortMapping
 from ipynbsrv.core.signals.signals import *
 from os import path
 import time
@@ -13,25 +13,69 @@ import time
 storage_backend = get_storage_backend()
 
 
+def create_container_port_mappings(container):
+    """
+    Create the port mappings for the given container.
+
+    :param container: The container to create the mappings for.
+    """
+    ports = []
+    image = None
+    if container.is_image_based():
+        image = container.image
+    elif container.is_clone() and container.clone_of.is_image_based():
+        image = container.clone_of.image
+
+    if image:
+        protected_port = image.protected_port
+        public_ports = image.public_ports
+        if protected_port:
+            mapping = PortMapping(
+                server=container.server,
+                container=container,
+                external_port=PortMapping.get_available_server_port(container.server),
+                internal_port=protected_port
+            )
+            mapping.save()
+            ports.append({
+                ContainerBackend.PORT_MAPPING_KEY_ADDRESS: mapping.server.internal_ip,
+                ContainerBackend.PORT_MAPPING_KEY_EXTERNAL: mapping.external_port,
+                ContainerBackend.PORT_MAPPING_KEY_INTERNAL: mapping.internal_port
+            })
+        if public_ports:
+            for port in public_ports.split(','):
+                mapping = PortMapping(
+                    server=container.server,
+                    container=container,
+                    external_port=PortMapping.get_available_server_port(container.server),
+                    internal_port=port
+                )
+                mapping.save()
+                ports.append({
+                    ContainerBackend.PORT_MAPPING_KEY_ADDRESS: '0.0.0.0',
+                    ContainerBackend.PORT_MAPPING_KEY_EXTERNAL: mapping.external_port,
+                    ContainerBackend.PORT_MAPPING_KEY_INTERNAL: mapping.internal_port
+                })
+    return ports
+
+
 @receiver(container_created)
 def create_on_server(sender, container, **kwargs):
     """
     Create the newly saved container on the server's container backend.
     """
     if container is not None:
-        ports = []
+        ports = create_container_port_mappings(container)
+        clone_of = None
         cmd = None
         image = None
         if container.is_image_based():
-            ports = get_container_port_mappings(container)
             cmd = container.image.command
             image = container.image.backend_pk
-        clone_of = None
-        if container.is_clone():
+        elif container.is_clone() and container.clone_of.is_image_based():
             clone_of = container.clone_of.backend_pk
-            if container.clone_of.is_image_based():
-                ports = get_container_port_mappings(container.clone_of)
-                cmd = container.clone_of.image.command
+            cmd = container.clone_of.image.command
+            image = container.clone_of.image.backend_pk
 
         result = None
         try:
@@ -55,6 +99,7 @@ def create_on_server(sender, container, **kwargs):
                     }
                 ],
                 cmd=cmd,
+                base_url=container.get_backend_base_url(),
                 image=image,
                 clone_of=clone_of
             )
@@ -106,25 +151,6 @@ def delete_on_server(sender, container, **kwargs):
         except ContainerBackendError as ex:
             # XXX: restore?
             raise ex
-
-
-def get_container_port_mappings(container):
-    """
-    Return the list of port mappings for the container that can be passed to container backends.
-    """
-    ports = []
-    if container.image.protected_port is not None:
-        ports.append({
-            ContainerBackend.PORT_MAPPING_KEY_ADDRESS: container.server.internal_ip,
-            ContainerBackend.PORT_MAPPING_KEY_INTERNAL: container.image.protected_port
-        })
-    if container.image.public_ports is not None:
-        for port in container.image.public_ports.split(','):
-            ports.append({
-                ContainerBackend.PORT_MAPPING_KEY_ADDRESS: '0.0.0.0',
-                ContainerBackend.PORT_MAPPING_KEY_INTERNAL: int(port)
-            })
-    return ports
 
 
 @receiver(container_restarted)
