@@ -56,7 +56,7 @@ def delete_on_server(sender, image, **kwargs):
                 try:
                     # FIXME: isn't deleted....
                     backend = server.get_container_backend()
-                    backend.delete_container_image(image.backend_pk, force=True)
+                    backend.delete_container_image(image.backend_pk)
                 except ContainerImageNotFoundError:
                     pass  # already removed
                 except ContainerBackendError as ex:

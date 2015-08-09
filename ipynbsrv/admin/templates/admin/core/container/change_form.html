@@ -19,16 +19,16 @@
     <fieldset class="module aligned ">
         <h2>Status Actions</h2>
         <div class="form-row">
-            {% if original.is_suspended %}
-                <input type="submit" value="{% trans 'Resume' %}" name="_resume" {{ onclick_attrib }} />
-            {% else %}
-                {% if original.is_running %}
-                    <input type="submit" value="{% trans 'Restart' %}" name="_restart" {{ onclick_attrib }} />
-                    <input type="submit" value="{% trans 'Stop' %}" name="_stop" {{ onclick_attrib }} />
-                    <input type="submit" value="{% trans 'Suspend' %}" name="_suspend" {{ onclick_attrib }} />
+            {% if original.is_running %}
+                <input type="submit" value="{% trans 'Restart' %}" name="_restart" {{ onclick_attrib }} />
+                <input type="submit" value="{% trans 'Stop' %}" name="_stop" {{ onclick_attrib }} />
+                {% if original.is_suspended %}
+                    <input type="submit" value="{% trans 'Resume' %}" name="_resume" {{ onclick_attrib }} />
                 {% else %}
-                    <input type="submit" value="{% trans 'Start' %}" name="_start" {{ onclick_attrib }} />
+                    <input type="submit" value="{% trans 'Suspend' %}" name="_suspend" {{ onclick_attrib }} />
                 {% endif %}
+            {% else %}
+                <input type="submit" value="{% trans 'Start' %}" name="_start" {{ onclick_attrib }} />
             {% endif %}
         </div>
     </fieldset>

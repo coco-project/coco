@@ -36,15 +36,14 @@ def create_on_server(sender, container, **kwargs):
         result = None
         try:
             result = container.server.get_container_backend().create_container(
-                container.get_backend_name(),
+                container.owner.backend_pk,
+                container.owner.backend_id,
+                container.name,
                 ports,
                 [
                     {   # home directory
-                        ContainerBackend.VOLUME_KEY_SOURCE: path.join(
-                            path.join(storage_backend.base_dir, settings.STORAGE_DIR_HOME),
-                            container.owner.backend_pk
-                        ),
-                        ContainerBackend.VOLUME_KEY_TARGET: path.join('/home', 'user')
+                        ContainerBackend.VOLUME_KEY_SOURCE: path.join(storage_backend.base_dir, settings.STORAGE_DIR_HOME),
+                        ContainerBackend.VOLUME_KEY_TARGET: '/home'
                     },
                     {   # public directory
                         ContainerBackend.VOLUME_KEY_SOURCE: path.join(storage_backend.base_dir, settings.STORAGE_DIR_PUBLIC),
@@ -101,21 +100,7 @@ def delete_on_server(sender, container, **kwargs):
     """
     if container is not None:
         try:
-            if container.is_suspended():
-                container.resume()
-        except:
-            pass
-        try:
-            if container.is_running():
-                container.stop()
-        except:
-            pass
-
-        try:
-            container.server.get_container_backend().delete_container(
-                container.backend_pk,
-                force=True
-            )
+            container.server.get_container_backend().delete_container(container.backend_pk)
         except ContainerNotFoundError as ex:
             pass  # already deleted
         except ContainerBackendError as ex:
