@@ -12,7 +12,7 @@ from ipynbsrv.core.signals.signals import backend_group_created, \
 @receiver(backend_group_member_added)
 def add_member_to_internal_ldap_group(sender, group, user, **kwargs):
     """
-    When ever a member is added to a group we need to sync the LDAP group.
+    Whenever a member is added to a group we need to sync the LDAP group.
     """
     if group is not None and user is not None:
         try:
@@ -28,7 +28,7 @@ def add_member_to_internal_ldap_group(sender, group, user, **kwargs):
 @receiver(backend_group_member_removed)
 def remove_member_from_internal_ldap_group(sender, group, user, **kwargs):
     """
-    When ever a member is removed to a group we need to sync the LDAP group.
+    Whenever a member is removed from a group we need to sync the LDAP group.
     """
     if group is not None and user is not None:
         try:
