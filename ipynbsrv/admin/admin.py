@@ -451,6 +451,37 @@ class NotificationAdmin(admin.ModelAdmin):
         return []
 
 
+class PortMappingAdmin(admin.ModelAdmin):
+
+    """
+    Admin model for the `PortMapping` model.
+    """
+
+    list_display = ['container', 'external_port', 'internal_port']
+    list_filter = [
+        ('container', admin.RelatedOnlyFieldListFilter),
+        'external_port',
+        'internal_port',
+        ('server', admin.RelatedOnlyFieldListFilter),
+    ]
+
+    fieldsets = [
+        ('Server Properties', {
+            'fields': ['server', 'external_port']
+        }),
+        ('Container Properties', {
+            'fields': ['container', 'internal_port']
+        })
+    ]
+    readonly_fields = ['container', 'external_port', 'internal_port', 'server']
+
+    def has_add_permission(self, request):
+        """
+        :inherit.
+        """
+        return False
+
+
 class ServerAdmin(admin.ModelAdmin):
 
     """
@@ -606,6 +637,7 @@ admin_site.register(ContainerImage, ContainerImageAdmin)
 admin_site.register(ContainerSnapshot, ContainerSnapshotAdmin)
 admin_site.register(Group, GroupAdmin)
 admin_site.register(Notification, NotificationAdmin)
+admin_site.register(PortMapping, PortMappingAdmin)
 admin_site.register(Server, ServerAdmin)
 admin_site.register(Share, ShareAdmin)
 admin_site.register(Tag, TagAdmin)

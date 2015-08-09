@@ -613,8 +613,13 @@ class Container(models.Model):
         """
         base_url = None
         if self.has_protected_port():
+            image = None
+            if self.is_image_based():
+                image = self.image
+            else:
+                image = self.clone_of.image
             for port_mapping in self.port_mappings.all():
-                if port_mapping.internal_port == self.image.protected_port:
+                if port_mapping.internal_port == image.protected_port:
                     ip_and_port = port_mapping.server.internal_ip + ':' + str(port_mapping.external_port)
                     base_url = settings.CONTAINER_ACCESS_BASE_URI + ip_and_port.encode('hex') + '/'
                     break
@@ -649,7 +654,12 @@ class Container(models.Model):
         """
         Return `True` if the container is exposing a protected port.
         """
-        return self.image.protected_port is not None
+        has_protected_port = False
+        if self.is_image_based():
+            has_protected_port = self.image.protected_port is not None
+        elif self.is_clone() and self.clone_of.is_image_based():
+            has_protected_port = self.clone_of.image.protected_port is not None
+        return has_protected_port
     has_protected_port.boolean = True
 
     def is_clone(self):
