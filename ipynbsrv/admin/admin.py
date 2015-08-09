@@ -1,11 +1,15 @@
 from django_admin_conf_vars.models import ConfigurationVariable
+from django.conf.urls import patterns, url
 from django.contrib import admin, messages
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from ipynbsrv.admin.forms import CollaborationGroupAdminForm, ShareAdminForm
+from ipynbsrv.core.auth.authentication_backends import BackendProxyAuthentication
+from ipynbsrv.core.helpers import get_user_backend_connected
 from ipynbsrv.core.models import *
+from ipynbsrv.contract.backends import GroupBackend, UserBackend
 
 
 class CoreAdminSite(admin.AdminSite):
@@ -534,6 +538,10 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ['username', 'is_active', 'is_staff']
     list_filter = ['is_active', 'is_staff']
 
+    class Media:
+        # javascript to add custom button to User lits
+        js = ('admin/js/user_import.js', )
+
     def get_fieldsets(self, request, obj=None):
         """
         :inherit.
@@ -554,6 +562,37 @@ class UserAdmin(admin.ModelAdmin):
                     'fields': ['username', 'is_active', 'is_staff']
                 })
             ]
+
+    def get_urls(self):
+        urls = super(UserAdmin, self).get_urls()
+        my_urls = patterns('', (r'^import_users/$', self.import_users))
+        return my_urls + urls
+
+    def import_users(self, request):
+        # custom view which should return an HttpResponse
+        try:
+            backend = get_user_backend_connected()
+            users = backend.get_users()
+            helper = BackendProxyAuthentication()
+            new_users = []
+            for user in users:
+                username = str(user.get(UserBackend.FIELD_PK))
+                password = ''
+                obj = User.objects.filter(username=username)
+                if not obj:
+                    # if user is not existing yet, create him
+                    uid = BackendUser.generate_internal_uid()
+                    group = helper.create_user_groups(username, uid)
+                    user = helper.create_users(username, password, uid, group.backend_group)
+                    group.add_user(user.backend_user)
+                    new_users.append(username)
+            if len(new_users) == 0:
+                self.message_user(request, "All users already imported.", messages.INFO)
+            else:
+                self.message_user(request, "Successfully imported {} users. ({})".format(len(new_users), ', '.join(new_users)))
+        except Exception:
+            self.message_user(request, "Operation failed.", messages.ERROR)
+        return HttpResponseRedirect(reverse('admin:auth_user_changelist'))
 
     def get_readonly_fields(self, request, obj=None):
         """
