@@ -1,15 +1,13 @@
 from django_admin_conf_vars.models import ConfigurationVariable
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns
 from django.contrib import admin, messages
 from django.contrib.auth.admin import GroupAdmin
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from ipynbsrv.admin.forms import CollaborationGroupAdminForm, ShareAdminForm
-from ipynbsrv.core.auth.authentication_backends import BackendProxyAuthentication
-from ipynbsrv.core.helpers import get_user_backend_connected
 from ipynbsrv.core.models import *
-from ipynbsrv.contract.backends import GroupBackend, UserBackend
+from ipynbsrv.core.management.commands import import_users
 
 
 class CoreAdminSite(admin.AdminSite):
@@ -571,25 +569,13 @@ class UserAdmin(admin.ModelAdmin):
     def import_users(self, request):
         # custom view which should return an HttpResponse
         try:
-            backend = get_user_backend_connected()
-            users = backend.get_users()
-            helper = BackendProxyAuthentication()
-            new_users = []
-            for user in users:
-                username = str(user.get(UserBackend.FIELD_PK))
-                password = ''
-                obj = User.objects.filter(username=username)
-                if not obj:
-                    # if user is not existing yet, create him
-                    uid = BackendUser.generate_internal_uid()
-                    group = helper.create_user_groups(username, uid)
-                    user = helper.create_users(username, password, uid, group.backend_group)
-                    group.add_user(user.backend_user)
-                    new_users.append(username)
+            # Todo: imports
+            new_users = import_users.import_users()
+
             if len(new_users) == 0:
                 self.message_user(request, "All users already imported.", messages.INFO)
             else:
-                self.message_user(request, "Successfully imported {} users. ({})".format(len(new_users), ', '.join(new_users)))
+                self.message_user(request, "Successfully imported {} users: {}".format(len(new_users), ', '.join(new_users)))
         except Exception:
             self.message_user(request, "Operation failed.", messages.ERROR)
         return HttpResponseRedirect(reverse('admin:auth_user_changelist'))
