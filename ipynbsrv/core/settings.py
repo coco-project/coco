@@ -2,6 +2,8 @@
 Settings related to containers.
 """
 CONTAINER_ACCESS_BASE_URI = '/ct/'
+CONTAINER_PORT_MAPPINGS_START_PORT = 49152
+CONTAINER_PORT_MAPPINGS_END_PORT = 65534
 
 """
 Settings storing the paths (relative to STORAGE_DIR_BASE) under which (user) directories should be created.

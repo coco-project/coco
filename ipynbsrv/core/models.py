@@ -609,13 +609,15 @@ class Container(models.Model):
 
     def get_backend_base_url(self):
         """
-        Returns the base URL under which proxied services should listen within the container.
+        Get the base url under which the protected service should listen.
         """
         base_url = None
-        if self.is_image_based() and self.image.protected_port:
-            base_url = settings.CONTAINER_ACCESS_BASE_URI + self.server.internal_ip + PortMapping
-        elif self.is_clone() and self.clone_of.is_image_based() and self.clone_of.image.protected_port:
-            base_url = settings.CONTAINER_ACCESS_BASE_URI + self.server.internal_ip + PortMapping
+        if self.has_protected_port():
+            for port_mapping in self.port_mappings.all():
+                if port_mapping.internal_port == self.image.protected_port:
+                    ip_and_port = port_mapping.server.internal_ip + ':' + str(port_mapping.external_port)
+                    base_url = settings.CONTAINER_ACCESS_BASE_URI + ip_and_port.encode('hex') + '/'
+                    break
         return base_url
 
     def get_backend_name(self):
@@ -643,9 +645,16 @@ class Container(models.Model):
         return Container.objects.filter(clone_of=self).exists()
     has_clones.boolean = True
 
+    def has_protected_port(self):
+        """
+        Return `True` if the container is exposing a protected port.
+        """
+        return self.image.protected_port is not None
+    has_protected_port.boolean = True
+
     def is_clone(self):
         """
-        Return true if this container is a clone of another one.
+        Return `True` if this container is a clone of another one.
         """
         return self.clone_of is not None
     is_clone.boolean = True
@@ -1062,30 +1071,6 @@ class Notification(models.Model):
         return self.__str__()
 
 
-class PortMapping(models.Model):
-
-    """
-    TODO: write doc.
-    """
-
-    container = models.ForeignKey(
-        'container',
-        related_name='port_mappings',
-        help_text='The container for which this port mapping is.'
-    )
-    external_port = models.PositiveIntegerField(
-        help_text='The public port for this port mapping (e.g. the one under which it can be accessed).'
-    )
-    internal_port = models.PositiveIntegerField(
-        help_text='The container internal port.'
-    )
-
-    class Meta:
-        unique_together = (
-            ('container', 'external_port', 'internal_port')
-        )
-
-
 class NotificationLog(models.Model):
 
     """
@@ -1128,6 +1113,73 @@ class NotificationLog(models.Model):
         :inherit.
         """
         return self.__str__()
+
+
+class PortMapping(models.Model):
+
+    """
+    TODO: write doc.
+    """
+
+    server = models.ForeignKey(
+        'Server',
+        related_name='port_mappings',
+        help_text='The server on which this port mapping is active.'
+    )
+    container = models.ForeignKey(
+        'Container',
+        related_name='port_mappings',
+        help_text='The container for which this port mapping is.'
+    )
+    external_port = models.PositiveIntegerField(
+        help_text='The public port for this port mapping (e.g. the one under which it can be accessed).'
+    )
+    internal_port = models.PositiveIntegerField(
+        help_text='The container internal port.'
+    )
+
+    def clean(self):
+        """
+        :inherit.
+        """
+        if not self.server and self.container:
+            self.server = self.container.server
+        if not self.external_port:
+            self.external_port = PortMapping.get_available_server_port(self.server)
+
+    @classmethod
+    def get_available_server_port(cls, server):
+        """
+        Get a free port safe to use as `external_port` on `server`.
+
+        :param server: The server to get a free port of.
+        """
+        port = settings.CONTAINER_PORT_MAPPINGS_START_PORT
+        mappings = cls.objects.filter(server=server)
+        if mappings.exists():
+            port = mappings.latest('external_port').external_port + 1
+            # TODO: if reached settings.CONTAINER_PORT_MAPPINGS_END_PORT
+            # start over and look while i+1 for free port.
+            # ServerSelectionAlgorithm must guarantee enough ports are free!
+        return port
+
+    def __str__(self):
+        """
+        :inherit.
+        """
+        return smart_unicode("%s:%i->%s:%i" % (self.server, self.external_port, self.container, self.internal_port))
+
+    def __unicode__(self):
+        """
+        :inherit.
+        """
+        return self.__str__()
+
+    class Meta:
+        unique_together = (
+            ('server', 'external_port'),
+            ('container', 'external_port', 'internal_port')
+        )
 
 
 class Server(models.Model):
