@@ -28,7 +28,11 @@ def clone(request):
     new_name = "{}_clone".format(container.name)
 
     # create clone
-    client.containers(ct_id).clone.post({"name": new_name})
+    try:
+        client.containers(ct_id).clone.post({"name": new_name})
+        messages.success(request, "Sucessfully created the clone `{}`.".format(new_name))
+    except Exception as e:
+            messages.error(request, api_error_message(e, params))
 
     return redirect('containers')
 
@@ -96,6 +100,8 @@ def create(request):
         image = client.containers.images(params.get('image_id')).get()
     except HttpNotFoundError:
         messages.error(request, "Container bootstrap image does not exist or you don't have enough permissions for the requested operation.")
+    except Exception as ex:
+        messages.error(request, api_error_message(ex, params))
 
     if image:
         try:
