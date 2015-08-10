@@ -99,10 +99,6 @@ def create(request):
 
     if image:
         try:
-            # does not make any sense, but seems like it won't work without this line
-            # Todo: find the actual problem!
-            client.containers.get()
-
             # server and owner get set by the core automatically
             client.containers.post(params)
             messages.success(request, "Image created successfully.")
