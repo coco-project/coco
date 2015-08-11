@@ -63,7 +63,7 @@ def clone(request):
     # create clone
     try:
         client.containers(ct_id).clone.post(params)
-        messages.success(request, "Sucessfully created the clone `{}`.".format(name))
+        messages.success(request, "Sucessfully created the clone `{}`.".format(params.get('name']))
     except Exception as e:
             messages.error(request, api_error_message(e, params))
 
