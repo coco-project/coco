@@ -7,7 +7,6 @@
                 <div class="panel panel-warning panel-container">
             {% else %}
                 <div class="panel panel-success panel-container">
-                }
             {% endif %}
         {% else %}
             <div class="panel panel-danger panel-container">
@@ -26,7 +25,7 @@
                 </thead>
                 <tbody>
                     {% for port_mapping in ct.port_mappings %}
-                        {% if not port_mapping.is_protected_mappping %}
+                        {% if not port_mapping.is_protected_mapping %}
                         <tr>
                             <td>{{ port_mapping.internal_port }}</td>
                             <td>{{ ct.server.external_ip }}:{{ port_mapping.external_port }}</td>
@@ -80,7 +79,7 @@
                                 </li>
                             {% else %}
                                 <li role="presentation">
-                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('resume-{{ ct.id }}').getElementsByTagName('button')[0].click();">Suspend</a>
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('suspend-{{ ct.id }}').getElementsByTagName('button')[0].click();">Suspend</a>
                                     <form id="suspend-{{ ct.id }}" action="{% url 'container_suspend' %}" method="POST" role="form">
                                         {% csrf_token %}
                                         <input name="id" type="hidden" value="{{ ct.id }}">
