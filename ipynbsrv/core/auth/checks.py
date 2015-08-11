@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponse
-from ipynbsrv.wui.models import PortMapping
+from ipynbsrv.core.models import PortMapping
 
 
 COOKIE_NAME = 'username'

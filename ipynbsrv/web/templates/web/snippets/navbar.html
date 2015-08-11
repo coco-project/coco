@@ -25,7 +25,7 @@
                 <li class="hidden-xs"><a href="" data-tooltip data-placement="bottom" title="User Guide" target="_blank">
                     <i class="glyphicon glyphicon-question-sign" aria-hidden="true"></i>
                 </a></li>
-                <li class="hidden-xs"><a href="{% settings 'PUBLIC_URL' %}{% request.user.get_username %}" data-tooltip data-placement="bottom" title="My publications" target="_blank">
+                <li class="hidden-xs"><a href="{% settings 'PUBLIC_URL' %}{{ request.user.get_username }}" data-tooltip data-placement="bottom" title="My publications" target="_blank">
                     <i class="glyphicon glyphicon-globe" aria-hidden="true"></i>
                 </a></li>
                 <li class="hidden-xs"><a href="/accounts/unflag" data-tooltip data-placement="bottom" title="Logout">
@@ -35,7 +35,7 @@
                     <a href="" title="User Guide" target="_blank">Use Guide</a>
                 </li>
                 <li class="hidden-sm hidden-md hidden-lg">
-                    <a href="{% settings 'PUBLIC_URL' %}{% request.user.get_username %}" title="My publications" target="_blank">My publications</a>
+                    <a href="{% settings 'PUBLIC_URL' %}{{ request.user.get_username }}" title="My publications" target="_blank">My publications</a>
                 </li>
                 <li class="hidden-sm hidden-md hidden-lg">
                     <a href="/accounts/unflag" title="Logout">Logout</a>
