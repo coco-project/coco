@@ -45,9 +45,10 @@ def delete_on_server(sender, image, **kwargs):
                     backend.delete_container_image(image.backend_pk)
                 except ContainerImageNotFoundError:
                     pass  # already removed
-                except ContainerBackendError as ex:
+                except ContainerBackendError:
                     # XXX: restore?
-                    raise ex
+                    # raise ex
+                    pass
 
 
 @receiver(post_delete, sender=ContainerImage)
