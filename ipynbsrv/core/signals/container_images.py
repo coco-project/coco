@@ -22,20 +22,6 @@ def create_image_on_server(sender, container, image, **kwargs):
             raise ex
 
 
-@receiver(container_deleted)
-def delete_internal_image_if_latest(sender, container, **kwargs):
-    """
-    Delete the internal only image if this is the last container using it.
-    """
-    if container is not None:
-        try:
-            if container.is_image_based() and container.image.is_internal and not container.has_clones():
-                if not Container.objects.filter(image=container.image).exists():
-                    container.image.delete()
-        except ContainerImage.DoesNotExist:
-            pass
-
-
 @receiver(container_image_deleted)
 def delete_related_notifications(sender, image, **kwargs):
     """
@@ -59,9 +45,10 @@ def delete_on_server(sender, image, **kwargs):
                     backend.delete_container_image(image.backend_pk)
                 except ContainerImageNotFoundError:
                     pass  # already removed
-                except ContainerBackendError as ex:
+                except ContainerBackendError:
                     # XXX: restore?
-                    raise ex
+                    # raise ex
+                    pass
 
 
 @receiver(post_delete, sender=ContainerImage)

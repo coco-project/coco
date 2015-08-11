@@ -544,6 +544,10 @@ class Container(models.Model):
                 raise ValidationError({
                     'server': 'A clone can only be created on the same node as it\'s parent.'
                 })
+            if self.image and self.image.is_internal:
+                raise ValidationError({
+                    'image': 'Internal images cannot be used to create containers from.'
+                })
         super(Container, self).clean()
 
     def clone(self, name, description=None):
