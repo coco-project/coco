@@ -45,9 +45,6 @@ if [ $PS == "deb" ]; then
     # autostart on boot
     update-rc.d docker defaults
     update-rc.d docker enable
-    # enable memory and swap accounting (not used yet, --memory=limit)
-    sed -i 's/GRUB_CMDLINE_LINUX="find_preseed=\/preseed.cfg noprompt"/GRUB_CMDLINE_LINUX="find_preseed=\/preseed.cfg noprompt cgroup_enable=memory swapaccount=1"/' /etc/default/grub
-    update-grub
 else
     $INSTALL docker
     systemctl start docker.service
@@ -60,9 +57,6 @@ curl --fail -L -O https://github.com/phusion/baseimage-docker/archive/master.tar
 tar xzf master.tar.gz
 ./baseimage-docker-master/install-tools.sh
 rm -rf master.tar.gz baseimage-docker-master
-# pull the base image for our templates
-docker pull phusion/baseimage:0.9.15
-docker pull phusion/baseimage:0.9.16
 
 # create the data directories
 DATA="/srv/ipynbsrv"

@@ -25,14 +25,14 @@ docker run \
     -t -i \
     --name="${CT_NAME}" \
     --link ipynbsrv_ldap:ipynbsrv_ldap --link ipynbsrv_postgresql:ipynbsrv_postgresql \
-    phusion/baseimage:0.9.16 /bin/bash
+    phusion/baseimage:0.9.17 /bin/bash
 
 echo "------------------------------------------------------------"
 echo "Committing the WUI container so we can create a new one from it..."
 echo "------------------------------------------------------------"
 sleep 2
 
-docker commit $CT_NAME ipynbsrv/wui:init
+docker commit $CT_NAME ipynbsrv/wui:install
 docker rm $CT_NAME
 
 echo "------------------------------------------------------------"
@@ -46,6 +46,5 @@ docker run \
     --name="${CT_NAME}" \
     -p 80:80 \
     --link ipynbsrv_ldap:ipynbsrv_ldap --link ipynbsrv_postgresql:ipynbsrv_postgresql \
-    -v /srv/ipynbsrv/homes:/srv/ipynbsrv/data/homes -v /srv/ipynbsrv/public:/srv/ipynbsrv/data/public \
-    -v /srv/ipynbsrv/shares:/srv/ipynbsrv/data/shares \
+    -v /srv/ipynbsrv/data:/srv/ipynbsrv/data \
     ipynbsrv/wui:init $CMD

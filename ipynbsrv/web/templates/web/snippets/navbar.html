@@ -22,30 +22,23 @@
                 <li><a href="/notifications">Notifications {% if new_notifications_count >= 0 %}<span id="notification_bubble">{{ new_notifications_count }}</span>{% endif %}</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-
                 <li class="hidden-xs"><a href="" data-tooltip data-placement="bottom" title="User Guide" target="_blank">
                     <i class="glyphicon glyphicon-question-sign" aria-hidden="true"></i>
                 </a></li>
-                <li class="hidden-xs"><a href="" data-tooltip data-placement="bottom" title="My publications" target="_blank">
+                <li class="hidden-xs"><a href="{% settings 'PUBLIC_URL' %}{{ request.user.get_username }}" data-tooltip data-placement="bottom" title="My publications" target="_blank">
                     <i class="glyphicon glyphicon-globe" aria-hidden="true"></i>
                 </a></li>
-                <li class="hidden-xs"><a href="/accounts/logout" data-tooltip data-placement="bottom" title="Logout">
+                <li class="hidden-xs"><a href="/accounts/unflag" data-tooltip data-placement="bottom" title="Logout">
                     <i class="glyphicon glyphicon-log-out" aria-hidden="true"></i>
                 </a></li>
-
-
-                <li class="hidden-sm hidden-md hidden-lg">
-                    <a href="" title="Settings" target="_blank">Settings</a>
-                </li>
-
                 <li class="hidden-sm hidden-md hidden-lg">
                     <a href="" title="User Guide" target="_blank">Use Guide</a>
                 </li>
                 <li class="hidden-sm hidden-md hidden-lg">
-                    <a href="" title="My publications" target="_blank">My publications</a>
+                    <a href="{% settings 'PUBLIC_URL' %}{{ request.user.get_username }}" title="My publications" target="_blank">My publications</a>
                 </li>
                 <li class="hidden-sm hidden-md hidden-lg">
-                    <a href="/accounts/logout" title="Logout">Logout</a>
+                    <a href="/accounts/unflag" title="Logout">Logout</a>
                 </li>
             </ul>
         </div>

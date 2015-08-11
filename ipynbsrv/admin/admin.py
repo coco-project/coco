@@ -322,7 +322,7 @@ class ContainerImageAdmin(admin.ModelAdmin):
         :inherit.
         """
         if obj:
-            return ['backend_pk', 'command', 'name', 'protected_port', 'public_ports', 'owner']
+            return ['backend_pk', 'command', 'protected_port', 'public_ports', 'owner']
         return []
 
 
@@ -592,12 +592,33 @@ class UserAdmin(admin.ModelAdmin):
                 })
             ]
 
+    def get_readonly_fields(self, request, obj=None):
+        """
+        :inherit.
+        """
+        if obj is not None and hasattr(obj, 'backend_user'):
+            return ['groups', 'is_staff', 'username']
+        else:
+            return ['is_staff']
+
     def get_urls(self):
+        """
+        TODO.
+        """
         urls = super(UserAdmin, self).get_urls()
         my_urls = patterns('', (r'^import_users/$', self.import_users))
         return my_urls + urls
 
+    def has_add_permission(self, request):
+        """
+        :inherit.
+        """
+        return False
+
     def import_users(self, request):
+        """
+        TODO.
+        """
         # custom view which should return an HttpResponse
         try:
             # Todo: imports
@@ -610,21 +631,6 @@ class UserAdmin(admin.ModelAdmin):
         except Exception:
             self.message_user(request, "Operation failed.", messages.ERROR)
         return HttpResponseRedirect(reverse('admin:auth_user_changelist'))
-
-    def get_readonly_fields(self, request, obj=None):
-        """
-        :inherit.
-        """
-        if obj is not None and hasattr(obj, 'backend_user'):
-            return ['groups', 'is_staff', 'username']
-        else:
-            return ['is_staff']
-
-    def has_add_permission(self, request):
-        """
-        :inherit.
-        """
-        return False
 
 
 # register the model admins with the site

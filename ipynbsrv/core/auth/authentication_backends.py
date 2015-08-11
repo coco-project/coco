@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from ipynbsrv.contract.errors import AuthenticationError, ConnectionError, \
     UserNotFoundError
-from ipynbsrv.core.helpers import get_user_backend_connected
+from ipynbsrv.core.helpers import get_internal_ldap_connected, get_user_backend_connected
 from ipynbsrv.core.models import BackendGroup, BackendUser, \
     CollaborationGroup
 import logging
@@ -35,11 +35,13 @@ class BackendProxyAuthentication(object):
                 return None  # not allowed, Django only user
 
         try:
+            internal_ldap = get_internal_ldap_connected()
             user_backend = get_user_backend_connected()
             user_backend.auth_user(username, password)
             if user is not None:  # existing user
                 if not user.check_password(password):
-                    user.set_password(password)
+                    user.set_password(password)  # XXX: not needed. should we leave it empty?
+                    internal_ldap.set_user_password(username, password)
                     user.save()
             else:  # new user
                 uid = BackendUser.generate_internal_uid()
@@ -61,6 +63,7 @@ class BackendProxyAuthentication(object):
             return None
         finally:
             try:
+                internal_ldap.disconnect()
                 user_backend.disconnect()
             except:
                 pass

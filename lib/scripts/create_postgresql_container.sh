@@ -12,7 +12,7 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-CT_NAME="ipynbsrv.postgresql"
+CT_NAME="ipynbsrv_postgresql"
 
 echo "------------------------------------------------------------"
 echo "Pulling the PostgreSQL server image..."

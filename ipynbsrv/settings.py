@@ -121,7 +121,7 @@ MESSAGE_TAGS = {
 # LEGACY SETTINGS FROM OLD IPYNBSRV. NEEDS REFACTORING
 LOGIN_URL = '/accounts/login'
 LOGIN_REDIRECT_URL = '/accounts/flag'
-
+PUBLIC_URL = '/public/'
 
 VARS_MODULE_PATH = 'ipynbsrv.core.conf'
 

@@ -1,210 +1,143 @@
-# ipynbsrv
+# Installation
 
-> IPython Notebook Multi-User Server
-> - https://git.rackster.ch/groups/ipynbsrv
+> A step-by-step guide on how to setup an `ipynbsrv` server/infrastructure.
 
-## Installation
+## Introduction
 
-The following introduction steps explain how to setup a fresh box as an IPython notebook multi-user server.    
-If you follow the whole guide step-by-step, you should end-up with a fully functional, ready-to-use system.
+Before we begin with the installation, it is incessant to leave a few words about the concepts and architecture of `ipynbsrv`. The main reason for that is that `ipynbsrv` is not really an application, but a giant project consisting of several (independent) components – each of it playing an important role within the whole setup. Since most of these components are exchangeable, the necessarily install steps will vary depending on the concrete component implementation/specification you pick. This makes it harder to get started, but once you understand the concepts and ideas behind that approach, you'll be loving it – promised.
 
-### Requirements
+### Architecture
 
-- a dedicated hardware/virtualized node (will be the `Docker` host)
-- around 4GB of ram (at very least 2GB as per the `Docker` requirements)
-- some basic Linux skills
+Basically, the whole can be seen as a multilayered architecture project. Each component is either part of one layer or defines the layer itself. Additionally, each component can be structured and multilayered itself (i.e. the software stuff).
 
-### Tested Distributions
+Because there has to be at least one (sub)component plugging all the others together and coordinating their behavior, minimal requirements are specified for each of them. These specifications come either in the form of contracts (i.e. for the software backends) or formal descriptions (i.e. the networking). Everything together can therefor only work, if every single component fully fulfills its relevant specifications.
 
+Since a specification contains only the minimal set of requirements, two components that are totally specification conform, can have nearly nothing in common. For that reason, every component has to provide its own setup instructions (if any). Depending on the component's layer, its install steps may affect the installation process of other components as well. Besides, the type of deployment (single-server or multi-server) can have an impact too. For that reason, one has to inspect every component's install guide before actually starting. This makes the installation – as initially said – complex.
+
+### Components
+
+As touched in the previous sections, `ipynbsrv` consists of mostly independent and replaceable components. The following list gives you a brief and shorten overview of the different components currently involved:
+
+- **Networking:** To limit access to user created containers to its owner, there has to be a network that is not reachable from the outside. An internal only network has to exist. This network is used for other thing as well and is the most low-end component. The standard implementation uses `Open vSwitch` to create such a network.
+- **Core Infrastructure:** The core infrastructure itself is not a component (or if you'd like to call it like that anyway, think of it as one giant component consisting of various parts). Beside a handful of directories on the filesystem, it includes an LDAP directory server, a Postgresql DB server, an Nginx web server and a few Django applications. The project won't work without them and they are not meant to be replaceable, that's why they are grouped under the *Core Infrastructure* name. The default implementation/install guide uses Docker containers to run these services, but one is free to install them somewhere else.
+- **Backends:** Backend components are on one hand the most powerful abstraction in `ipynbsrv` (they abstract the storage, container and user/group backends), the most complex on the other hand. Take the `Docker` container backend as an example: it consists of the Docker platform (so it has to provide an install guide for that), Python code to communicate with that platform (it has to provide an `ipynbsrv.contract.container_backend` implementation for that) and a set of preconfigured images to run containers from (it has to provide `Dockerfile`s for that). Depending on the deployment (i.e. multi-server), additional tools like the `Docker Registry` are needed as well.
+
+If you have (roughly) understood this concept of components, you're ready to go.
+
+> PS: Do I have complied with my promise? ;)
+
+## Requirements
+
+The following requirements are only valid for the core infrastructure. Each component may define own requirements as well, so don't take the ones listed here as given:
+
+- a dedicated hardware or virtualized node
+- at least 2GB of RAM
+- intermediate *nix skills
+
+### Tested operating systems
+
+- OS X 10.10.x (Yosemite)
 - CentOS 7 64-bit (in theory only)
-- Ubuntu 14.04 (LTS) 64-bit
-- Ubuntu 14.10 64-bit
+- Ubuntu 14.04 (LTS)
+- Ubuntu 14.10
+- Ubuntu 15.04 (LTS)
+- Ubuntu 15.10
 
-> **Recommended distro:** Ubuntu 14.04 (LTS) 64-bit
+> **Recommended OS:** Ubuntu 15.04 (LTS) 64-bit
 
-### Dedicated Node
+## Available Components
 
-Everything starts at the dedicated node, which will be configured to host Docker containers. We assume you already installed a fresh copy of the recommended distro on the machine and are connected to it either directly or via SSH.
+Below you can find a list of all currently available components. Make sure to consult their documentations before you start, as some might only work in combination with others.
 
-To make the setup as easy as possible, we wrote a tiny shell script that will perform all needed operations for you. Just fetch and execute it as follow:
+> If you are aware of one not listed, please submit a merge request. Thanks! 
 
-```bash
-$ apt-get -y install wget  # or yum for EL
-$ BRANCH=master
-$ wget https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/$BRANCH/lib/scripts/setup_docker_host.sh
-$ chmod +x setup_docker_host.sh && ./setup_docker_host.sh
-```
+### Container Backends
 
-> Note: Commands prefixed with `$` are meant to be run under `root` account.
+- [Docker](https://git.rackster.ch/ipynbsrv/backends/blob/master/docs/container_backends.md#docker)
+- [HttpRemote](https://git.rackster.ch/ipynbsrv/backends/blob/master/docs/container_backends.md#httpremote)
 
-All it does is, create some directories inside `/srv/ipynbsrv`, install the Docker packages/environment and configure the system to use `LDAP` as an additional backend for user management.
+### Networking
 
-There is one thing you should double-check (we noticed serveral *problems* here) however. Open the file `/etc/nsswitch.conf` and ensure the lines for `passwd`, `group` and `shadow` end with `ldap`, like so:
+- [Docker](https://git.rackster.ch/ipynbsrv/backends/blob/master/docs/container_backends.md#docker) (single-server only)
+- [Open vSwitch](https://git.rackster.ch/ipynbsrv/ipynbsrv/blob/master/docs/install/networking/openvswitch.md)
 
-```bash
-passwd:         compat ldap
-group:          compat ldap
-shadow:         compat ldap
-```
+### Storage Backends
 
-### LDAP Container
+- [LocalFileSystem](https://git.rackster.ch/ipynbsrv/backends/blob/master/docs/storage_backends.md#localfilesystem)
 
-> It is already time to bootstrap your first Docker container. Yay!
+### User/Group Backends
 
-The Django application (more on that later) itself and some core features like `user shares` depend on a centralized account directory. We have choosen an LDAP server for that purpose, so the next thing you're going to do is to create a container for it.
+- [LdapBackend](https://git.rackster.ch/ipynbsrv/backends/blob/master/docs/usergroup_backends.md#ldapbackend)
 
-Again, there is a shell script available that will perform most operations for you.    
-Start over by issueing:
+## Getting started
 
-```bash
-$ wget https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/$BRANCH/lib/scripts/create_ldap_container.sh
-$ chmod +x create_ldap_container.sh && ./create_ldap_container.sh
-```
+> If you are looking for an easier install guide (this one describes the modular approach), the [Easy Install Guide](https://git.rackster.ch/ipynbsrv/ipynbsrv/blob/master/docs/install/easy_installation.md) might be for you.    
+> ––––    
+> If you landed here and have not yet read the **Introduction** chapter, do yourself a flavor and start there.
 
-and follow the introductions printed on screen.
+Now that you are familiar enough with `ipynbsrv`'s architecture, we can proceed to the actual installation steps. Because the setup you're going to deploy depends extensively on the components you choose, the following steps are very generic.
 
-If everything went well, you should end up with an  **All done!** message.
+The following chapters assume you have a running box (see **Requirements**) and an open `root` console. Commands prefixed with `$` are meant to be run as `root`.
 
-#### User Management
+### 1. Setting up Networking
 
-As said, we will use the newly created container for user management. So why not create one right away?
+The very first component to setup is networking. Right now, you have the choice between *Docker* and *Open vSwitch* (see **Available Components**). If you plan to deploy a multi-server setup, you cannot use *Docker*. The actual installation steps are defined by the component, so head over to its documentation to get specification comply networking.
 
-> To be honest, we are not LDAP experts at all. We therefor use a graphical application called `Apache Directory Studio` to manage our users/groups. Head over and install a local copy for the next steps: [https://directory.apache.org/studio/downloads.html](https://directory.apache.org/studio/downloads.html)
+> The reference implementation uses `Open vSwitch`.
 
-> Note: At this stage it is assumed that you have created the LDAP container, installed the `Apache Directory Studio` and know the IP address of your dedicated box (Docker host).
+### 2. Setting up the Core Infrastructure (Part 1)
 
-Open `Apache Directory Studio` and create a new connection:
+Setting up the core infrastructure is splitted into two parts. The main reason for that is that backends (see below) might influent the way you have to deploy the core infrastructure. Thus, this first part only includes the steps that *should* not vary, while the second part contains the rest.
 
-    File -> New -> LDAP Browser -> LDAP Connection
+#### 2.1 Deploying a PostgreSQL server
 
-Enter the IP address of your dedicated box into the `Hostname` field and verify the parameters by clicking on `Test connection`. If it works, you can continue to the next wizard page.
+The core application relies on a working PostgreSQL server to store its data. Make sure you have one running somewhere the application can access it.
 
-You will be asked for authentication credentials. Fill them like this:
+> The reference implementation uses the official PostgreSQL Docker container image and links the container into the application container.
 
-    Authentification method: Simple Authentification
-    Bind DN or user: cn=admin,dc=ipynbsrv,dc=ldap
-    Bind password: "the password you took when creating the LDAP container"
+#### 2.2 Deploying an LDAP server
 
-and verify they are correct. If they are, you can finish the wizard and connect to your LDAP container.
+The *Lightweight Directory Access Protocol* is a widely supported protocol to communicate with directory servers like Window's Active Directory. The core application needs full access to such a server to store user and group information on it. While you're free to use other procotols/servers as well, this most likely does not work at the moment.
 
-You should have a view similiar to this:
+The server must have two organizational units for users and groups, best named `users` and `groups`. Depending on the container backend you pick, created containers (also on remote nodes) need to access the server.
 
-![Apache Directory Studio Connection](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/docs/install/_img/apache_directory_studio_connection.png)
+> The reference implementation runs `slapd` within a Docker container. To ensure containers and remote nodes have access to it, the services is binded onto the internal IPv4 address of the master node.
 
-##### Creating Records
+### 3. Setting up the Storage Backend
 
-Now that you are connected to the LDAP server, we can continue by creating a new group (needed by the user) and the user itself afterwards.
+Storage backends define the way how and where directories and files are stored. This includes the user's home directories, publication directories and user created share directories.
 
-###### Creating a Group
+Because the core application as well as user containers need to access these resources (directories and files), the storage backend should be the first backend to setup. Again, open the documentation of the storage backend in use to see how it needs to be set up.
 
-    Right-click on "ou=groups" -> New -> New Entry -> Create entry from scratch
+> The reference implementation uses the `LocalFileSystem` backend. The working directory is set to `/srv/ipynbsrv/data`.
 
-In the upcoming dialog, choose the object class `posixGroup`, click `Add` and go on to the next screen, which you should fill in like this:
+### 4. Setting up the Container Backend
 
-![Apache Directory Studion Group Creation CN](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/docs/install/_img/apache_directory_studio_group_cn.png)
+Container backends are by far the most complex component to install (and implement). Since the specification for such backends do not include the required install steps, you have to read the concrete backends documentation again. It should tell you how to install the (container) isolation product itself, how to configure it so it plays nicely with `ipynbsrv`, how to add/create images for it and what additional steps are needed for a working multi-server deployment.
 
-> The value of `cn` is the desired username for which this group is.
+> The reference implementation uses the `Docker` backend in combination with the `HttpRemote` proxy backend (if deploying a multi-server setup).
 
-Click `Next` and enter a group ID. If this is your first group (and it should be), enter something like `2500` (so we have some offset to the default system groups which are around `500`) and finish the process.
+### 5. Setting up the User Backend
 
-Again, you should end up with a view like this:
+Beside the internal usage of the `LdapBackend` for communication with the core infrastructure LDAP server (if that is the way you go), this backend (talking about it because no alternatives exist atm) can also be used to let users from an external LDAP server access the application. In general, user backends allow one to use an existing user directory to be used as `ipynbsrv`'s authentication backend.
 
-![Apache Directory Studio Group Overview](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/docs/install/_img/apache_directory_studio_group.png)
+But enough. Please consult the backend's own documentation to get it working.
 
-I have already right-clicked somewhere in the information window, because we need to add another attribute to the group:
+> The reference implementation uses the `LdapBackend` backend and reuses the LDAP server from the core infrastructure to simulate an external server.
 
-    Right-click -> New Attribute -> memberUid -> Finish
+### 6. Setting up the Core Infrastructure (Part 2)
 
-and enter the same username in the red-colored field. Done!
+Now that all backends are ready and you have read there documentations for potential notes about setting up the core infrastructure, we can finally deploy the rest of the core.
 
-![Apache Directory Studio Group Overview](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/docs/install/_img/apache_directory_studio_group_final.png)
+#### 6.1 Deploying the Nginx Web Server
 
-> Note: From now on, you should choose `Use existing entry as template` when creating a new group. That way you do not have to fill in everything again each time (**but do not forget to change the username fields**).
+Nginx is our web server of choice. A lot of the core features (i.e. container access control) depend on it. It will be configured to serve the Django application (but not only), so make sure to install Nginx either directly on the hardware node or within a powerful enough container.
 
-###### Creating a User
-
-    Right-click on "ou=users" -> New -> New Entry -> Create entry from scratch
-
-In the upcoming dialog, choose the object classes `inetOrgPerson` and `posixAccount`, click `Add` and go on to the next screen.
-
-As with the group, use `cn=username` as `RND` and click `Next`. You end up with a window that has some red-bordered fields (`gidNumber`, `sn` etc.), which you must fill out like on the screen below:
-
-![Apache Directory Studio User Wizard](https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/docs/install/_img/apache_directory_studio_user.png)
-
-> The `gidNumber` is the ID of the group you have just created. I like to keep it in sync with the `uidNumber`, so it is easier to remember.
-
-Close the window by clicking on `Finish`. As a last step, you have to add a password to this user account. Proceed as follow:
-
-    Right-click -> New Attribute -> userPassword -> Finish
-
-and enter the desired password in the popping-out window. Done.
-
-> Right now, only the default (and not so secure) `MD5` hashing algorithm is supported...
-
-> Note: From now on, you should choose `Use existing entry as template` when creating a new user. That way you do not have to fill in everything again each time (**but do not forget to change the username/group/password fields**).
-
-### Postgres Container
-
-As most useful applications, we need a database to store application information. We decided to use `Postgres` for that purpose. For that reason, we're going to create yet another container.
-
-Again, there is a shell script available that will perform most operations for you.    
-Start over by issueing:
+Because special Nginx modules are needed, we decided to use the OpenResty derivate, which includes them out-of-the-box. Sadly, we cannot install the package via apt/aptitude, but need to compile it from source. The following commands will help you with that:
 
 ```bash
-$ wget https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/$BRANCH/lib/scripts/create_postgresql_container.sh
-$ chmod +x create_postgresql_container.sh && ./create_postgresql_container.sh
-```
-
-and follow the introductions printed on screen.
-
-If everything went well, you should end up with an  **All done!** message.
-
-> That was an easy one, wasn't it?
-
-### Web Interface (WUI) Container
-
-The WUI container is the trickiest one to setup, yet everyone should be able to suceed. The container will communicate with the others we have created (`LDAP` and `Postgres`) and expose our web application over `HTTP`.
-
-Yes, you have guessed correctly. There is yet another script to bootstrap the container for you:
-
-```bash
-$ wget https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/$BRANCH/lib/scripts/create_wui_container.sh
-$ chmod +x create_wui_container.sh && ./create_wui_container.sh
-```
-
-It will bring you right into the container, where you need to issue all the commands found below.
-
-#### LDAP
-
-As already done on the dedicated node, we need to install and configure the `PAM LDAP` module:
-
-```bash
-$ apt-get update
-$ apt-get -y install libpam-ldap
-```
-
-When prompted, enter:
-
-    LDAP server: ldap://ipynbsrv_ldap/
-    Distinguished name: dc=ipynbsrv,dc=ldap
-    3, No, No
-
-There is one thing you should double-check. Open the file `/etc/nsswitch.conf` and ensure the lines for `passwd`, `group` and `shadow` end with `ldap`, like so:
-
-```bash
-passwd:         compat ldap
-group:          compat ldap
-shadow:         compat ldap
-```
-
-#### Nginx/OpenResty
-
-Because we need special Nginx modules, we decided to use the `OpenResty` derivate, which includes them.    
-Sadly we cannot install the package via `apt/aptitude`, but need to compile it from source:
-
-```bash
-$ OPENRESTY_VERSION=1.7.7.1
-$ apt-get -y install libreadline-dev libncurses5-dev libpcre3-dev libssl-dev perl make wget
+$ OPENRESTY_VERSION=1.7.10.2
+$ apt-get -y install libreadline-dev libncurses5-dev libpcre3-dev libssl-dev perl make wget  # dependencies
 
 $ cd /usr/local/src
 $ wget http://openresty.org/download/ngx_openresty-$OPENRESTY_VERSION.tar.gz
@@ -263,74 +196,68 @@ $ make
 $ make install
 ```
 
-To make it auto-start on boot, create the file `/etc/my_init.d/nginx.sh` with those lines inside:
+> This will install OpenResty under `/usr/local/openresty` and Nginx under `/usr/local/openresty/nginx`.
+
+Make sure the Nginx service is starting on boot by executing `/usr/local/openresty/nginx/sbin/nginx` during startup.
+
+> The reference implementation is creating a dedicated Docker container for the Nginx web server and the stuff from the next chapters.
+
+#### 6.2 Installing additional packages
+
+Not much to say here, those are just some of the packages (mainly Python) we need:
 
 ```bash
-#!/bin/sh
-exec /usr/local/openresty/nginx/sbin/nginx
-```
-
-and ensure it is executable:
-
-```bash
-chmod +x /etc/my_init.d/nginx.sh
-```
-
-#### Python/uwsgi/npm
-
-Not much to say here, those are just some of the packages (mainly Python stuff) we need.
-
-```bash
-$ apt-get -y install python-pip uwsgi-plugin-python
-$ apt-get -y install python-dev libldap2-dev libsasl2-dev libssl-dev  # for django-auth-ldap
+$ apt-get -y install python-pip  # package manager
+$ apt-get -y install uwsgi-plugin-python  # uwsgi plugin (used for Nginx uwsgi_pass)
 $ apt-get -y install python-psycopg2  # for Django PostgreSQL
 $ apt-get -y install nodejs-legacy npm
 $ npm -g install bower less  # for frontend assets
 $ pip install mkdocs  # for the user guide
 ```
 
-#### Django/Application
+#### 6.3 Deploying the Django Application
 
-Finally here, you are going to clone the source code repository, create a dedicated user (things should not be run under `root`, should they?) and populate the database.
+> Because no code has been publiched to `PyPie` or any other repository yet, everything needs to be installed from source. For that purpose, the source repositories are cloned via `git`. Once the project is mature enough, we expect the installation process to become easier.
 
-First, install the `git` version control system:
+##### 6.3.1 Preparing the base
+
+As a first prerequisite, install the `git` package:
 
 ```bash
 $ apt-get -y install git
 ```
 
-and continue by creating the dedicated user and cloning the repository:
+After creating the directory where the application will resist, it is already time to clone the application repositories:
 
 ```bash
-$ useradd --home-dir /srv/ipynbsrv --create-home --system ipynbsrv
-$ su ipynbsrv
-```
-
-```bash
-cd ~
-mkdir -p data/homes data/public data/shares
 BRANCH=master
 git clone -b $BRANCH https://git.rackster.ch/ipynbsrv/ipynbsrv.git _repo
-ln -s /srv/ipynbsrv/_repo/ /srv/ipynbsrv/www
 ```
 
-As `root` again (use `exit` to become `root`), install some more Python modules and configure `Nginx`:
+> A smart location for the repository is `/srv/ipynbsrv/_repo`.
+
+Since the `ipynbsrv` Django application has several dependencies, they need to be installed before the application will work:
 
 ```bash
-$ cd /srv/ipynbsrv/_repo/
+$ cd _repo
 $ pip install -r requirements.txt
+```
+
+Next, we're going to create a directory that will contain the `uwsgi` socket and tell Nginx about the application's vhost file. This virtual host configuration for Nginx makes sure that i.e. requests are send to the `uwsgi` backend:
+
+```bash
 $ mkdir -p /var/run/ipynbsrv/
 $ mkdir /usr/local/openresty/nginx/conf/sites-enabled
 $ ln -s /srv/ipynbsrv/_repo/lib/confs/nginx/ipynbsrv.conf /usr/local/openresty/nginx/conf/sites-enabled/
-
-$ nano /usr/local/openresty/nginx/conf/nginx.conf
 ```
 
-and change these values to:
+> The linking command assumes you have cloned the repository to `/srv/ipynbsrv/_repo`.
+
+Last but not least, make sure the Nginx main configuration at `/usr/local/openresty/nginx/conf/nginx.conf` reflects the snippet below:
 
 ```bash
 user  www-data;
-worker_processes  auto;
+worker_processes  auto;  # = CPU count
 
 http {
     # remove the servers already defined here, but not other stuff like mime.types etc.
@@ -338,76 +265,50 @@ http {
 }
 ```
 
-and you are mostly done with the preparation!
+##### 6.3.2 Installing additional Python packages
 
-##### Django Application
-
-The final steps include defining the Django application settings, populating the database and some other little changes.
-
-Start over by changing to the `ipynbsrv` user account:
+Remember the initial note regarding unpublished packages? They can be manually installed with:
 
 ```bash
-$ su ipynbsrv
-cd ~/www
+$ cd /usr/local/src
+$ git clone https://git.rackster.ch/ipynbsrv/contract.git
+$ cd contract && pip install -e . && cd ..
+$ git clone https://git.rackster.ch/ipynbsrv/common.git
+$ cd common && pip install -e . && cd ..
+$ git clone https://git.rackster.ch/ipynbsrv/client.git
+$ cd client && pip install -e . && cd ..
+$ git clone https://git.rackster.ch/ipynbsrv/backends.git
+$ cd backends && pip install -e . && cd ..
 ```
 
-###### settings.py
+> Note: This chapter should be removed once the packages have been published.
 
-Everyone familiar with `Django` knows this file. It contains the application's settings.    
-Some of them need adjustment, so open it with `nano ipynbsrv/settings.py` and define those options:
+##### 6.3.3 Making the application ready
 
-| Option                     | Value
-|----------------------------|-------------------------------------
-| SECRET_KEY                 | Some randomly generated characters
-| DEBUG                      | Change to `False`
-| TEMPLATE_DEBUG             | Change to `False`
-| ALLOWED_HOSTS              | ['*']
-| DATABASES.default.PASSWORD | The `Postgres` password you took
-| DATABASES.ldap.PASSWORD    | The `LDAP` admin password you took
-| TIME_ZONE                  | Your timezone (e.g. `Europe/Zurich`)
-| DOCKER\_API\_VERSION       | Get it with `docker version`
-| DOCKER\_IFACE\_IP          | The IP address of the `docker0` iface
-
-> Note: For `DOCKER_IFACE_IP` issue `ifconfig docker0 | grep inet\ addr:` on the dedicated node.
-
-All other values should be fine.
-
-Now that you have the `DOCKER_IFACE_IP`, open `/srv/ipynbsrv/_repo/lib/confs/nginx/ipynbsrv.conf` and replace:
-
-    proxy_pass  http://172.17.42.1:$1;
-
-with:
-
-    proxy_pass http://"DOCKER_IFACE_IP":$1;
-
-###### manage.py
-
-`manage.py` is Django's utility script to perform setup and maintenance tasks.
-
-Use it to create migrations (if any) and populate/alter the database:
+After having completed the above preparation steps, the next few commands will look familiar to everyone already having used Django in the past. They are all about initializing the Django application and should be run in the repository root.
 
 ```bash
-python manage.py makemigrations
-python manage.py migrate
+$ python manage.py makemigrations
+$ python manage.py migrate
 ```
 
-Because we are using `LESS` to produce `CSS` and `bower` to manage external dependencies, you need to compile the styles and install the deps (like `jQuery` etc.):
+As we are using `LESS` to produce `CSS` and `bower` to manage external dependencies, you need to compile the styles and install the deps (like `jQuery` etc.):
 
 ```bash
-cd ipynbsrv/wui/static/
-bower install  # installs external dependencies
-mkdir css
-lessc less/main.less css/main.css  # compile LESS to CSS
-cd ~/www
+$ cd ipynbsrv/web/static
+$ bower install --allow-root  # installs external dependencies
+$ mkdir css
+$ lessc less/main.less css/main.css  # compile LESS to CSS
+$ cd ../../..
 ```
 
-> If `bower install` doesn't work, try forcing `git` to use HTTP protocol: `git config --global url.https://.insteadOf git://`
+> If `bower install` doesn't work, try forcing `git` to use the HTTP protocol: `git config --global url.https://.insteadOf git://`
 
 The user guide must be generated as well:
 
 ```bash
-cd /srv/ipynbsrv/_repo/docs/user-guide/
-mkdocs build --clean
+$ cd docs/user-guide
+$ mkdocs build --clean
 ```
 
 Last but not least, finalize the whole setup by issueing:
@@ -419,13 +320,6 @@ python manage.py createsuperuser
 
 which will create a local superuser account (the admin account).
 
-Leave the container with:
+### 7. Configuring the Application
 
-```bash
-exit
-exit
-```
-
-so the script continues. It will create a local image from the container and bootstrap a new instance using that one. As soon as it has completed, you're all done.
-
-Congratulations!
+TODO: Login to admin, define variables (backends), add backends and servers and images.

@@ -54,7 +54,7 @@ urlpatterns = [
     url(r'^notifications/mark_as_read$', 'ipynbsrv.web.views.notifications.mark_as_read', name='notification_mark_as_read'),
 
     # internal
-    url(r'^_workspace_auth_check$', 'ipynbsrv.web.views.common.workspace_auth_access'),
+    url(r'^_workspace_auth_check$', 'ipynbsrv.core.auth.checks.workspace_auth_access'),
     url(r'^error/404$', 'ipynbsrv.web.views.system.error_404'),
     url(r'^error/500$', 'ipynbsrv.web.views.system.error_500'),
 
