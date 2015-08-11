@@ -776,7 +776,7 @@ class ContainerImage(models.Model):
         max_length=75,
         validators=[
             RegexValidator(
-                regex='^[A-z][\w\/]*$',
+                regex='^[A-z][\w\/-]*$',
                 message='Invalid container snapshot name.'
             )
         ]
