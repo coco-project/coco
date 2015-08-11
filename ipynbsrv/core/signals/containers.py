@@ -72,9 +72,10 @@ def create_on_server(sender, container, **kwargs):
         if container.is_image_based():
             cmd = container.image.command
             image = container.image.backend_pk
-        elif container.is_clone() and container.clone_of.is_image_based():
+        elif container.is_clone():
             clone_of = container.clone_of.backend_pk
-            cmd = container.clone_of.image.command
+            if container.clone_of.is_image_based():
+                cmd = container.clone_of.image.command
 
         result = None
         try:
