@@ -55,64 +55,44 @@
             </tbody>
         </table>
 
-        <h2>Shared with...</h2>
-        <div class="row" style="margin-bottom: 20px">
-            <form role="form" class="col-xs-12">
-                <fieldset class="pull-right">
-                    <button type="button" class="btn btn-primary btn-adduser" data-toggle="modal" data-target="#modal-share-adduser">
-                        Add user
-                    </button>
-                    {% if groups|length_is:"1" %}
-                        <button type="button" class="btn btn-primary btn-addgroup" data-toggle="modal" data-target="#modal-share-addgroup" disabled>
+        {% if request.user.backend_user.id == share.owner.id %}
+            <h2>Shared with...</h2>
+            <div class="row" style="margin-bottom: 20px">
+                <form role="form" class="col-xs-12">
+                    <fieldset class="pull-right">
+                        <button type="button" class="btn btn-primary btn-adduser" data-toggle="modal" data-target="#modal-share-adduser">
+                            Add user
+                        </button>
+                        {% if groups|length_is:"1" %}
+                            <button type="button" class="btn btn-primary btn-addgroup" data-toggle="modal" data-target="#modal-share-addgroup" disabled>
+                                Add group
+                            </button>
+                        {% else %}
+                        <button type="button" class="btn btn-primary btn-addgroup" data-toggle="modal" data-target="#modal-share-addgroup">
                             Add group
                         </button>
-                    {% else %}
-                    <button type="button" class="btn btn-primary btn-addgroup" data-toggle="modal" data-target="#modal-share-addgroup">
-                        Add group
-                    </button>
-                    {% endif %}
-                </fieldset>
-            </form>
-        </div>
-        <table class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
-            <thead>
-                <tr>
-                    <th style="width: 75%">Member</th>
-                    <th style="width: 25%; text-align: right">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for group in share.access_groups %}
-                <tr>
-                    <td><a href="{% url 'group_manage' group.id %}">{{ group.name }}</a></td>
-                    <td style="text-align: right">
-                    {% if request.user.backend_user.id == share.owner.id %}
-                        {% if member.backend_user.id != share.owner %}
-                            <form action="{% url 'share_remove_access_group' %}" method="POST" role="form" class="form-action">
-                                {% csrf_token %}
-                                <input type="hidden" name="share_id" value="{{ share.id }}">
-                                <input type="hidden" name="access_group" value="{{ group.id }}">
-                                <button class="btn btn-sm btn-danger" title="Remove from share?" data-toggle="confirmation" data-placement="left">
-                                    <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
-                                </button>
-                            </form>
                         {% endif %}
-                    {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-
-                {% for user in users %}
-                {% if user.backend_user.collab_group in share.access_groups %}
+                    </fieldset>
+                </form>
+            </div>
+            <table class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
+                <thead>
                     <tr>
-                        <td><a href="{% url 'group_manage' user.backend_user.collab_group.id %}">{{ user.backend_user.collab_group.name }}</a></td>
+                        <th style="width: 75%">Member</th>
+                        <th style="width: 25%; text-align: right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in share.access_groups %}
+                    <tr>
+                        <td><a href="{% url 'group_manage' group.id %}">{{ group.name }}</a></td>
                         <td style="text-align: right">
                         {% if request.user.backend_user.id == share.owner.id %}
                             {% if member.backend_user.id != share.owner %}
                                 <form action="{% url 'share_remove_access_group' %}" method="POST" role="form" class="form-action">
                                     {% csrf_token %}
                                     <input type="hidden" name="share_id" value="{{ share.id }}">
-                                    <input type="hidden" name="access_group" value="{{ user.backend_user.collab_group.id }}">
+                                    <input type="hidden" name="access_group" value="{{ group.id }}">
                                     <button class="btn btn-sm btn-danger" title="Remove from share?" data-toggle="confirmation" data-placement="left">
                                         <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
                                     </button>
@@ -121,13 +101,35 @@
                         {% endif %}
                         </td>
                     </tr>
-                {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
+                    {% endfor %}
 
-        {% include 'web/shares/modal_addusers.html' with id=share.id users=users share=share origin='manage' csrf_token=csrf_token only %}
-        {% include 'web/shares/modal_addgroups.html' with id=share.id groups=groups share=share origin='manage' csrf_token=csrf_token only %}
+                    {% for user in users %}
+                    {% if user.backend_user.collab_group in share.access_groups %}
+                        <tr>
+                            <td><a href="{% url 'group_manage' user.backend_user.collab_group.id %}">{{ user.backend_user.collab_group.name }}</a></td>
+                            <td style="text-align: right">
+                            {% if request.user.backend_user.id == share.owner.id %}
+                                {% if member.backend_user.id != share.owner %}
+                                    <form action="{% url 'share_remove_access_group' %}" method="POST" role="form" class="form-action">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="share_id" value="{{ share.id }}">
+                                        <input type="hidden" name="access_group" value="{{ user.backend_user.collab_group.id }}">
+                                        <button class="btn btn-sm btn-danger" title="Remove from share?" data-toggle="confirmation" data-placement="left">
+                                            <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
+                            </td>
+                        </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% include 'web/shares/modal_addusers.html' with id=share.id users=users share=share origin='manage' csrf_token=csrf_token only %}
+            {% include 'web/shares/modal_addgroups.html' with id=share.id groups=groups share=share origin='manage' csrf_token=csrf_token only %}
+        {% endif %}
     </div>
 </div>
 {% endblock %}
