@@ -34,6 +34,8 @@ urlpatterns = [
     url(r'^container/restart$', 'ipynbsrv.web.views.containers.restart', name='container_restart'),
     url(r'^container/start$', 'ipynbsrv.web.views.containers.start', name='container_start'),
     url(r'^container/stop$', 'ipynbsrv.web.views.containers.stop', name='container_stop'),
+    url(r'^container/suspend$', 'ipynbsrv.web.views.containers.suspend', name='container_suspend'),
+    url(r'^container/resume$', 'ipynbsrv.web.views.containers.resume', name='container_resume'),
 
     # # /images(s)/...
     url(r'^images/$', 'ipynbsrv.web.views.images.index', name='images'),

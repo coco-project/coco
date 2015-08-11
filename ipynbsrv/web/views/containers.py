@@ -188,7 +188,7 @@ def restart(request):
     if container:
         try:
             client.containers(ct_id).restart.post()
-            messages.success(request, "Container is restarting.")
+            messages.success(request, "Container is now restarting.")
         except Exception as e:
             messages.error(request,  api_error_message(e, ""))
     else:
@@ -221,7 +221,7 @@ def start(request):
     if container:
         try:
             client.containers(ct_id).start.post()
-            messages.success(request, "Container is starting.")
+            messages.success(request, "Container is now starting up.")
         except Exception as e:
             messages.error(request, api_error_message(e, ""))
     else:
@@ -254,7 +254,73 @@ def stop(request):
     if container:
         try:
             client.containers(ct_id).stop.post()
-            messages.success(request, "Container stopped successfully.")
+            messages.success(request, "Container is shutting down.")
+        except Exception as e:
+            messages.error(request, api_error_message(e, ""))
+    else:
+        messages.error(request, "Container does not exist.")
+
+    return redirect('containers')
+
+
+@user_passes_test(login_allowed)
+def suspend(request):
+    """
+    Suspend the container.
+    """
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('containers')
+    if 'id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('containers')
+
+    ct_id = int(request.POST.get('id'))
+
+    client = get_httpclient_instance(request)
+
+    try:
+        container = client.containers(ct_id).get()
+    except HttpNotFoundError:
+        messages.error(request, "Container does not exist.")
+
+    if container:
+        try:
+            client.containers(ct_id).suspend.post()
+            messages.success(request, "Container is going into suspended mode.")
+        except Exception as e:
+            messages.error(request, api_error_message(e, ""))
+    else:
+        messages.error(request, "Container does not exist.")
+
+    return redirect('containers')
+
+
+@user_passes_test(login_allowed)
+def resume(request):
+    """
+    Resume the container
+    """
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('containers')
+    if 'id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('containers')
+
+    ct_id = int(request.POST.get('id'))
+
+    client = get_httpclient_instance(request)
+
+    try:
+        container = client.containers(ct_id).get()
+    except HttpNotFoundError:
+        messages.error(request, "Container does not exist.")
+
+    if container:
+        try:
+            client.containers(ct_id).resume.post()
+            messages.success(request, "Container is resuming.")
         except Exception as e:
             messages.error(request, api_error_message(e, ""))
     else:
