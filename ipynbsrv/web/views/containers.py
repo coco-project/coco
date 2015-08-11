@@ -140,7 +140,7 @@ def create(request):
         try:
             # server and owner get set by the core automatically
             client.containers.post(params)
-            messages.success(request, "Image created successfully.")
+            messages.success(request, "Container created successfully.")
         except Exception as ex:
             messages.error(request, api_error_message(ex, params))
 

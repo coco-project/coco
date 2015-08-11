@@ -42,6 +42,12 @@
         {% endif %}
 
         <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 25%">Property</th>
+                    <th style="width: 75%">Value</th>
+                </tr>
+            </thead>
             <tbody>
                 <tr>
                     <td>Name:</td><td>{{ group.name }}</td>
@@ -54,13 +60,13 @@
         </table>
 
         <h2>Members</h2>
-        <form role="form">
-        {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator.id %}
-            <form role="form">
-            <button type="button" class="btn btn-primary btn-add pull-right" data-toggle="modal" data-target="#modal-group-addusers">Add Users</button>
-        </form>
-        {% endif %}
-        </form>
+        <div class="row" style="margin-bottom: 20px">
+            {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator.id %}
+            <form role="form" class="col-xs-12">
+                <button type="button" class="btn btn-primary btn-add pull-right" data-toggle="modal" data-target="#modal-group-addusers">Add Users</button>
+            </form>
+            {% endif %}
+        </div>
         <table class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
             <thead>
                 <tr>
@@ -87,7 +93,7 @@
                     </form>
                     {% endif %}
                     {% if request.user.backend_user.id in group.admins or request.user.backend_user.id == group.creator.id %}
-                        {% if member.id != group.creator.id %} 
+                        {% if member.id != group.creator.id %}
                             <form action="{% url 'group_remove_member' %}" method="POST" role="form" class="form-action">
                                 {% csrf_token %}
                                 <input type="hidden" name="group_id" value="{{ group.id }}">
