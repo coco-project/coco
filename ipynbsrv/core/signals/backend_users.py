@@ -151,24 +151,6 @@ def remove_public_directory(sender, user, **kwargs):
             raise ex
 
 
-@receiver(backend_user_modified)
-def update_password_on_internal_ldap(sender, user, fields, **kwargs):
-    """
-    Update the password on the internal LDAP server on change.
-    """
-    if user is not None:
-        try:
-            internal_ldap = get_internal_ldap_connected()
-            internal_ldap.set_user_password(user.backend_pk, user.django_user.password)
-        except UserNotFoundError:
-            user.delete()  # XXX: cleanup
-        finally:
-            try:
-                internal_ldap.disconnect()
-            except:
-                pass
-
-
 @receiver(post_delete, sender=BackendUser)
 def post_delete_handler(sender, instance, **kwargs):
     """
