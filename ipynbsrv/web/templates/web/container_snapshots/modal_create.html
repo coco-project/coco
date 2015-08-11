@@ -13,7 +13,7 @@
                     <input name="ct_id" type="hidden" class="form-control" value="{{ container.id }}">
                     <div class="form-group">
                         <label for="name">Name</label>
-                        <input name="name" type="text" pattern="[A-Za-z1-9_-]+" class="form-control" required>
+                        <input name="name" type="text" pattern="^[A-z]\w*$" class="form-control" required>
                         <p class="help-block">Allowed pattern: ^[A-z]\w*$</p>
                     </div>
                     <div class="form-group">
