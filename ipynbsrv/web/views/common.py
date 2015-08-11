@@ -16,6 +16,6 @@ def dashboard(request):
 
     return render(request, 'web/dashboard.html', {
         'title': "Dashboard",
-        'containers': containers,
+        'containers': filter(lambda ct: ct.is_running is True, containers),
         'new_notifications_count': new_notifications_count
     })

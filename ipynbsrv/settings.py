@@ -122,6 +122,7 @@ MESSAGE_TAGS = {
 LOGIN_URL = '/accounts/login'
 LOGIN_REDIRECT_URL = '/accounts/flag'
 PUBLIC_URL = '/public/'
+USER_GUIDE_URL = '/docs/user-guide/'
 
 VARS_MODULE_PATH = 'ipynbsrv.core.conf'
 

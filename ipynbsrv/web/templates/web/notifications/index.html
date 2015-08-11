@@ -31,7 +31,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for n in notifications %}
+            {% for n in notifications %}
                 <tr data-id="{{ n.id }}" {% if not n.read %} class="unread" {% endif %}>
                     <td>{{ n.date | date:"d.m.Y, H:i" }}</td>
                     <td>{{ n.notification.sender.username }}</td>
@@ -48,11 +48,11 @@
                         </form>
                     </td>
                 </tr>
-                {% endfor %}
+            {% endfor %}
             </tbody>
         </table>
         {% else %}
-            <div class="alert alert-info">You have no notifications yet.</div>
+            <div class="alert alert-info">You have no notifications.</div>
         {% endif %}
 
         {% include 'web/notifications/modal_create.html' with groups=groups notification_types=notification_types containers=containers container_images=container_images shares=shares csrf_token=csrf_token only %}

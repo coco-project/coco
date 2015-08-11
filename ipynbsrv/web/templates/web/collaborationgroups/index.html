@@ -13,12 +13,12 @@
     <div class="col-xs-12">
         {% include 'web/snippets/messages.html' with messages=messages only %}
 
-        <h1>My Groups</h1>
+        <h1>Groups</h1>
         <form role="form">
             <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-group-create">Create new</button>
         </form>
 
-        {% if groups %}
+        {% if groups and not groups|length_is:"1" %}
         <table id="groups-table" class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
             <thead>
                 <tr>
@@ -29,56 +29,55 @@
                 </tr>
             </thead>
             <tbody>
-        {% for group in groups %}
-        {% if not group.is_single_user_group %}
-        <tr>
-            <td><a href="/groups/manage/{{group.id}}">{{group.name}}</a></td>
-            <td>{{ group.member_count }}</td>
-            <td>{% if request.user.backend_user.id in group.admins %}<span class="label label-info">Admin</span>{% endif %}
-                {% if request.user.backend_user.id == group.creator.id %}<span class="label label-info">Creator</span>
-                {% else %} {% if request.user.backend_user.id in group.member_ids %}<span class="label label-info">Member</span>{% endif %}{% endif %}
-            </td>
-            <td>
-            {% if request.user.backend_user.id != group.creator.id and group.creator %} 
-                {% if request.user.backend_user.id in group.member_ids %}
-                <form action="{% url 'group_leave' %}" method="POST" role="form" class="form-action">
-                    {% csrf_token %}
-                    <input type="hidden" name="group_id" value="{{ group.id }}">
-                    <input type="hidden" name="user_id" value="{{ request.user.id }}">
-                    <button class="btn btn-sm btn-warning" title="Leave group?" data-toggle="confirmation" data-placement="left">
-                        <i class="glyphicon glyphicon-minus-sign" aria-hidden="true"></i>
-                    </button>
-                </form>
-                {% else %}
-                <form action="{% url 'group_join' %}" method="POST" role="form" class="form-action">
-                    {% csrf_token %}
-                    <input type="hidden" name="group_id" value="{{ group.id }}">
-                    <input type="hidden" name="user_id" value="{{ request.user.id }}">
-                    <button class="btn btn-sm btn-success" title="Join group?" data-toggle="confirmation" data-placement="left">
-                        <i class="glyphicon glyphicon-plus-sign" aria-hidden="true"></i>
-                    </button>
-                </form>
-                {% endif %}
-            {% endif %}
+            {% for group in groups %}
+                {% if not group.is_single_user_group %}
+                <tr>
+                    <td><a href="/groups/manage/{{group.id}}">{{group.name}}</a></td>
+                    <td>{{ group.member_count }}</td>
+                    <td>{% if request.user.backend_user.id in group.admins %}<span class="label label-info">Admin</span>{% endif %}
+                        {% if request.user.backend_user.id == group.creator.id %}<span class="label label-info">Creator</span>
+                        {% else %} {% if request.user.backend_user.id in group.member_ids %}<span class="label label-info">Member</span>{% endif %}{% endif %}
+                    </td>
+                    <td>
+                    {% if request.user.backend_user.id != group.creator.id and group.creator %}
+                        {% if request.user.backend_user.id in group.member_ids %}
+                        <form action="{% url 'group_leave' %}" method="POST" role="form" class="form-action">
+                            {% csrf_token %}
+                            <input type="hidden" name="group_id" value="{{ group.id }}">
+                            <input type="hidden" name="user_id" value="{{ request.user.id }}">
+                            <button class="btn btn-sm btn-warning" title="Leave group?" data-toggle="confirmation" data-placement="left">
+                                <i class="glyphicon glyphicon-minus-sign" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                        {% else %}
+                        <form action="{% url 'group_join' %}" method="POST" role="form" class="form-action">
+                            {% csrf_token %}
+                            <input type="hidden" name="group_id" value="{{ group.id }}">
+                            <input type="hidden" name="user_id" value="{{ request.user.id }}">
+                            <button class="btn btn-sm btn-success" title="Join group?" data-toggle="confirmation" data-placement="left">
+                                <i class="glyphicon glyphicon-plus-sign" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    {% endif %}
 
-            {% if request.user.backend_user.id == group.creator.id or request.user.id in group.admins %}
-            <form action="{% url 'group_delete' %}" method="POST" role="form" class="form-action">
-                {% csrf_token %}
-                <input type="hidden" name="group_id" value="{{ group.id }}">
-                <button class="btn btn-sm btn-danger" title="Delete group?" data-toggle="confirmation" data-placement="left">
-                    <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
-                </button>
-            </form>
-            {% endif %}
-            </td>
-        </tr>
-        {% endif %}
-        {% endfor %}
-        </tbody>
+                    {% if request.user.backend_user.id == group.creator.id or request.user.id in group.admins %}
+                    <form action="{% url 'group_delete' %}" method="POST" role="form" class="form-action">
+                        {% csrf_token %}
+                        <input type="hidden" name="group_id" value="{{ group.id }}">
+                        <button class="btn btn-sm btn-danger" title="Delete group?" data-toggle="confirmation" data-placement="left">
+                            <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
         </table>
-        
         {% else %}
-            <div class="alert alert-info">You have no groups yet.</div>
+            <div class="alert alert-info">You have no groups.</div>
         {% endif %}
 
         {% include 'web/collaborationgroups/modal_addusers.html' with csrf_token=csrf_token only %}
@@ -111,7 +110,7 @@ $(function () {
     table.find('.label').click(function (e) {
         var label = $(e.target);
         search_input.val(label.text());
-	    search_input.submit();
+        search_input.submit();
     });
 
     $('[data-toggle="modal"]').click(function (e) {
