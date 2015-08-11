@@ -146,6 +146,10 @@ def delete_on_server(sender, container, **kwargs):
     if container is not None:
         try:
             container.server.get_container_backend().delete_container(container.backend_pk)
+            # cleanup internal images
+            if container.is_image_based() and container.image.is_internal and not container.has_clones():
+                if not Container.objects.filter(image=container.image).exists():
+                    container.image.delete()
         except ContainerNotFoundError as ex:
             pass  # already deleted
         except ContainerBackendError as ex:
