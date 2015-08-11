@@ -61,7 +61,6 @@ def create(request):
                 # create a new tag
                 try:
                     tag_params = {"label": str(tag)}
-                    t = client.tags.get()
                     t = client.tags.post(tag_params)
                 except Exception as e:
                     messages.error(request, api_error_message(e, tag_params))
@@ -105,8 +104,6 @@ def share_add_access_groups(request):
     params = {}
     params['access_groups'] = access_groups
 
-    # then call API to add the users to the group
-    client.shares.get()
     try:
         client.shares(share_id).add_access_groups.post(params)
         messages.success(request, "The selected groups are now a member of this share.")

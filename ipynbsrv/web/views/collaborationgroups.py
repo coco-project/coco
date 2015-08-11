@@ -71,8 +71,6 @@ def create(request):
     client = get_httpclient_instance(request)
 
     try:
-        # stupid create workaround (see containers)
-        client.collaborationgroups.get()
         client.collaborationgroups.post(params)
         messages.success(request, "Group `{}` created sucessfully.".format(params.get("name")))
     except HttpClientError:
