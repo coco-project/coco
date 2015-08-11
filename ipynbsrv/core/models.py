@@ -772,7 +772,15 @@ class ContainerImage(models.Model):
         max_length=255,
         help_text='The primary key the backend uses to identify this image.'
     )
-    name = models.CharField(max_length=75)
+    name = models.CharField(
+        max_length=75,
+        validators=[
+            RegexValidator(
+                regex='^[A-z][\w\/]*$',
+                message='Invalid container snapshot name.'
+            )
+        ]
+    )
     description = models.TextField(blank=True, null=True)
     # TODO: document placeholders
     command = models.CharField(

@@ -1,8 +1,7 @@
 site_name: User Guide
-theme: readthedocs
 
 docs_dir: .
-site_dir: ../../ipynbsrv/wui/static/docs/user-guide
+site_dir: ../../ipynbsrv/web/static/docs/user-guide
 
 pages:
-- [index.md, Home]
+- 'Home' : 'index.md'
