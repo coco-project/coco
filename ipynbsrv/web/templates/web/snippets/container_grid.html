@@ -2,8 +2,14 @@
 <div class="row container-grid">
    {% for ct in containers %}
     <div class="col-xs-12 col-sm-6 col-md-4">
-        {% if ct.running %}
-            <div class="panel panel-success panel-container">
+        {% if ct.is_running %}
+            {% if ct.is_suspended %}
+                <div class="panel panel-warning panel-container">
+            }
+            {% else %}
+                <div class="panel panel-success panel-container">
+                }
+            {% endif %}
         {% else %}
             <div class="panel panel-danger panel-container">
         {% endif %}
@@ -11,7 +17,7 @@
             <div class="panel-body">
                 {{ ct.description }}
             </div>
-            {% if ct.running and ct.port_mappings %}
+            {% if ct.is_running and ct.port_mappings %}
             <table class="table">
                 <thead>
                     <tr>
@@ -21,10 +27,12 @@
                 </thead>
                 <tbody>
                     {% for port_mapping in ct.port_mappings %}
-                    <tr>
-                        <td>{{ port_mapping.internal }}</td>
-                        <td>{{ port_mapping.external }}</td>
-                    </tr>
+                        {% if not port_mapping.is_protected_mappping %}
+                        <tr>
+                            <td>{{ port_mapping.internal_port }}</td>
+                            <td>{{ ct.server.external_ip }}:{{ port_mapping.external_port }}</td>
+                        </tr>
+                        {% endif %}
                     {% endfor %}
                 </tbody>
             </table>
@@ -37,13 +45,15 @@
                     </button>
                     <ul class="dropdown-menu" role="menu" aria-labelledby="actions-container_1">
                         {% if ct.is_running %}
-                            <li role="presentation">
-                                <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('connect-{{ ct.id }}').getElementsByTagName('button')[0].click();">Connect</a>
-                                <form id="connect-{{ ct.id }}" action="/workspace/{{ ct.workspace_port }}/" method="GET" target="_blank" role="form">
-                                    {% csrf_token %}
-                                    <button type="submit"></button>
-                                </form>
-                            </li>
+                            {% if ct.backend_base_url %}
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('connect-{{ ct.id }}').getElementsByTagName('button')[0].click();">Connect</a>
+                                    <form id="connect-{{ ct.id }}" action="{{ ct.backend_base_url }}" method="GET" target="_blank" role="form">
+                                        {% csrf_token %}
+                                        <button type="submit"></button>
+                                    </form>
+                                </li>
+                            {% endif %}
                             <li role="presentation">
                                 <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('stop-{{ ct.id }}').getElementsByTagName('button')[0].click();">Stop</a>
                                 <form id="stop-{{ ct.id }}" action="{% url 'container_stop' %}" method="POST" role="form">
@@ -60,6 +70,26 @@
                                     <button type="submit"><button>
                                 </form>
                             </li>
+                            {% if ct.is_suspended %}
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('resume-{{ ct.id }}').getElementsByTagName('button')[0].click();">Resume</a>
+                                    <form id="resume-{{ ct.id }}" action="{% url 'container_resume' %}" method="POST" role="form">
+                                        {% csrf_token %}
+                                        <input name="id" type="hidden" value="{{ ct.id }}">
+                                        <button type="submit"><button>
+                                    </form>
+                                </li>
+                            {% else %}
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('resume-{{ ct.id }}').getElementsByTagName('button')[0].click();">Suspend</a>
+                                    <form id="suspend-{{ ct.id }}" action="{% url 'container_suspend' %}" method="POST" role="form">
+                                        {% csrf_token %}
+                                        <input name="id" type="hidden" value="{{ ct.id }}">
+                                        <button type="submit"><button>
+                                    </form>
+                                </li>
+
+                            {% endif %}
                         {% else %}
                             <li role="presentation">
                                 <a role="menuitem" tabindex="-1" href="javascript:document.getElementById('start-{{ ct.id }}').getElementsByTagName('button')[0].click();">Start</a>

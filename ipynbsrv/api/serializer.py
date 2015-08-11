@@ -138,6 +138,16 @@ class ServerSerializer(serializers.ModelSerializer):
         model = Server
 
 
+class PortMappingSerializer(serializers.ModelSerializer):
+    """
+
+    """
+    is_protected_mapping = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = PortMapping
+
+
 class ContainerSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
@@ -145,12 +155,17 @@ class ContainerSerializer(serializers.ModelSerializer):
     Server is set through the server selection algorithm set in the conf module.
     """
     backend_name = serializers.CharField(read_only=True, source='get_backend_name')
+    backend_base_url = serializers.CharField(read_only=True, source='get_backend_base_url')
     friendly_name = serializers.CharField(read_only=True, source='get_friendly_name')
     is_clone = serializers.BooleanField(read_only=True)
     is_image_based = serializers.BooleanField(read_only=True)
     is_running = serializers.BooleanField(read_only=True)
     is_suspended = serializers.BooleanField(read_only=True)
     has_clones = serializers.BooleanField(read_only=True)
+    port_mappings = PortMappingSerializer(
+        many=True,
+        read_only=True
+        )
 
     owner = serializers.HiddenField(
         default=CurrentBackendUserDefault()

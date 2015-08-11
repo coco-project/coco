@@ -1173,6 +1173,12 @@ class PortMapping(models.Model):
             # ServerSelectionAlgorithm must guarantee enough ports are free!
         return port
 
+    def is_protected_mapping(self):
+        """
+        Return `True` if this mapping is for the protected container port.
+        """
+        return self.internal_port == self.container.image.protected_port
+
     def __str__(self):
         """
         :inherit.
