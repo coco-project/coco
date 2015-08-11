@@ -464,7 +464,7 @@ class CollaborationGroup(Group):
 
         :return bool `True` if the user has been removed.
         """
-        if self.is_user(user):
+        if self.is_user(user) and self.creator != user:
             self.user_set.remove(user.django_user)
             return True
         return False

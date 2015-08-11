@@ -44,7 +44,6 @@
                 <form action="{% url 'group_leave' %}" method="POST" role="form" class="form-action">
                     {% csrf_token %}
                     <input type="hidden" name="group_id" value="{{ group.id }}">
-                    <input type="hidden" name="user_id" value="{{ request.user.id }}">
                     <button class="btn btn-sm btn-warning" title="Leave group?" data-toggle="confirmation" data-placement="left">
                         <i class="glyphicon glyphicon-minus-sign" aria-hidden="true"></i>
                     </button>
@@ -53,7 +52,6 @@
                 <form action="{% url 'group_join' %}" method="POST" role="form" class="form-action">
                     {% csrf_token %}
                     <input type="hidden" name="group_id" value="{{ group.id }}">
-                    <input type="hidden" name="user_id" value="{{ request.user.id }}">
                     <button class="btn btn-sm btn-success" title="Join group?" data-toggle="confirmation" data-placement="left">
                         <i class="glyphicon glyphicon-plus-sign" aria-hidden="true"></i>
                     </button>

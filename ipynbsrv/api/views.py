@@ -42,7 +42,9 @@ def api_root(request, format=None):
             'add_members': 'Add members to a collaborationgroup.',
             'remove_members': 'Remove members from a collaborationgroup.',
             'add_admins': 'Add admins to a collaborationgroup.',
-            'remove_admins': 'Remove admins from a collaborationgroup.'
+            'remove_admins': 'Remove admins from a collaborationgroup.',
+            'join': 'Join a public collaborationgroup.',
+            'leave': 'Leave a collaborationgroup.'
         }
     }
     available_endpoints['containers'] = {
@@ -374,6 +376,53 @@ def collaborationgroup_remove_members(request, pk):
         result = group.remove_member(user)
         if not result:
             return Response({"error": "{} is no member of {}".format(user.username, group.name), "data": user.id})
+
+    serializer = NestedCollaborationGroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+def collaborationgroup_join(request, pk):
+    """
+    Join a group.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    """
+
+    obj = CollaborationGroup.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "CollaborationGroup not found!", "data": request.data})
+    group = obj.first()
+
+    if not group.is_public:
+        return Response({"error": "{} could not be added to {}. Group not public.".format(request.user.username, group.name)})
+
+    result = group.add_user(request.user.backend_user)
+    if not result:
+        return Response({"error": "{} could not be added to {}".format(request.user.username, group.name)})
+
+    serializer = NestedCollaborationGroupSerializer(group)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+def collaborationgroup_leave(request, pk):
+    """
+    Leave a group.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    """
+
+    obj = CollaborationGroup.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "CollaborationGroup not found!", "data": request.data})
+    group = obj.first()
+
+    result = group.remove_member(request.user.backend_user)
+    if not result:
+        return Response({"error": "{} could not be removed from {}. Not a member or creator.".format(request.user.username, group.name)})
 
     serializer = NestedCollaborationGroupSerializer(group)
     return Response(serializer.data, status=status.HTTP_201_CREATED)

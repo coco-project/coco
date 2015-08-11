@@ -26,7 +26,6 @@
         <form action="{% url 'group_join' %}" method="POST" role="form">
             {% csrf_token %}
             <input type="hidden" name="group_id" value="{{ group.id }}">
-            <input type="hidden" name="user_id" value="{{ request.user.id }}">
             <button class="btn btn-primary btn-delete pull-right" title="Join this public group?" data-toggle="confirmation" data-placement="bottom">Join Group
             </button>
         </form>
@@ -35,7 +34,6 @@
         <form action="{% url 'group_leave' %}" method="POST" role="form">
             {% csrf_token %}
             <input type="hidden" name="group_id" value="{{ group.id }}">
-            <input type="hidden" name="user_id" value="{{ request.user.id }}">
             <button class="btn btn-warning btn-delete pull-right" title="Leave this public group?" data-toggle="confirmation" data-placement="bottom">Leave Group
             </button>
         </form>

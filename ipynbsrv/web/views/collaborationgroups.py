@@ -257,33 +257,24 @@ def leave(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('groups')
-    if 'group_id' not in request.POST or 'user_id' not in request.POST:
+    if 'group_id' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('groups')
 
     group_id = int(request.POST.get('group_id'))
-    user_id = int(request.POST.get('user_id'))
 
     client = get_httpclient_instance(request)
-
-    user = client.users(user_id).get()
     group = client.collaborationgroups(group_id).get()
 
     if group:
-        if user:
-            params = {}
-            params["users"] = [user_id]
-            try:
-                client.collaborationgroups(group_id).remove_members.post(params)
-                messages.success(request, "You are no longer a member of group {}.".format(group.name))
-            except Exception as e:
-                messages.error(request, api_error_message(e, params))
+        try:
+            client.collaborationgroups(group_id).leave.post()
+            messages.success(request, "You are no longer a member of group {}.".format(group.name))
+        except Exception as e:
+            messages.error(request, api_error_message(e, ""))
 
-            request.method = "GET"
-            return redirect('groups')
-        else:
-            messages.error(request, "User does not exist.")
-            return redirect('group_manage', group.id)
+        request.method = "GET"
+        return redirect('groups')
     else:
         messages.error(request, "Group does not exist.")
 
@@ -295,24 +286,19 @@ def join(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'group_id' not in request.POST or 'user_id' not in request.POST:
+    if 'group_id' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('groups')
 
-    user_id = request.POST.get('user_id')
     group_id = request.POST.get('group_id')
 
     client = get_httpclient_instance(request)
-
     group = client.collaborationgroups(group_id).get()
-    user = client.users(user_id).get()
-    if user:
-        params = {}
-        params["users"] = [user_id]
-        try:
-            client.collaborationgroups(group_id).add_members.post(params)
-            messages.success(request, "You are now a member of {}.".format(group.name))
-        except Exception as e:
-            messages.error(request, api_error_message(e, params))
+
+    try:
+        client.collaborationgroups(group_id).join.post()
+        messages.success(request, "You are now a member of {}.".format(group.name))
+    except Exception as e:
+        messages.error(request, api_error_message(e, ""))
 
     return redirect('groups')

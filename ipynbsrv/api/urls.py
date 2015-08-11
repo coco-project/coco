@@ -18,6 +18,8 @@ urlpatterns = patterns('',
     url(r'^collaborationgroups/(?P<pk>[0-9]+)$', views.CollaborationGroupDetail.as_view(), name="collaborationgroup_detail"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)/add_members$', views.collaborationgroup_add_members, name="collaborationgroup_add_members"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)/remove_members$', views.collaborationgroup_remove_members, name="collaborationgroup_remove_members"),
+    url(r'^collaborationgroups/(?P<pk>[0-9]+)/join$', views.collaborationgroup_join, name="collaborationgroup_join"),
+    url(r'^collaborationgroups/(?P<pk>[0-9]+)/leave$', views.collaborationgroup_leave, name="collaborationgroup_leave"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)/add_admins$', views.collaborationgroup_add_admins, name="collaborationgroup_add_admins"),
     url(r'^collaborationgroups/(?P<pk>[0-9]+)/remove_admins$', views.collaborationgroup_remove_admins, name="collaborationgroup_remove_admins"),
 
