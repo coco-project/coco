@@ -190,8 +190,6 @@ def add_members(request):
     users = request.POST.getlist('users')
     group_id = request.POST.get('group_id')
 
-    print(users)
-
     client = get_httpclient_instance(request)
 
     user_list = []

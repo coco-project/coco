@@ -12,73 +12,85 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="receiver_groups">Receiving Group</label>
-                        <select class="form-control" name="receiver_groups">
-                            <option></option>
-                            {% for group in groups %}
-                                {% if not group.is_single_user_group %}
-                                    <option value="{{ group.id }}">{{ group.name }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
+                        <div class="select">
+	                        <select class="form-control enableCaseInsensitiveFiltering" name="receiver_groups">
+	                        <option>None</option>
+	                            {% for group in groups %}
+	                                {% if not group.is_single_user_group %}
+	                                    <option value="{{ group.id }}">{{ group.name }}</option>
+	                                {% endif %}
+	                            {% endfor %}
+	                        </select>
+	                    </div>
                     </div>
                     <div class="form-group">
                         <label for="type">Notification Type</label>
-                        <select class="form-control" name="notification_type">
-                            <option></option>
-                            {% for n1, n2 in notification_types %}
-                                <option value="{{ n1 }}">{{ n2 }}</option>
+                        <div class="select">
+	                        <select class="form-control enableCaseInsensitiveFiltering" name="notification_type">
+	                        	<option>None</option>
+	                            {% for n1, n2 in notification_types %}
+	                                <option value="{{ n1 }}">{{ n2 }}</option>
 
-                            {% endfor %}
-                        </select>
+	                            {% endfor %}
+	                        </select>
+	                    </div>
 
                     </div>
                     <div class="form-group">
                         <label for="type">Container</label>
-                        <select class="form-control" name="container">
-                            <option></option>
-                            {% for c in containers %}
-                                <option value="{{ c.id }}">{{ c.name }}</option>
+                        <div class="select">
+	                        <select class="form-control enableCaseInsensitiveFiltering" name="container">
+	                            <option>None</option>
+	                            {% for c in containers %}
+	                                <option value="{{ c.id }}">{{ c.name }}</option>
 
-                            {% endfor %}
-                        </select>
+	                            {% endfor %}
+	                        </select>
+	                    </div>
 
                     </div>
 
                     <div class="form-group">
                         <label for="type">Container Image</label>
-                        <select class="form-control" name="container_image">
-                            <option></option>
-                            {% for ci in container_images %}
-                                <option value="{{ ci.id }}">{{ ci.name }}</option>
+                        <div class="select">
+	                        <select class="form-control enableCaseInsensitiveFiltering" name="container_image">
+	                            <option>None</option>
+	                            {% for ci in container_images %}
+	                                <option value="{{ ci.id }}">{{ ci.name }}</option>
 
-                            {% endfor %}
-                        </select>
+	                            {% endfor %}
+	                        </select>
+	                    </div>
 
                     </div>
 
 
                     <div class="form-group">
                         <label for="type">Group</label>
-                        <select class="form-control" name="group">
-                            <option></option>
-                            {% for g in groups %}
-                                {% if not group.is_single_user_group %}
-                                    <option value="{{ g.id }}">{{ g.name }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
+                        <div class="select">
+	                        <select class="form-control enableCaseInsensitiveFiltering" name="group">
+	                            <option>None</option>
+	                            {% for g in groups %}
+	                                {% if not group.is_single_user_group %}
+	                                    <option value="{{ g.id }}">{{ g.name }}</option>
+	                                {% endif %}
+	                            {% endfor %}
+	                        </select>
+	                    </div>
 
                     </div>
 
                     <div class="form-group">
                         <label for="type">Share</label>
-                        <select class="form-control" name="share">
-                            <option></option>
-                            {% for s in shares %}
-                                <option value="{{ s.id }}">{{ s.name }}</option>
+                        <div class="select">
+	                        <select class="form-control enableCaseInsensitiveFiltering" name="share">
+	                            <option>None</option>
+	                            {% for s in shares %}
+	                                <option value="{{ s.id }}">{{ s.name }}</option>
 
-                            {% endfor %}
-                        </select>
+	                            {% endfor %}
+	                        </select>
+	                    </div>
 
                     </div>
 

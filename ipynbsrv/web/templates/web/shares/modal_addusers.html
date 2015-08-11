@@ -11,19 +11,20 @@
                 {% csrf_token %}
                 <input id="modal-share-adduser_id" type="hidden" name="id" value="{{ id }}">
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label for="recipient">Users</label>
-                            {% for user in users %}
+
+                <div class="form-group">
+                        <label for="access_groups">Groups</label>
+                        <div class="select">
+                            <select class="enableMultiselectCaseInsensitiveFiltering" multiple="multiple" name="access_groups">
+                                {% for user in users %}
                                 {% if user.backend_user.collab_group %}
-                                    {% if user.backend_user.collab_group not in share.access_groups %}
-                                    <div class="checkbox">
-                                      <label><input name="access_groups" type="checkbox" value="{{ user.backend_user.collab_group.id }}">{{ user.backend_user.collab_group.name }}</label>
-                                    </div>
+                                    {% if user.backend_user.collab_group not in share.access_groups and user != request.user %}
+                                        <option value="{{ user.backend_user.collab_group.id }}">{{ user.backend_user.collab_group.name }}</option>
                                     {% endif %}
                                 {% endif %}
-
-                            {% endfor %}
-                        </select>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

@@ -18,9 +18,23 @@
 <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
 <script src="{% static 'bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
-<script>
+<script type="text/javascript">
 $(function () {
     $('[data-tooltip]').tooltip();
+});
+
+$(document).ready(function() {
+    $('.enableMultiselectCaseInsensitiveFiltering').multiselect({
+        enableCaseInsensitiveFiltering: true,
+        includeSelectAllOption: true,
+        selectAllValue: 'select-all-value',
+        disableIfEmpty: true
+    });
+
+    $('.enableCaseInsensitiveFiltering').multiselect({
+        enableCaseInsensitiveFiltering: true,
+        disableIfEmpty: true
+    });
 });
 </script>
 {% block js %}{% endblock %}

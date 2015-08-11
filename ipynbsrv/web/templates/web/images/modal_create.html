@@ -12,12 +12,14 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="ct_id">Base container</label>
-                        <select name="ct_id" class="form-control" required>
-                            <option></option>
-                            {% for ct in containers %}
-                                <option value="{{ ct.id }}"{% if ct == selected %} selected{% endif %}>{{ ct.name }}</option>
-                            {% endfor %}
-                        </select>
+                        <div class="select">
+	                        <select name="ct_id" class="form-control enableCaseInsensitiveFiltering" required>
+	                            <option>None</option>
+	                            {% for ct in containers %}
+	                                <option value="{{ ct.id }}"{% if ct == selected %} selected{% endif %}>{{ ct.name }}</option>
+	                            {% endfor %}
+	                        </select>
+	                    </div>
                     </div>
                     <div class="form-group">
                         <label for="img_name">Name</label>
