@@ -78,8 +78,6 @@ def create_public_directory(sender, user, **kwargs):
                 storage_backend.set_dir_mode(public_dir, 0755)
             except StorageBackendError as ex:
                 raise ex
-        else:
-            logger.warn("Public directory for user %s already exists." % user.django_user.get_username())
 
 
 @receiver(backend_user_deleted)
