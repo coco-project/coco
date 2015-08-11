@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}">
     {% block external_css %}{% endblock %}
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-multiselect.css' %}">
     {% block css %}{% endblock %}
 </head>
 
@@ -16,6 +17,7 @@
 </body>
 <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
 <script src="{% static 'bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
 <script>
 $(function () {
     $('[data-tooltip]').tooltip();

@@ -39,7 +39,7 @@
                     <td>{% if n.notification.has_related_object %}<a href="{% if n.notification.notification_type == 'container'%}{% url 'containers' %}{% elif n.notification.notification_type == 'container_image'%}{% url 'images' %}{% elif n.notification.notification_type == 'group' %}{% url 'group_manage' n.notification.group %}{% elif n.notification.notification_type == 'share' %}{% url 'share_manage' n.notification.share %}{% endif %}">{{ n.notification.notification_type }}</a>{% else %}{{ n.notification.notification_type }}{% endif %}</td>
                     <td>{{ n.read }}</td>
                     <td>
-                        <form action="{% url 'notification_mark_as_read' %}" method="POST" role="form" class="form-action">
+                        <form action="{% url 'notification_mark_as_read' %}" method="POST" role="form" class="form-action pull-right">
                             {% csrf_token %}
                             <input type="hidden" name="id" value="{{ n.id }}">
                             <button class="btn btn-sm btn-success" title="Mark as read" data-placement="left" {% if n.read %} disabled {% endif %}>
