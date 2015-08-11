@@ -58,12 +58,12 @@ def clone(request):
     ct_id = int(request.POST.get('id'))
     client = get_httpclient_instance(request)
     container = client.containers(ct_id).get()
-    params['new_name'] = "{}_clone".format(container.name)
+    params['name'] = "{}_clone".format(container.name)
 
     # create clone
     try:
         client.containers(ct_id).clone.post(params)
-        messages.success(request, "Sucessfully created the clone `{}`.".format(new_name))
+        messages.success(request, "Sucessfully created the clone `{}`.".format(name))
     except Exception as e:
             messages.error(request, api_error_message(e, params))
 
