@@ -200,6 +200,26 @@ class ContainerDetailPermission(IsSuperUserOrIsObjectOwner):
     pass
 
 
+class ContainerSnapshotDetailPermission(
+        permissions.BasePermission,
+        IsBackendUserMixin,
+        IsSafeMethodMixin,
+        IsPublicMixin,
+        IsObjectOwnerMixin,
+        IsSuperUserMixin):
+    """
+    Todo: write doc.
+    """
+    def has_object_permission(self, request, view, obj):
+        if self.is_public and self.is_safe_method(request):
+            return True
+        if self.is_superuser(request.user):
+            return True
+        if self.is_backend_user(request.user):
+            return self.is_owner(request.user, obj.container)
+        return False
+
+
 class CollaborationGroupDetailPermission(
         permissions.BasePermission,
         IsSuperUserMixin,

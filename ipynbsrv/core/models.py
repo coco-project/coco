@@ -859,6 +859,7 @@ class ContainerSnapshot(models.Model):
         related_name='snapshots',
         help_text='The container from which this snapshot was taken/is for.'
     )
+    created_on = models.DateTimeField(auto_now_add=True)
 
     def get_friendly_name(self):
         """

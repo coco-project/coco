@@ -29,6 +29,9 @@ urlpatterns = [
     url(r'^containers/$', 'ipynbsrv.web.views.containers.index', name='containers'),
     url(r'^container/clone$', 'ipynbsrv.web.views.containers.clone', name='container_clone'),
     url(r'^container/commit$', 'ipynbsrv.web.views.containers.commit', name='container_commit'),
+    url(r'^container/create_snapshot$', 'ipynbsrv.web.views.containers.create_snapshot', name='container_create_snapshot'),
+    url(r'^container/delete_snapshot$', 'ipynbsrv.web.views.containers.delete_snapshot', name='container_delete_snapshot'),
+    url(r'^container/restore_snapshot$', 'ipynbsrv.web.views.containers.restore_snapshot', name='container_restore_snapshot'),
     url(r'^container/create$', 'ipynbsrv.web.views.containers.create', name='container_create'),
     url(r'^container/delete$', 'ipynbsrv.web.views.containers.delete', name='container_delete'),
     url(r'^container/restart$', 'ipynbsrv.web.views.containers.restart', name='container_restart'),
@@ -36,6 +39,8 @@ urlpatterns = [
     url(r'^container/stop$', 'ipynbsrv.web.views.containers.stop', name='container_stop'),
     url(r'^container/suspend$', 'ipynbsrv.web.views.containers.suspend', name='container_suspend'),
     url(r'^container/resume$', 'ipynbsrv.web.views.containers.resume', name='container_resume'),
+    url(r'^container/(\d+)/snapshots$', 'ipynbsrv.web.views.container_snapshots.index', name='container_snapshots'),
+
 
     # # /images(s)/...
     url(r'^images/$', 'ipynbsrv.web.views.images.index', name='images'),

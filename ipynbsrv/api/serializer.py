@@ -148,6 +148,14 @@ class PortMappingSerializer(serializers.ModelSerializer):
         model = PortMapping
 
 
+class FlatContainerSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
+    class Meta:
+        model = Container
+
+
 class ContainerSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.
@@ -201,6 +209,7 @@ class ContainerSnapshotSerializer(serializers.ModelSerializer):
     Todo: write doc.
     """
     friendly_name = serializers.CharField(read_only=True, source='get_friendly_name')
+    container = FlatContainerSerializer(read_only=True, many=False)
 
     class Meta:
         model = ContainerSnapshot

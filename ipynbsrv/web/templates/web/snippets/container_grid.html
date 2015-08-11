@@ -114,7 +114,7 @@
                                 <button type="submit"></button>
                             </form>
                         </li>
-                        <li role="presentation"><a role="menuitem" tabindex="-1" href="{% url 'images' %}?backup=1&amp;ct={{ ct.id }}">Backup</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="{% url 'container_snapshots' ct.id %}">Snapshots</a></li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" href="{% url 'images' %}?share=1&amp;ct={{ ct.id }}">Share</a></li>
                     </ul>
                 </div>

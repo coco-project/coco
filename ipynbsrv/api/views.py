@@ -55,6 +55,7 @@ def api_root(request, format=None):
             'clone': 'Clone the container.',
             'clones': 'Get a list of all clones of the container',
             'create_snapshot': 'Create a snapshot of the container.',
+            'restore_snapshot': 'Restore a snapshot of the container.',
             'restart': 'Restart the container.',
             'resume': 'Resume the container.',
             'start': 'Start the container.',
@@ -507,7 +508,7 @@ def container_commit(request, pk):
 @api_view(['POST'])
 def container_create_snapshot(request, pk):
     """
-    Make a snapshot of the container.
+    Create a snapshot of the container.
     Todo: show params on OPTIONS call.
     :param pk   pk of the container that needs to be cloned
     :param name
@@ -537,6 +538,37 @@ def container_create_snapshot(request, pk):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response({"error": "Container not found!", "pk": pk})
+
+
+@api_view(['POST'])
+def container_restore_snapshot(request, pk):
+    """
+    Restore a snapshot of the container.
+    Todo: show params on OPTIONS call.
+    :param pk   pk of the container that needs to be cloned
+    """
+    params = {}
+
+    data = request.data
+
+    if not data.get('id'):
+        return Response({"error": "please provide name for the clone: {\"name\" : \"some name \"}"})
+
+    params['id'] = data.get('id')
+
+    container = get_container(pk)
+
+    # validate permissions
+    validate_object_permission(ContainerDetailPermission, request, container)
+
+    snapshots = ContainerSnapshot.objects.filter(id=params.get('id'))
+    if container and snapshots:
+        s = snapshots.first()
+        s.restore()
+        serializer = ContainerSerializer(container)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Container or Snapshot not found!", "pk": pk})
 
 
 @api_view(['GET'])
@@ -675,7 +707,25 @@ class ContainerImageDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = ContainerImage.objects.all()
 
 
-class ContainerSnapshotList(generics.ListCreateAPIView):
+class ContainerSnapshotsList(generics.ListAPIView):
+    """
+    Get a list of all snapshots for a specific container.
+    """
+    serializer_class = ContainerSnapshotSerializer
+
+    def get_queryset(self):
+        # get pk of container from url
+        pk = self.kwargs['pk']
+        if self.request.user.is_superuser:
+            queryset = ContainerSnapshot.objects.all().filter(container__id=pk)
+        else:
+            queryset = ContainerSnapshot.objects.filter(
+                container__owner=self.request.user.backend_user
+            ).filter(container=pk)
+            return queryset
+
+
+class ContainerSnapshotList(generics.ListAPIView):
     """
     Get a list of all the container snapshots.
     """
@@ -696,8 +746,8 @@ class ContainerSnapshotDetail(generics.RetrieveUpdateDestroyAPIView):
     Get details of a container snapshot.
     """
     serializer_class = ContainerSnapshotSerializer
-    permission_classes = [ContainerDetailPermission]
-    queryset = queryset = ContainerSnapshot.objects.all()
+    permission_classes = [ContainerSnapshotDetailPermission]
+    queryset = ContainerSnapshot.objects.all()
 
 
 class ServerList(generics.ListCreateAPIView):

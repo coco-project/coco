@@ -1,0 +1,96 @@
+{% extends 'web/base.html' %}
+
+{% load staticfiles %}
+
+{% block external_css %}
+<link rel="stylesheet" href="{% static 'bower_components/datatables/media/css/jquery.dataTables.min.css' %}">
+<link rel="stylesheet" href="{% static 'bower_components/datatables-plugins-bootstrap3/dist/css/datatables-plugins-bootstrap3.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        {% include 'web/snippets/messages.html' with messages=messages only %}
+
+        <h1>Container Snapshots</h1>
+        <form role="form">
+            <button id="modal-create-snapshot_button" type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-snapshot">Create new</button>
+        </form>
+
+        {% if container_snapshots %}
+        <div class="row shares-table">
+            <div class="col-xs-12">
+                <table class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th width="20%">Timestamp</th>
+                            <th width="25%">Name</th>
+                            <th width="45%">Description</th>
+                            <th width="10%" style="text-align: right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for snapshot in container_snapshots %}
+                        <tr>
+                            <td> {{ snapshot.created_on }}</td>
+                            <td>{{ snapshot.friendly_name }}</td>
+                            <td>{{ snapshot.description }}</td>
+                            <td>
+                                {% if snapshot.container.owner == request.user.backend_user.id %}
+                                <form action="{% url 'container_restore_snapshot' %}" method="POST" class="form-action" role="form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="id" value="{{ snapshot.id }}">
+                                    <input type="hidden" name="ct_id" value="{{ container.id }}">
+                                    <button type="submit" class="btn btn-sm btn-warning" title="Restore this image?" data-toggle="confirmation" data-placement="left" disabled>
+                                        <i class="glyphicon glyphicon-open"></i>
+                                    </button>
+                                </form>
+                                <form action="{% url 'container_delete_snapshot' %}" method="POST" class="form-action" role="form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="id" value="{{ snapshot.id }}">
+                                    <input type="hidden" name="ct_id" value="{{ container.id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete this image?" data-toggle="confirmation" data-placement="left">
+                                        <i class="glyphicon glyphicon-remove"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+            <div class="alert alert-info">No container snapshots you can access available.</div>
+        {% endif %}
+
+        {% include 'web/container_snapshots/modal_create.html' with container=container csrf_token=csrf_token only %}
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'bower_components/datatables/media/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'bower_components/datatables-plugins-bootstrap3/dist/js/datatables-plugins-bootstrap3.min.js' %}"></script>
+<script src="{% static 'bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js' %}"></script>
+<script>
+$(function () {
+    {% if selected %}
+        $('#modal-create-snapshot_button').click();
+    {% endif %}
+
+    $('[data-toggle="confirmation"]').confirmation({
+        popout: true
+    });
+
+    $('.js-table-smart').dataTable({
+        columnDefs: [{
+            aTargets: [ 3 ],
+            bSearchable: false,
+            bSortable: false
+        }]
+    });
+});
+</script>
+{% endblock %}

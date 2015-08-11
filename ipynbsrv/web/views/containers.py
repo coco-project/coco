@@ -1,12 +1,43 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
-from django.db.models import Q
 from django.shortcuts import redirect, render
 from ipynbsrv.core.auth.checks import login_allowed
-from ipynbsrv.core.models import Container, ContainerImage, Server
 from ipynbsrv.web.api_client_proxy import get_httpclient_instance
 from ipynbsrv.web.views._messages import api_error_message
 from slumber.exceptions import HttpNotFoundError
+
+
+@user_passes_test(login_allowed)
+def create_snapshot(request):
+    """
+    Todo: write doc.
+    Todo: get name & description param from GUI.
+    """
+    print(request.POST)
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('containers')
+    if 'ct_id' not in request.POST or 'name' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('containers')
+
+    ct_id = int(request.POST.get('ct_id'))
+    params = {}
+    params['name'] = request.POST.get('name', '')
+    description = request.POST.get('description', '')
+    if description:
+        params['description'] = description
+
+    client = get_httpclient_instance(request)
+
+    # create snapshot
+    try:
+        client.containers(ct_id).create_snapshot.post(params)
+        messages.success(request, "Sucessfully created snapshot `{}`.".format(params.get('name')))
+    except Exception as e:
+            messages.error(request, api_error_message(e, params))
+
+    return redirect('container_snapshots', ct_id)
 
 
 @user_passes_test(login_allowed)
@@ -22,14 +53,16 @@ def clone(request):
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
+    params = {}
+
     ct_id = int(request.POST.get('id'))
     client = get_httpclient_instance(request)
     container = client.containers(ct_id).get()
-    new_name = "{}_clone".format(container.name)
+    params['new_name'] = "{}_clone".format(container.name)
 
     # create clone
     try:
-        client.containers(ct_id).clone.post({"name": new_name})
+        client.containers(ct_id).clone.post(params)
         messages.success(request, "Sucessfully created the clone `{}`.".format(new_name))
     except Exception as e:
             messages.error(request, api_error_message(e, params))
@@ -329,3 +362,63 @@ def resume(request):
         messages.error(request, "Container does not exist.")
 
     return redirect('containers')
+
+
+@user_passes_test(login_allowed)
+def restore_snapshot(request):
+    """
+    Todo: write doc.
+    Todo: get name & description param from GUI.
+    """
+    print(request.POST)
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('containers')
+    if 'id' not in request.POST or 'ct_id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('containers')
+
+    ct_id = int(request.POST.get('ct_id'))
+    params = {}
+    params['id'] = int(request.POST.get('id'))
+
+    client = get_httpclient_instance(request)
+
+    # create snapshot
+    try:
+        client.containers(ct_id).restore_snapshot.post(params)
+        messages.success(request, "Sucessfully restored snapshot `{}`.".format(params.get('name')))
+    except Exception as e:
+            messages.error(request, api_error_message(e, params))
+
+    return redirect('container_snapshots', ct_id)
+
+
+@user_passes_test(login_allowed)
+def delete_snapshot(request):
+    """
+    Todo: write doc.
+    """
+    print(request.POST)
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('containers')
+    if 'id' not in request.POST or 'ct_id' not in request.POST:
+        messages.error(request, "Invalid POST request.")
+        return redirect('containers')
+
+    snapshot_id = int(request.POST.get('id'))
+    params = {}
+    params['id'] = snapshot_id
+    ct_id = params['ct_id'] = int(request.POST.get('ct_id'))
+
+    client = get_httpclient_instance(request)
+
+    # create snapshot
+    try:
+        client.containers.snapshots(snapshot_id).delete()
+        messages.success(request, "Sucessfully deleted snapshot.")
+    except Exception as e:
+            messages.error(request, api_error_message(e, params))
+
+    return redirect('container_snapshots', ct_id)
