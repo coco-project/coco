@@ -15,7 +15,7 @@
                     <div class="form-group">
                         <label for="access_groups">Groups</label>
                         <div class="select">
-                            <select class="enableMultiselectCaseInsensitiveFiltering" multiple="multiple" name="access_groups">
+                            <select class="enableMultiselectCaseInsensitiveFiltering" multiple="multiple" name="access_groups" required>
                                 {% for group in groups %}
                                 {% if group.id not in share.access_group_ids and not group.is_single_user_group %}
                                         <option value="{{ group.id }}">{{ group.name }}</option>

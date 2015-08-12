@@ -12,7 +12,7 @@ def delete(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('images')
-    if 'id' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 

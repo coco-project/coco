@@ -86,7 +86,7 @@ def delete(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('groups')
-    if 'group_id' not in request.POST:
+    if 'group_id' not in request.POST  or not request.POST.get('group_id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
@@ -112,7 +112,8 @@ def add_admin(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'group_id' not in request.POST or 'user_id' not in request.POST:
+    if 'group_id' not in request.POST  or not request.POST.get('group_id').isdigit() \
+        or 'user_id' not in request.POST  or not request.POST.get('user_id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
@@ -149,7 +150,8 @@ def remove_admin(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'group_id' not in request.POST or 'user_id' not in request.POST:
+    if 'group_id' not in request.POST  or not request.POST.get('group_id').isdigit() \
+        or 'user_id' not in request.POST  or not request.POST.get('user_id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
@@ -216,7 +218,8 @@ def remove_member(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('groups')
-    if 'group_id' not in request.POST or 'user_id' not in request.POST:
+    if 'group_id' not in request.POST or not request.POST.get('group_id').isdigit() \
+         or 'user_id' not in request.POST  or not request.POST.get('user_id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('groups')
 
@@ -255,7 +258,7 @@ def leave(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('groups')
-    if 'group_id' not in request.POST:
+    if 'group_id' not in request.POST or not request.POST.get('group_id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('groups')
 
@@ -284,7 +287,7 @@ def join(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'group_id' not in request.POST:
+    if 'group_id' not in request.POST or not request.POST.get('group_id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('groups')
 

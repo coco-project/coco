@@ -14,7 +14,7 @@
                         <label for="ct_id">Base container</label>
                         <div class="select">
 	                        <select name="ct_id" class="form-control enableCaseInsensitiveFiltering" required>
-	                            <option>None</option>
+	                            <option value="" selected>None</option>
 	                            {% for ct in containers %}
 	                                <option value="{{ ct.id }}"{% if ct == selected %} selected{% endif %}>{{ ct.name }}</option>
 	                            {% endfor %}

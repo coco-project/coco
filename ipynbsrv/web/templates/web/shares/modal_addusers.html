@@ -15,7 +15,7 @@
                 <div class="form-group">
                         <label for="access_groups">Users</label>
                         <div class="select">
-                            <select class="enableMultiselectCaseInsensitiveFiltering" multiple="multiple" name="access_groups">
+                            <select class="enableMultiselectCaseInsensitiveFiltering" multiple="multiple" name="access_groups" required>
                                 {% for user in users %}
                                 {% if user.backend_user.collab_group %}
                                     {% if user.backend_user.collab_group.id not in share.access_group_ids and user != request.user %}

@@ -46,7 +46,8 @@ def create(request):
         messages.error(request, "Invalid request method.")
         return redirect('notifications')
     # Todo: validate POST params: receiver_group, msg, type, rel objs
-    if 'receiver_groups' not in request.POST or 'message' not in request.POST or 'notification_type' not in request.POST:
+    if 'receiver_groups' not in request.POST or 'message' not in request.POST \
+        or 'notification_type' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('notifications')
 
@@ -77,8 +78,7 @@ def mark_as_read(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('notifications')
-    # Todo: validate POST params: receiver_group, msg, type, rel objs
-    if 'id' not in request.POST:
+    if 'id' not in request.POST  or not request.POST.get('id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('notifications')
 

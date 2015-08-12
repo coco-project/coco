@@ -91,7 +91,7 @@ def share_add_access_groups(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'id' not in request.POST or 'access_groups' not in request.POST:
+    if 'id' not in request.POST  or not request.POST.get('id').isdigit() or 'access_groups' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
@@ -149,7 +149,7 @@ def delete(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'share_id' not in request.POST:
+    if 'share_id' not in request.POST or not request.POST.get('share_id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
@@ -178,7 +178,7 @@ def leave(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'id' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 

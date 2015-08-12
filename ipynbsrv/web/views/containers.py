@@ -17,7 +17,8 @@ def create_snapshot(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
-    if 'ct_id' not in request.POST or 'name' not in request.POST:
+    if 'ct_id' not in request.POST  or not request.POST.get('ct_id').isdigit() \
+        or 'name' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
@@ -49,7 +50,7 @@ def clone(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
-    if 'id' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
@@ -79,7 +80,8 @@ def commit(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('images')
-    if 'ct_id' not in request.POST or 'img_name' not in request.POST or 'description' not in request.POST:
+    if 'ct_id' not in request.POST or not request.POST.get('ct_id').isdigit() \
+        or 'img_name' not in request.POST or 'description' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 
@@ -115,10 +117,12 @@ def create(request):
     """
     Todo: write doc.
     """
+    print(request.POST)
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('images')
-    if 'name' not in request.POST or 'description' not in request.POST or 'image_id' not in request.POST:
+    if 'name' not in request.POST or 'description' not in request.POST \
+        or 'image_id' not in request.POST or not request.POST.get('image_id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 
@@ -155,7 +159,7 @@ def delete(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
-    if 'id' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
@@ -207,7 +211,7 @@ def restart(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
-    if 'id' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
@@ -240,7 +244,7 @@ def start(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
-    if 'id' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
@@ -273,7 +277,7 @@ def stop(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
-    if 'id' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
@@ -306,7 +310,7 @@ def suspend(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
-    if 'id' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
@@ -339,7 +343,7 @@ def resume(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
-    if 'id' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
@@ -374,7 +378,7 @@ def restore_snapshot(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
-    if 'id' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdigit():
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
@@ -388,7 +392,7 @@ def restore_snapshot(request):
         # restore snapshot
         try:
             client.containers.snapshots(id).restore.post()
-            messages.success(request, "Sucessfully restored snapshot `{}`.".format(snapshot.name)
+            messages.success(request, "Sucessfully restored snapshot `{}`.".format(snapshot.name))
         except Exception as e:
                 messages.error(request, api_error_message(e, ""))
     else:
@@ -406,7 +410,8 @@ def delete_snapshot(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
-    if 'id' not in request.POST or 'ct_id' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdgit() \
+        or 'ct_id' not in request.POST or not request.get('ct_id').isdgit():
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
