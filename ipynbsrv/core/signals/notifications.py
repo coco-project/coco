@@ -63,7 +63,7 @@ def create_member_share_removed(sender, share, group, **kwargs):
     if share is not None and group is not None:
         try:
             notification = Notification(
-                message='Group %s has been removed to share.' % group,
+                message='Group %s has been removed from share.' % group,
                 notification_type=Notification.SHARE,
                 share=share
             )
@@ -71,6 +71,24 @@ def create_member_share_removed(sender, share, group, **kwargs):
             notification.receiver_groups.add(group)
         except Exception as e:
             print('create_member_share_removed error: %s' % e)    # just for debugging purposes
+
+
+@receiver(container_image_access_group_added)
+def create_member_image_added(sender, image, group, **kwargs):
+    """
+    Create an image notification if a new access_group gets added.
+    """
+    if image is not None and group is not None:
+        try:
+            notification = Notification(
+                message='%s has shared a container image with you.' % image.owner,
+                notification_type=Notification.CONTAINER_IMAGE,
+                container_image=image
+            )
+            notification.save()
+            notification.receiver_groups.add(group)
+        except Exception as e:
+            print('create_member_image_added error: %s' % e)    # just for debugging purposes
 
 
 @receiver(notification_receiver_group_added)

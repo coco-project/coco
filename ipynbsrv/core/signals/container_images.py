@@ -1,8 +1,8 @@
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
 from ipynbsrv.contract.backends import ContainerBackend
-from ipynbsrv.contract.errors import ConnectionError, ContainerBackendError, ContainerImageNotFoundError
-from ipynbsrv.core.models import Container, ContainerImage, Server
+from ipynbsrv.contract.errors import ContainerBackendError, ContainerImageNotFoundError
+from ipynbsrv.core.models import CollaborationGroup, ContainerImage, Server
 from ipynbsrv.core.signals.signals import *
 
 
@@ -49,6 +49,46 @@ def delete_on_server(sender, image, **kwargs):
                     # XXX: restore?
                     # raise ex
                     pass
+
+
+@receiver(m2m_changed, sender=ContainerImage.access_groups.through)
+def m2m_changed_handler(sender, instance, **kwargs):
+    """
+    Method to map Django m2m_changed model signals to custom ones.
+    """
+    action = kwargs.get('action')
+    if isinstance(instance, ContainerImage):
+        if 'pk_set' in kwargs:  # access groups
+            # get the group objects
+            groups = []
+            if kwargs.get('pk_set') is not None:
+                for group_pk in kwargs.get('pk_set'):
+                    groups.append(CollaborationGroup.objects.get(pk=group_pk))
+            # trigger the signals
+            if action == 'post_add':
+                for group in groups:
+                    container_image_access_group_added.send(
+                        sender=sender,
+                        image=instance,
+                        group=group,
+                        kwargs=kwargs
+                    )
+            elif action == 'pre_clear':
+                for group in instance.access_groups.all():
+                    container_image_access_group_removed.send(
+                        sender=sender,
+                        image=instance,
+                        group=group,
+                        kwargs=kwargs
+                    )
+            elif action == 'post_remove':
+                for group in groups:
+                    container_image_access_group_removed.send(
+                        sender=sender,
+                        image=instance,
+                        group=group,
+                        kwargs=kwargs
+                    )
 
 
 @receiver(post_delete, sender=ContainerImage)

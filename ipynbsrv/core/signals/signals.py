@@ -55,6 +55,8 @@ Set of signals to be triggered for `ContainerImage` model events.
 container_image_created = Signal(providing_args=['image'])
 container_image_deleted = Signal(providing_args=['image'])
 container_image_modified = Signal(providing_args=['image'])
+container_image_access_group_added = Signal(providing_args=['image', 'group'])
+container_image_access_group_removed = Signal(providing_args=['image', 'group'])
 
 
 """
