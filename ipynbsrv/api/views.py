@@ -83,7 +83,9 @@ def api_root(request, format=None):
     }
     available_endpoints['notificationlogs'] = {
         '': 'Get a list of all available notificationlogs.',
-        '{id}': 'Get details about a notificationlog.'
+        '{id}': 'Get details about a notificationlog.',
+        'unread': 'Get all new notificationlogs.',
+        'mark_all_as_read': 'Mark all your notificationlogs as read.'
     }
     available_endpoints['notificationtypes'] = 'Get a list of all available notificationtypes.'
 
@@ -1044,8 +1046,23 @@ class NotificationLogDetail(generics.RetrieveUpdateAPIView):
     queryset = NotificationLog.objects.all()
 
 
+@api_view(('POST',))
+def notificationlogs_mark_all_as_read(request):
+    """
+    Mark all notificationlogs of a user as read.
+    """
+    notifications = NotificationLog.objects.filter(user=request.user.backend_user)
+    count = 0
+    for n in notifications:
+        if not n.read:
+            n.read=True
+            n.save()
+            count += 1
+    return Response({"detail": "{} NotificationLog objects marked as read.".format(count), "count": count})
+
+
 @api_view(('GET',))
-def notification_types(request, format=None):
+def notification_types(request):
     """
     Notification types.
     """

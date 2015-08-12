@@ -59,6 +59,8 @@ urlpatterns = [
     url(r'^notifications/$', 'ipynbsrv.web.views.notifications.index', name='notifications'),
     url(r'^notifications/create$', 'ipynbsrv.web.views.notifications.create', name='notification_create'),
     url(r'^notifications/mark_as_read$', 'ipynbsrv.web.views.notifications.mark_as_read', name='notification_mark_as_read'),
+    url(r'^notifications/mark_all_as_read$', 'ipynbsrv.web.views.notifications.mark_all_as_read', name='notifications_mark_all_as_read'),
+    
 
     # internal
     url(r'^_workspace_auth_check$', 'ipynbsrv.core.auth.checks.workspace_auth_access'),

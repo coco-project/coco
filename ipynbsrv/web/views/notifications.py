@@ -95,3 +95,27 @@ def mark_as_read(request):
         messages.error(request, api_error_message(e, params))
 
     return redirect('notifications')
+
+
+@user_passes_test(login_allowed)
+def mark_all_as_read(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method.")
+        return redirect('notifications')
+
+    client = get_httpclient_instance(request)
+
+    try:
+        response = client.notificationlogs.mark_all_as_read.post()
+        count = response.get('count')
+        if count == 0:
+            messages.info(request, "All Notifications already marked as read.")
+        elif count == 1:
+            messages.success(request, "{} Notification marked as read.".format(count))
+        else:
+            messages.success(request, "{} Notifications marked as read.".format(count))
+        
+    except Exception as e:
+        messages.error(request, api_error_message(e, ""))
+
+    return redirect('notifications')

@@ -14,7 +14,7 @@
                         <label for="receiver_groups">Receiving Group</label>
                         <div class="select">
 	                        <select class="form-control enableCaseInsensitiveFiltering" name="receiver_groups">
-	                        <option>None</option>
+	                        <option value="" selected disabled>None</option>
 	                            {% for group in groups %}
 	                                {% if not group.is_single_user_group %}
 	                                    <option value="{{ group.id }}">{{ group.name }}</option>
@@ -27,7 +27,7 @@
                         <label for="type">Notification Type</label>
                         <div class="select">
 	                        <select class="form-control enableCaseInsensitiveFiltering" name="notification_type">
-	                        	<option>None</option>
+	                        	<option value="" selected disabled>None</option>
 	                            {% for n1, n2 in notification_types %}
 	                                <option value="{{ n1 }}">{{ n2 }}</option>
 
@@ -40,7 +40,7 @@
                         <label for="type">Container</label>
                         <div class="select">
 	                        <select class="form-control enableCaseInsensitiveFiltering" name="container">
-	                            <option>None</option>
+	                            <option value="" selected disabled>None</option>
 	                            {% for c in containers %}
 	                                <option value="{{ c.id }}">{{ c.name }}</option>
 
@@ -54,7 +54,7 @@
                         <label for="type">Container Image</label>
                         <div class="select">
 	                        <select class="form-control enableCaseInsensitiveFiltering" name="container_image">
-	                            <option>None</option>
+	                            <option value="" selected disabled>None</option>
 	                            {% for ci in container_images %}
 	                                <option value="{{ ci.id }}">{{ ci.name }}</option>
 
@@ -69,7 +69,7 @@
                         <label for="type">Group</label>
                         <div class="select">
 	                        <select class="form-control enableCaseInsensitiveFiltering" name="group">
-	                            <option>None</option>
+	                            <option value="" selected disabled>None</option>
 	                            {% for g in groups %}
 	                                {% if not group.is_single_user_group %}
 	                                    <option value="{{ g.id }}">{{ g.name }}</option>
@@ -84,7 +84,7 @@
                         <label for="type">Share</label>
                         <div class="select">
 	                        <select class="form-control enableCaseInsensitiveFiltering" name="share">
-	                            <option>None</option>
+	                            <option value="" selected disabled>None</option>
 	                            {% for s in shares %}
 	                                <option value="{{ s.id }}">{{ s.name }}</option>
 

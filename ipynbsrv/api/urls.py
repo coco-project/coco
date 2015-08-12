@@ -76,6 +76,7 @@ urlpatterns = patterns('',
     # /api/notificationlogs(/)...
     url(r'^notificationlogs/?$', views.NotificationLogList.as_view(), name="notificationlogs"),
     url(r'^notificationlogs/unread$', views.NotificationLogUnreadList.as_view(), name="notificationlogs_unread"),
+    url(r'^notificationlogs/mark_all_as_read$', views.notificationlogs_mark_all_as_read, name="notificationlogs_mark_all_as_read"),
     url(r'^notificationlogs/(?P<pk>[0-9]+)$', views.NotificationLogDetail.as_view(), name="notificationlog_detail"),
 
 )

@@ -14,11 +14,19 @@
         {% include 'web/snippets/messages.html' with messages=messages only %}
 
         <h1>Notifications</h1>
-        <form role="form">
-            <button type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-notification-create">Create new</button>
-        </form>
+        <fieldset class="pull-right btn-create">
+            <form role="form" style="display: inline-block;">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-notification-create">Create new</button>
+            </form>
+
+            <form role="form" method="POST" action="{% url 'notifications_mark_all_as_read' %}" style="display: inline-block;">
+                {% csrf_token %}
+                <button type="submit" class="button btn btn-primary btn-mark_all_as_read" {% if new_notifications_count == 0 %}disabled{% endif %}>Mark all as read</button>
+            </form>
+        </fieldset>
 
         {% if notifications %}
+
         <table id="notifications-table" class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
             <thead>
                 <tr>
