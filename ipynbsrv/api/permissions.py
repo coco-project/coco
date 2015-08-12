@@ -190,6 +190,8 @@ class ContainerImageDetailPermission(
         if self.is_superuser(request.user):
             return True
         if self.is_backend_user(request.user):
+            if request.user in obj.access_groups.all() and self.is_safe_method(request):
+                return True
             return self.is_owner(request.user, obj)
         return False
 

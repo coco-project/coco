@@ -718,9 +718,17 @@ class ContainerImageList(generics.ListCreateAPIView):
         if self.request.user.is_superuser:
             queryset = ContainerImage.objects.all()
         else:
-            queryset = ContainerImage.objects.filter(
-                Q(is_internal=False) & (Q(owner=self.request.user) | Q(is_public=True))
-            )
+            collab_group = None
+            if hasattr(self.request.user, 'backend_user'):
+                collab_group = self.request.user.backend_user.get_collaboration_group()
+            if collab_group:
+                queryset = ContainerImage.objects.filter(
+                    Q(is_internal=False) & (Q(owner=self.request.user) | Q(is_public=True) | Q(access_groups=collab_group))
+                ).distinct()
+            else:
+                queryset = ContainerImage.objects.filter(
+                    Q(is_internal=False) & (Q(owner=self.request.user) | Q(is_public=True))
+                ).distinct()
         return queryset
 
 
@@ -750,7 +758,7 @@ def image_add_access_groups(request, pk):
     image = obj.first()
 
     # validate permissions
-    # validate_object_permission(ShareDetailPermissions, request, share)
+    validate_object_permission(ContainerImageDetailPermission, request, image)
 
     # validate all the access_groups first before adding them
     access_groups = []
@@ -794,7 +802,7 @@ def image_remove_access_groups(request, pk):
     image = obj.first()
 
     # validate permissions
-    # validate_object_permission(ShareDetailPermissions, request, share)
+    validate_object_permission(ContainerImageDetailPermission, request, image)
 
     # validate all the access_groups first before adding them
     access_groups = []
