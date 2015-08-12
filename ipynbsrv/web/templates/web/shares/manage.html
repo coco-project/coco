@@ -18,7 +18,7 @@
         <form action="{% url 'share_delete' %}" method="POST" role="form">
             {% csrf_token %}
             <input type="hidden" name="share_id" value="{{ share.id }}">
-            <button class="btn btn-danger btn-delete pull-right" title="Delete this share?" data-toggle="confirmation" data-placement="bottom">Delete Share
+            <button class="btn btn-danger btn-create pull-right" title="Delete this share?" data-toggle="confirmation" data-placement="bottom">Delete Share
             </button>
         </form>
         {% endif %}
@@ -57,9 +57,9 @@
 
         {% if request.user.backend_user.id == share.owner.id %}
             <h2>Shared with...</h2>
-            <div class="row" style="margin-bottom: 20px">
-                <form role="form" class="col-xs-12">
-                    <fieldset class="pull-right">
+                
+                <fieldset class="pull-right btn-create">
+                    <form role="form">
                         <button type="button" class="btn btn-primary btn-adduser" data-toggle="modal" data-target="#modal-share-adduser">
                             Add user
                         </button>
@@ -72,9 +72,8 @@
                             Add group
                         </button>
                         {% endif %}
-                    </fieldset>
-                </form>
-            </div>
+                    </form>
+                </fieldset>
             <table class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
                 <thead>
                     <tr>
