@@ -571,7 +571,7 @@ class Container(models.Model):
 
         return clone
 
-    def commit(self, name, description=None, public=False):
+    def commit(self, name, description=None, short_description=None, public=False):
         """
         Create a new container image based on the container.
 
@@ -581,6 +581,7 @@ class Container(models.Model):
         """
         image = ContainerImage(
             name=name,
+            short_description=short_description,
             description=description,
             command=self.image.command,
             protected_port=self.image.protected_port,
@@ -781,8 +782,24 @@ class ContainerImage(models.Model):
             )
         ]
     )
-    description = models.TextField(blank=True, null=True)
-    # TODO: document placeholders
+    short_description = models.CharField(
+        blank=True,
+        null=True,
+        max_length=255,
+        help_text='A short description of the container image.'
+        )
+    description = models.TextField(
+        blank=True, 
+        null=True,
+        help_text='Detailed information on how to use this image.'
+        )
+    access_groups = models.ManyToManyField(
+        'CollaborationGroup',
+        blank=True,
+        related_name='images',
+        help_text='The groups having access to that image.'
+    )
+    
     command = models.CharField(
         blank=True,
         null=True,

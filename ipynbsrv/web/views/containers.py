@@ -81,14 +81,19 @@ def commit(request):
         messages.error(request, "Invalid request method.")
         return redirect('images')
     if 'ct_id' not in request.POST or not request.POST.get('ct_id').isdigit() \
-        or 'img_name' not in request.POST or 'description' not in request.POST:
+        or 'img_name' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('images')
 
     params = {}
     ct_id = int(request.POST.get('ct_id'))
     params["name"] = request.POST.get('img_name')
-    params["description"] = request.POST.get('description')
+    description = request.POST.get('description', None)
+    if description:
+        params["description"] = description
+    short_description = request.POST.get('short_description', None)
+    if short_description:
+        params["short_description"] = short_description
     params["public"] = request.POST.get('public', "") == "on"
 
     client = get_httpclient_instance(request)
