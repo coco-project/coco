@@ -117,7 +117,8 @@ def create_on_server(sender, container, **kwargs):
             image = ContainerImage(
                 backend_pk=backend_image.get(ContainerBackend.KEY_PK),
                 name=container.clone_of.image.name + '-clone-' + str(int(time.time())),
-                description="Internal only image created during the cloning process of container %s." % container.clone_of.get_friendly_name(),
+                short_description="Internal only image created during the cloning process of container %s." % container.clone_of.get_friendly_name(),
+                description=container.clone_of.image.description
                 command=container.clone_of.image.command,
                 protected_port=container.clone_of.image.protected_port,
                 public_ports=container.clone_of.image.public_ports,
