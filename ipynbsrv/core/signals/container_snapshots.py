@@ -47,7 +47,13 @@ def restore_on_server(sender, snapshot, **kwargs):
     """
     Restore the restored snapshot on the container backend.
     """
-    pass
+    if snapshot is not None:
+        backend = snapshot.container.server.get_container_backend()
+        try:
+            backend.restore_container_snapshot(snapshot.container.backend_pk, snapshot.backend_pk)
+        except ContainerBackendError as ex:
+            # XXX: restore?
+            raise ex
 
 
 @receiver(post_delete, sender=ContainerSnapshot)

@@ -374,24 +374,27 @@ def restore_snapshot(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('containers')
-    if 'id' not in request.POST or 'ct_id' not in request.POST:
+    if 'id' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('containers')
 
-    ct_id = int(request.POST.get('ct_id'))
     params = {}
-    params['id'] = int(request.POST.get('id'))
+    id = int(request.POST.get('id'))
 
     client = get_httpclient_instance(request)
 
-    # create snapshot
-    try:
-        client.containers(ct_id).restore_snapshot.post(params)
-        messages.success(request, "Sucessfully restored snapshot `{}`.".format(params.get('name')))
-    except Exception as e:
-            messages.error(request, api_error_message(e, params))
+    snapshot = client.containers.snapshots(id).get()
+    if snapshot:
+        # restore snapshot
+        try:
+            client.containers.snapshots(id).restore.post()
+            messages.success(request, "Sucessfully restored snapshot `{}`.".format(snapshot.name)
+        except Exception as e:
+                messages.error(request, api_error_message(e, ""))
+    else:
+        messages.error(request, "Snapshot not found")
 
-    return redirect('container_snapshots', ct_id)
+    return redirect('container_snapshots', snapshot.container.id)
 
 
 @user_passes_test(login_allowed)

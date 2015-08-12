@@ -36,7 +36,6 @@ urlpatterns = patterns('',
     url(r'^containers/(?P<pk>[0-9]+)/snapshots/?$', views.ContainerSnapshotsList.as_view(), name="container_snapshots"),
     url(r'^containers/(?P<pk>[0-9]+)/commit$', views.container_commit, name="container_commit"),
     url(r'^containers/(?P<pk>[0-9]+)/create_snapshot$', views.container_create_snapshot, name="container_create_snapshot"),
-    url(r'^containers/(?P<pk>[0-9]+)/restore_snapshot$', views.container_restore_snapshot, name="container_restore_snapshot"),
     url(r'^containers/(?P<pk>[0-9]+)/restart$', views.container_restart, name="container_restart"),
     url(r'^containers/(?P<pk>[0-9]+)/resume$', views.container_resume, name="container_resume"),
     url(r'^containers/(?P<pk>[0-9]+)/start$', views.container_start, name="container_start"),
@@ -50,6 +49,7 @@ urlpatterns = patterns('',
     # /api/container/snapshots(/)...
     url(r'^containers/snapshots/?$', views.ContainerSnapshotList.as_view(), name="snapshot"),
     url(r'^containers/snapshots/(?P<pk>[0-9]+)$', views.ContainerSnapshotDetail.as_view(), name="snapshot_detail"),
+    url(r'^containers/snapshots/(?P<pk>[0-9]+)/restore$', views.container_snapshot_restore, name="container_snapshot_restore"),
 
     # /api/servers(/)...
     url(r'^servers/?$', views.ServerList.as_view(), name="servers"),

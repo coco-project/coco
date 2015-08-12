@@ -40,7 +40,6 @@
                                 <form action="{% url 'container_restore_snapshot' %}" method="POST" class="form-action" role="form">
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{ snapshot.id }}">
-                                    <input type="hidden" name="ct_id" value="{{ container.id }}">
                                     <button type="submit" class="btn btn-sm btn-warning" title="Restore this image?" data-toggle="confirmation" data-placement="left" disabled>
                                         <i class="glyphicon glyphicon-open"></i>
                                     </button>

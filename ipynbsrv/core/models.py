@@ -883,7 +883,8 @@ class ContainerSnapshot(models.Model):
         """
         TODO: write doc.
         """
-        pass
+        from ipynbsrv.core.signals.signals import container_snapshot_restored
+        container_snapshot_restored.send(sender=self, snapshot=self)
 
     def save(self, *args, **kwargs):
         """

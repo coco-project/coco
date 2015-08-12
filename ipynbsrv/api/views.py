@@ -589,37 +589,6 @@ def container_create_snapshot(request, pk):
         return Response({"error": "Container not found!", "pk": pk})
 
 
-@api_view(['POST'])
-def container_restore_snapshot(request, pk):
-    """
-    Restore a snapshot of the container.
-    Todo: show params on OPTIONS call.
-    :param pk   pk of the container that needs to be cloned
-    """
-    params = {}
-
-    data = request.data
-
-    if not data.get('id'):
-        return Response({"error": "please provide name for the clone: {\"name\" : \"some name \"}"})
-
-    params['id'] = data.get('id')
-
-    container = get_container(pk)
-
-    # validate permissions
-    validate_object_permission(ContainerDetailPermission, request, container)
-
-    snapshots = ContainerSnapshot.objects.filter(id=params.get('id'))
-    if container and snapshots:
-        s = snapshots.first()
-        s.restore()
-        serializer = ContainerSerializer(container)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    else:
-        return Response({"error": "Container or Snapshot not found!", "pk": pk})
-
-
 @api_view(['GET'])
 def container_clones(request, pk):
     container = get_container(pk)
@@ -797,6 +766,26 @@ class ContainerSnapshotDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ContainerSnapshotSerializer
     permission_classes = [ContainerSnapshotDetailPermission]
     queryset = ContainerSnapshot.objects.all()
+
+
+@api_view(['POST'])
+def container_snapshot_restore(request, pk):
+    """
+    Restore a snapshot of the container.
+    Todo: show params on OPTIONS call.
+    :param pk   pk of the container that needs to be cloned
+    """
+    snapshots = ContainerSnapshot.objects.filter(id=pk)
+    if snapshots:
+        s = snapshots.first()
+        container = s.container
+        # validate permissions
+        validate_object_permission(ContainerDetailPermission, request, container)
+        s.restore()
+        serializer = ContainerSerializer(container)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "Snapshot not found!", "pk": pk})
 
 
 class ServerList(generics.ListCreateAPIView):
