@@ -17,7 +17,7 @@
                         <div class="select">
                             <select class="enableMultiselectCaseInsensitiveFiltering" multiple="multiple" name="access_groups">
                                 {% for group in groups %}
-                                {% if group not in share.access_groups and not group.is_single_user_group %}
+                                {% if group.id not in share.access_group_ids and not group.is_single_user_group %}
                                         <option value="{{ group.id }}">{{ group.name }}</option>
                                     {% endif %}
                                 {% endfor %}

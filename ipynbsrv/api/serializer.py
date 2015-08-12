@@ -231,7 +231,7 @@ class NestedShareSerializer(serializers.ModelSerializer):
     """
     tags = TagSerializer(many=True, read_only=True)
     members = NestedBackendUserSerializer(source='get_members', many=True, read_only=True)
-    access_groups = NestedCollaborationGroupSerializer(many=True, read_only=True)
+    access_groups = FlatCollaborationGroupSerializer(many=True, read_only=True)
     owner = NestedBackendUserSerializer(many=False, read_only=True)
 
     class Meta:

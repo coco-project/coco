@@ -212,6 +212,7 @@ def manage(request, share_id):
 
     client = get_httpclient_instance(request)
     share = client.shares(share_id).get()
+    share['access_group_ids'] = [g.id for g in share.access_groups]
     users = client.users.get()
     groups = client.collaborationgroups.get()
     new_notifications_count = len(client.notificationlogs.unread.get())
