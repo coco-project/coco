@@ -1,4 +1,4 @@
-<div class="modal fade" id="modal-share-addgroup" tabindex="-1" role="dialog" aria-labelledby="modal-share-addgroup" aria-hidden="true">
+<div class="modal fade" id="modal-image-addgroup" tabindex="-1" role="dialog" aria-labelledby="modal-image-addgroup" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -7,9 +7,9 @@
                 </button>
                 <h4 class="modal-title">Share with...</h4>
             </div>
-            <form action="{% url 'share_add_access_groups' %}" method="POST" role="form">
+            <form action="{% url 'image_add_access_groups' %}" method="POST" role="form">
                 {% csrf_token %}
-                <input id="modal-share-adduser_id" type="hidden" name="id" value="{{ id }}">
+                <input id="modal-image-adduser_id" type="hidden" name="id" value="{{ id }}">
                 <div class="modal-body">
 
                     <div class="form-group">
@@ -17,7 +17,8 @@
                         <div class="select">
                             <select class="enableMultiselectCaseInsensitiveFiltering" multiple="multiple" name="access_groups" required>
                                 {% for group in groups %}
-                                {% if group.id not in share.access_group_ids and not group.is_single_user_group %}
+                                {{ group }}
+                                {% if group.id not in image.access_group_ids and not group.is_single_user_group %}
                                         <option value="{{ group.id }}">{{ group.name }}</option>
                                     {% endif %}
                                 {% endfor %}

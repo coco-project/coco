@@ -789,7 +789,7 @@ class ContainerImage(models.Model):
         help_text='A short description of the container image.'
         )
     description = models.TextField(
-        blank=True, 
+        blank=True,
         null=True,
         help_text='Detailed information on how to use this image.'
         )
@@ -799,7 +799,6 @@ class ContainerImage(models.Model):
         related_name='images',
         help_text='The groups having access to that image.'
     )
-    
     command = models.CharField(
         blank=True,
         null=True,
@@ -827,6 +826,24 @@ class ContainerImage(models.Model):
     )
     is_internal = models.BooleanField(default=False)
     is_public = models.BooleanField(default=False)
+
+    def add_access_group(self, group):
+        """
+        Add access group to image.
+        """
+        if group not in self.access_groups.all():
+            self.access_groups.add(group)
+            return True
+        return False
+
+    def remove_access_group(self, group):
+        """
+        Remove access group from image.
+        """
+        if group in self.access_groups.all():
+            self.access_groups.remove(group)
+            return True
+        return False
 
     def get_friendly_name(self):
         """

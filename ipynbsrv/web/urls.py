@@ -44,7 +44,10 @@ urlpatterns = [
 
     # # /images(s)/...
     url(r'^images/$', 'ipynbsrv.web.views.images.index', name='images'),
+    url(r'^images/manage/(\d+)$', 'ipynbsrv.web.views.images.manage', name='image_manage'),
     url(r'^image/delete$', 'ipynbsrv.web.views.images.delete', name='image_delete'),
+    url(r'^image/add_access_groups$', 'ipynbsrv.web.views.images.add_access_groups', name='image_add_access_groups'),
+    url(r'^image/remove_access_group$', 'ipynbsrv.web.views.images.remove_access_group', name='image_remove_access_group'),
 
     # /share(s)/...
     url(r'^shares/$', 'ipynbsrv.web.views.shares.index', name='shares'),
@@ -60,7 +63,6 @@ urlpatterns = [
     url(r'^notifications/create$', 'ipynbsrv.web.views.notifications.create', name='notification_create'),
     url(r'^notifications/mark_as_read$', 'ipynbsrv.web.views.notifications.mark_as_read', name='notification_mark_as_read'),
     url(r'^notifications/mark_all_as_read$', 'ipynbsrv.web.views.notifications.mark_all_as_read', name='notifications_mark_all_as_read'),
-    
 
     # internal
     url(r'^_workspace_auth_check$', 'ipynbsrv.core.auth.checks.workspace_auth_access'),

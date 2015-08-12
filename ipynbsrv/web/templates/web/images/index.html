@@ -24,7 +24,8 @@
                     <thead>
                         <tr>
                             <th width="25%">Name</th>
-                            <th width="55%">Short Description</th>
+                            <th width="40%">Short Description</th>
+                            <th width="15%">Owner</th>
                             <th width="10%" style="text-align: center">Public</th>
                             <th width="10%" style="text-align: right">Actions</th>
                         </tr>
@@ -32,13 +33,14 @@
                     <tbody>
                         {% for img in images %}
                         <tr>
-                            <td>{{ img.friendly_name }}</td>
+                            <td><a href="{% url 'image_manage' img.id %}">{{ img.friendly_name }}</a></td>
                             <td>{{ img.short_description }}</td>
+                            <td>{{ img.owner.username }}</td>
                             <td style="text-align: center">
                                 <input type="checkbox" data-sort="1"{% if img.is_public %} checked{% endif %}{% if img.owner != request.user.id %} disabled{% endif %}>
                             </td>
                             <td>
-                                {% if img.owner == request.user.id %}
+                                {% if img.owner.id == request.user.id %}
                                 <form action="{% url 'image_delete' %}" method="POST" class="pull-right" role="form">
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{ img.id }}">

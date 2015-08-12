@@ -91,7 +91,7 @@ def share_add_access_groups(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'id' not in request.POST  or not request.POST.get('id').isdigit() or 'access_groups' not in request.POST:
+    if 'id' not in request.POST or not request.POST.get('id').isdigit() or 'access_groups' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 
@@ -105,8 +105,15 @@ def share_add_access_groups(request):
     params['access_groups'] = access_groups
 
     try:
-        client.shares(share_id).add_access_groups.post(params)
-        messages.success(request, "The selected groups are now a member of this share.")
+        response = client.shares(share_id).add_access_groups.post(params)
+        count = response.get('count')
+        if count == 0:
+            messages.info(request, "{} groups successfully added to the share.".format(count))
+        elif count == 1:
+            messages.success(request, "{} group successfully added to the share.".format(count))
+        else:
+            messages.success(request, "{} groups successfully added to the share.".format(count))
+
     except Exception as e:
         messages.error(request, api_error_message(e, params))
 
@@ -122,7 +129,7 @@ def share_remove_access_group(request):
     if request.method != "POST":
         messages.error(request, "Invalid request method.")
         return redirect('shares')
-    if 'share_id' not in request.POST or 'access_group' not in request.POST:
+    if 'share_id' not in request.POST or not request.POST.get('share_id').isdigit() or 'access_group' not in request.POST:
         messages.error(request, "Invalid POST request.")
         return redirect('shares')
 

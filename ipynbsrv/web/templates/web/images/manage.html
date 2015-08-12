@@ -1,0 +1,137 @@
+{% extends 'web/base.html' %}
+
+{% load staticfiles %}
+
+{% block external_css %}
+<link rel="stylesheet" href="{% static 'bower_components/datatables/media/css/jquery.dataTables.min.css' %}">
+<link rel="stylesheet" href="{% static 'bower_components/datatables-plugins-bootstrap3/dist/css/datatables-plugins-bootstrap3.css' %}">
+<link rel="stylesheet" href="{% static 'bower_components/jquery-tagsinput-jurgen/jquery.tagsinput.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-12">
+        {% include 'web/snippets/messages.html' with messages=messages only %}
+
+        <h1>Image</h1>
+        {% if request.user.id == image.owner.id %}
+        <form action="{% url 'image_delete' %}" method="POST" role="form">
+            {% csrf_token %}
+            <input type="hidden" name="id" value="{{ image.id }}">
+            <button class="btn btn-danger btn-create pull-right" title="Delete this image?" data-toggle="confirmation" data-placement="bottom">Delete Image
+            </button>
+        </form>
+        {% endif %}
+        <table class="table table-hover table-striped" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th style="width: 25%">Property</th>
+                    <th style="width: 75%">Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Name</td>
+                    <td>{{ image.friendly_name }}</td>
+                </tr>
+                <tr>
+                    <td>Short Description</td>
+                    <td>{{ image.short_description }}</td>
+                </tr>
+                <tr>
+                    <td>Description</td>
+                    <td>{{ image.description }}</td>
+                </tr>
+                <tr>
+                    <td>Public</td>
+                    <td>{{ image.is_public }}</td>
+                </tr>
+                <tr>
+                    <td>Owner</td>
+                    <td>{{ image.owner.username }}{% if image.owner.id == request.user.id %} <span class="label label-info">That's you!</span>{% endif %}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        {% if request.user.id == image.owner.id %}
+            <h2>Shared with...</h2>
+                
+                <fieldset class="pull-right btn-create">
+                    <form role="form">
+                        <button type="button" class="btn btn-primary btn-adduser" data-toggle="modal" data-target="#modal-image-adduser">
+                            Add user
+                        </button>
+                        {% if groups|length_is:"1" %}
+                            <button type="button" class="btn btn-primary btn-addgroup" data-toggle="modal" data-target="#modal-image-addgroup" disabled>
+                                Add group
+                            </button>
+                        {% else %}
+                        <button type="button" class="btn btn-primary btn-addgroup" data-toggle="modal" data-target="#modal-image-addgroup">
+                            Add group
+                        </button>
+                        {% endif %}
+                    </form>
+                </fieldset>
+            <table class="table table-hover table-striped js-table-smart" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th style="width: 75%">Member</th>
+                        <th style="width: 25%; text-align: right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in image.access_groups %}
+                    <tr>
+                        <td><a href="{% url 'image_manage' image.id %}">{{ group.name }}</a></td>
+                        <td style="text-align: right">
+                        {% if request.user.id == image.owner.id %}
+                                <form action="{% url 'image_remove_access_group' %}" method="POST" role="form" class="form-action">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="id" value="{{ image.id }}">
+                                    <input type="hidden" name="access_group" value="{{ group.id }}">
+                                    <button class="btn btn-sm btn-danger" title="Remove from image?" data-toggle="confirmation" data-placement="left">
+                                        <i class="glyphicon glyphicon-remove" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+                        {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% include 'web/images/modal_addusers.html' with id=image.id users=users image=image origin='manage' csrf_token=csrf_token only %}
+            {% include 'web/images/modal_addgroups.html' with id=image.id groups=groups image=image origin='manage' csrf_token=csrf_token only %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'bower_components/datatables/media/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'bower_components/datatables-plugins-bootstrap3/dist/js/datatables-plugins-bootstrap3.min.js' %}"></script>
+<script src="{% static 'bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js' %}"></script>
+<script src="{% static 'bower_components/jquery-tagsinput-jurgen/jquery.tagsinput.js' %}"></script>
+<script>
+$(function () {
+    $('[data-toggle="confirmation"]').confirmation({
+        popout: true
+    });
+
+    $('#users').tagsInput({
+        width: '100%',
+        height: 'auto',
+        defaultText: '',
+        removeWithBackspace: true
+    });
+
+    $('.js-table-smart').dataTable({
+        columnDefs: [{
+            aTargets: [ 1 ],
+            bSearchable: false,
+            bSortable: false
+        }]
+    });
+});
+</script>
+{% endblock %}

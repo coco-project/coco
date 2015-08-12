@@ -45,6 +45,8 @@ urlpatterns = patterns('',
     # /api/container/images(/)...
     url(r'^containers/images/?$', views.ContainerImageList.as_view(), name="images"),
     url(r'^containers/images/(?P<pk>[0-9]+)$', views.ContainerImageDetail.as_view(), name="image_detail"),
+    url(r'^containers/images/(?P<pk>[0-9]+)/add_access_groups$', views.image_add_access_groups, name="image_add_access_groups"),
+    url(r'^containers/images/(?P<pk>[0-9]+)/remove_access_groups$', views.image_remove_access_groups, name="image_remove_access_groups"),
 
     # /api/container/snapshots(/)...
     url(r'^containers/snapshots/?$', views.ContainerSnapshotList.as_view(), name="snapshot"),

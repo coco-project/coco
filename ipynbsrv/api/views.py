@@ -49,7 +49,13 @@ def api_root(request, format=None):
     }
     available_endpoints['containers'] = {
         '': 'Get a list of all containers available to your user.',
-        'images': 'Get a list of all container images available to your user.',
+        'images': {
+            '': 'Get a list of all container images available to your user.',
+            '{id}': {
+                'add_access_groups': 'Add access_groups to the share.',
+                'remove_access_groups': 'Remove access_groups from the share.'
+            }
+        },
         'snapshots': 'Get a list of all container snapshots available to your user.',
         '{id}': {
             '': 'Get details about a container.',
@@ -727,6 +733,95 @@ class ContainerImageDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = ContainerImage.objects.all()
 
 
+@api_view(['POST'])
+def image_add_access_groups(request, pk):
+    """
+    Add a list of collaboration groups to the image.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    """
+    required_params = ["access_groups"]
+    params = validate_request_params(required_params, request)
+
+    obj = ContainerImage.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "Image not found!", "data": request.data})
+    image = obj.first()
+
+    # validate permissions
+    # validate_object_permission(ShareDetailPermissions, request, share)
+
+    # validate all the access_groups first before adding them
+    access_groups = []
+    for access_group_id in params.get("access_groups"):
+        obj = CollaborationGroup.objects.filter(id=access_group_id)
+        if not obj:
+            return Response(
+                {"error": "CollaborationGroup not found!", "data": access_group_id},
+                status=status.HTTP_404_NOT_FOUND
+                )
+        access_groups.append(obj.first())
+
+    added_groups = []
+    # add the access groups to the share
+    for access_group in access_groups:
+        if image.add_access_group(access_group):
+            added_groups.append((access_group.id, access_group.name))
+
+    return Response({
+        "detail": "Groups added successfully",
+        "groups": added_groups,
+        "count": len(added_groups)
+        },
+        status=status.HTTP_200_OK
+    )
+
+
+@api_view(['POST'])
+def image_remove_access_groups(request, pk):
+    """
+    Remove a list of collaboration groups from the image.
+    Todo: show params on OPTIONS call.
+    Todo: permissions
+    :param pk   pk of the collaboration group
+    """
+    required_params = ["access_groups"]
+    params = validate_request_params(required_params, request)
+    obj = ContainerImage.objects.filter(id=pk)
+    if not obj:
+        return Response({"error": "Image not found!", "data": request.data})
+    image = obj.first()
+
+    # validate permissions
+    # validate_object_permission(ShareDetailPermissions, request, share)
+
+    # validate all the access_groups first before adding them
+    access_groups = []
+    for access_group_id in params.get("access_groups"):
+        obj = CollaborationGroup.objects.filter(id=access_group_id)
+        if not obj:
+            return Response(
+                {"error": "CollaborationGroup not found!", "data": access_group_id},
+                status=status.HTTP_404_NOT_FOUND
+                )
+        access_groups.append(obj.first())
+
+    removed_groups = []
+    # add the access groups to the share
+    for access_group in access_groups:
+        if image.remove_access_group(access_group):
+            removed_groups.append((access_group.id, access_group.name))
+
+    return Response({
+        "detail": "Groups removed successfully",
+        "groups": removed_groups,
+        "count": len(removed_groups)
+        },
+        status=status.HTTP_200_OK
+    )
+
+
 class ContainerSnapshotsList(generics.ListAPIView):
     """
     Get a list of all snapshots for a specific container.
@@ -860,8 +955,6 @@ def share_add_access_groups(request, pk):
     """
     required_params = ["access_groups"]
     params = validate_request_params(required_params, request)
-    print("add access groups")
-    print(params)
 
     obj = Share.objects.filter(id=pk)
     if not obj:
@@ -880,15 +973,21 @@ def share_add_access_groups(request, pk):
                 {"error": "CollaborationGroup not found!", "data": access_group_id},
                 status=status.HTTP_404_NOT_FOUND
                 )
-        print(obj.first())
         access_groups.append(obj.first())
 
+    added_groups = []
     # add the access groups to the share
     for access_group in access_groups:
-        share.add_access_group(access_group)
+        if share.add_access_group(access_group):
+            added_groups.append((access_group.id, access_group.name))
 
-    serializer = NestedShareSerializer(share)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response({
+        "detail": "Groups added successfully",
+        "groups": added_groups,
+        "count": len(added_groups)
+        },
+        status=status.HTTP_200_OK
+    )
 
 
 @api_view(['POST'])
@@ -899,10 +998,9 @@ def share_remove_access_groups(request, pk):
     Todo: permissions
     :param pk   pk of the collaboration group
     """
-    print("remove access groups")
     required_params = ["access_groups"]
     params = validate_request_params(required_params, request)
-    print(params)
+
     obj = Share.objects.filter(id=pk)
     if not obj:
         return Response({"error": "Share not found!", "data": request.data})
@@ -922,15 +1020,19 @@ def share_remove_access_groups(request, pk):
                 )
         access_groups.append(obj.first())
 
+    removed_groups = []
     # add the access groups to the share
     for access_group in access_groups:
-        share.remove_access_group(access_group)
-        print("after remove from model")
+        if share.remove_access_group(access_group):
+            removed_groups.append((access_group.id, access_group.name))
 
-    print("after all")
-
-    serializer = NestedShareSerializer(share)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response({
+        "detail": "Groups removed successfully",
+        "groups": removed_groups,
+        "count": len(removed_groups)
+        },
+        status=status.HTTP_200_OK
+    )
 
 
 class TagList(generics.ListCreateAPIView):
