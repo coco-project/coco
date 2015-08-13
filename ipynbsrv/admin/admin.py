@@ -290,7 +290,7 @@ class ContainerImageAdmin(admin.ModelAdmin):
     Admin model for the `ContainerImage` model.
     """
 
-    list_display = ['get_friendly_name', 'description', 'is_internal', 'is_public']
+    list_display = ['get_friendly_name', 'short_description', 'is_internal', 'is_public']
     list_filter = [
         'is_internal',
         'is_public',
@@ -299,7 +299,7 @@ class ContainerImageAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ('General Properties', {
-            'fields': ['name', 'description', 'owner']
+            'fields': ['name', 'short_description', 'description', 'owner']
         }),
         ('Backend Properties', {
             'classes': ['collapse'],

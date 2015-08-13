@@ -72,3 +72,39 @@ $ service openvswitch-ipsec restart && service openvswitch-switch restart
 ```
 
 > Other services connecting to remote nodes via the internal network might need a restart as well, as soon as the connections have been established.
+
+<!--### 2. Connections between the nodes are really slow
+
+The commands below may result in a better OVS configuration. We had no success with that however.
+
+```bash
+# create OVS bridge
+ovs-vsctl add-br ovsbr0
+
+# add physical eth0
+ovs-vsctl add-port ovsbr0 eth0
+
+# assign eth0 address to the bridge
+ifconfig eth0 0
+ifconfig ovsbr0 172.16.231.138 netmask 255.255.255.0
+ifconfig ovsbr0 mtu 1420  # needed for GRE + IPSec
+
+# set new default route
+route del default
+route add default ovsbr0
+
+# add ipynbsrv port
+ovs-vsctl add-port ovsbr0 ipynbsrv0 -- set interface ipynbsrv0 type=internal
+ifconfig ipynbsrv0 192.168.0.2 netmask 255.255.0.0
+
+# establish GRE connections
+ovs-vsctl add-port ovsbr0 gre_master_slave1 -- set interface gre_master_slave1 type=ipsec_gre options:remote_ip=172.16.231.139 options:psk=ipynbsrv
+
+# in /etc/rc.local
+ifconfig eth0 0
+ifconfig ovsbr0 172.16.231.138 netmask 255.255.255.0
+ifconfig ovsbr0 mtu 1420
+route del default
+route add default ovsbr0
+ifconfig ipynbsrv0 192.168.0.1 netmask 255.255.0.0
+```-->
