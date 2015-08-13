@@ -285,7 +285,33 @@ $ cd backends && pip install -e . && cd ..
 
 ##### 6.3.3 Making the application ready
 
+As we are using the `django-admin-conf-vars`, we need to watch out to follow some required additional steps. You can find more details about this in the (official pypi registry entry of the package)[https://pypi.python.org/pypi/django-admin-conf-vars/].
+
+First of we need to comment out some lines in the source. 
+
+Open `ipynbsrv/settings.py` with the editor of your choice, and comment out the following line:
+
+```
+VARS_MODULE_PATH = 'ipynbsrv.core.conf'
+```
+
+Next up, open `ipynbsrv/core/models.py` and comment out the last lines, where all the signals get imported:
+
+```
+# make sure our signal receivers are loaded
+from ipynbsrv.core.signals import backend_users, backend_groups, \
+    collaboration_groups, container_images, container_snapshots, containers, \
+    groups, notifications, shares, users
+```
+
 After having completed the above preparation steps, the next few commands will look familiar to everyone already having used Django in the past. They are all about initializing the Django application and should be run in the repository root.
+
+```bash
+$ python manage.py makemigrations
+$ python manage.py migrate
+```
+
+Now you have to reopen `ipynbsrv/settings.py` and `ipynbsrv/core/models.py` again, undo your changes (remove the #), and run the migrations again:
 
 ```bash
 $ python manage.py makemigrations
