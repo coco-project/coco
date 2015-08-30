@@ -23,6 +23,12 @@
 <script src="{% static 'bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js' %}"></script>
 <script>
 $(function () {
+
+    {% if request.create %} 
+        $('#modal-create-container').modal('show');
+         $('#modal-create-container #img_select').multiselect('select', img);
+    {% endif %}
+
     $('[data-toggle="confirmation"]').confirmation({
         popout: true
     });

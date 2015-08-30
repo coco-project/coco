@@ -49,7 +49,8 @@ def index(request):
         'title': "Images",
         'containers': containers,
         'images': images,
-        'new_notifications_count': new_notifications_count
+        'new_notifications_count': new_notifications_count,
+        'request': request.GET
     })
 
 

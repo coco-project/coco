@@ -22,7 +22,7 @@
                     <div class="form-group">
                         <label for="image">Image</label>
                         <div class="select">
-	                        <select name="image_id" class="form-control enableCaseInsensitiveFiltering" required>
+	                        <select id="img_select" name="image_id" class="form-control enableCaseInsensitiveFiltering" required>
 	                            <option value="" selected>None</option>
 	                            {% for img in images %}
 	                                <option value="{{ img.id }}">{{ img.friendly_name }}</option>

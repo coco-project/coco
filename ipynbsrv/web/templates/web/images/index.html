@@ -12,7 +12,7 @@
     <div class="col-xs-12">
         {% include 'web/snippets/messages.html' with messages=messages only %}
 
-        <h1>Images</h1>
+        <h1>Images {{ request.share }}</h1>
         <form role="form">
             <button id="modal-create-image_button" type="button" class="btn btn-primary btn-create pull-right" data-toggle="modal" data-target="#modal-create-image" {% if not containers %}disabled{% endif %}>Create new</button>
         </form>
@@ -60,7 +60,7 @@
             <div class="alert alert-info">No images you can access available.</div>
         {% endif %}
 
-        {% include 'web/images/modal_create.html' with containers=containers selected=selected share=share csrf_token=csrf_token only %}
+        {% include 'web/images/modal_create.html' with containers=containers selected=selected share=request.share ct=request.ct csrf_token=csrf_token only %}
     </div>
 </div>
 {% endblock %}
@@ -70,9 +70,12 @@
 <script src="{% static 'bower_components/datatables-plugins-bootstrap3/dist/js/datatables-plugins-bootstrap3.min.js' %}"></script>
 <script src="{% static 'bower_components/bootstrap-confirmation2/bootstrap-confirmation.min.js' %}"></script>
 <script>
+
 $(function () {
-    {% if selected %}
-        $('#modal-create-image_button').click();
+
+    {% if request.share %} 
+        $('#modal-create-image').modal('show');
+        $('#modal-create-image #ct_select').multiselect('select', {{ request.ct }} );
     {% endif %}
 
     $('[data-toggle="confirmation"]').confirmation({

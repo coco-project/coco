@@ -723,7 +723,7 @@ class ContainerImageList(generics.ListCreateAPIView):
                 collab_group = self.request.user.backend_user.get_collaboration_group()
             if collab_group:
                 queryset = ContainerImage.objects.filter(
-                    Q(is_internal=False) & (Q(owner=self.request.user) | Q(is_public=True) | Q(access_groups=collab_group))
+                    Q(is_internal=False) & (Q(owner=self.request.user) | Q(is_public=True) | Q(access_groups__user=self.request.user))
                 ).distinct()
             else:
                 queryset = ContainerImage.objects.filter(

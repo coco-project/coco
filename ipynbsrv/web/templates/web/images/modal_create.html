@@ -13,10 +13,10 @@
                     <div class="form-group">
                         <label for="ct_id">Base container</label>
                         <div class="select">
-	                        <select name="ct_id" class="form-control enableCaseInsensitiveFiltering" required>
+	                        <select id="ct_select" name="ct_id" class="form-control enableCaseInsensitiveFiltering" required>
 	                            <option value="" selected>None</option>
-	                            {% for ct in containers %}
-	                                <option value="{{ ct.id }}"{% if ct == selected %} selected{% endif %}>{{ ct.name }}</option>
+	                            {% for c in containers %}
+	                                <option value="{{ c.id }}"{% if c == selected %} selected {% endif %}>{{ c.name }}</option>
 	                            {% endfor %}
 	                        </select>
 	                    </div>

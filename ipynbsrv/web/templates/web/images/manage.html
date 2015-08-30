@@ -14,14 +14,21 @@
         {% include 'web/snippets/messages.html' with messages=messages only %}
 
         <h1>Image</h1>
-        {% if request.user.id == image.owner.id %}
-        <form action="{% url 'image_delete' %}" method="POST" role="form">
-            {% csrf_token %}
-            <input type="hidden" name="id" value="{{ image.id }}">
-            <button class="btn btn-danger btn-create pull-right" title="Delete this image?" data-toggle="confirmation" data-placement="bottom">Delete Image
-            </button>
-        </form>
-        {% endif %}
+        <fieldset class="btn-create pull-right">
+            <!--<form action="{% url 'containers' %}" method="GET" role="form">
+                {% csrf_token %}
+                <input type="hidden" name="img" value="{{ image.id }}">
+                <input type="hidden" name="share" value="1">
+                <button class="btn btn-primary" title="Create container">Create Container</button>
+            </form>-->
+            {% if request.user.id == image.owner.id %}
+            <form action="{% url 'image_delete' %}" method="POST" role="form">
+                {% csrf_token %}
+                <input type="hidden" name="id" value="{{ image.id }}">
+                <button class="btn btn-danger" title="Delete this image?" data-toggle="confirmation" data-placement="bottom">Delete Image</button>
+            </form>
+            {% endif %}
+        </fieldset>
         <table class="table table-hover table-striped" cellspacing="0" width="100%">
             <thead>
                 <tr>
