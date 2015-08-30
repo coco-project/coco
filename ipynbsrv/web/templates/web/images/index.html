@@ -75,6 +75,7 @@ $(function () {
 
     {% if request.share %} 
         $('#modal-create-image').modal('show');
+        $('#modal-create-image #ct_select').multiselect('deselectAll');
         $('#modal-create-image #ct_select').multiselect('select', {{ request.ct }} );
     {% endif %}
 
