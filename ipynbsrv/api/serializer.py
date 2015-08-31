@@ -206,6 +206,17 @@ class ContainerImageSerializer(serializers.ModelSerializer):
         model = ContainerImage
 
 
+class FlatContainerImageSerializer(serializers.ModelSerializer):
+    """
+    Todo: write doc.
+    """
+    friendly_name = serializers.CharField(read_only=True, source='get_friendly_name')
+    access_groups = FlatCollaborationGroupSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ContainerImage
+
+
 class ContainerSnapshotSerializer(serializers.ModelSerializer):
     """
     Todo: write doc.

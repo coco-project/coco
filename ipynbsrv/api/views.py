@@ -712,7 +712,11 @@ class ContainerImageList(generics.ListCreateAPIView):
     """
     Get a list of all the container images.
     """
-    serializer_class = ContainerImageSerializer
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method in ['PATCH', 'POST', 'PUT']:
+            return FlatContainerImageSerializer
+        return ContainerImageSerializer
 
     def get_queryset(self):
         if self.request.user.is_superuser:
