@@ -1,15 +1,21 @@
-BUGS
+GENERAL
+
+  [ ] split admin and web django applications into dedicated repositories
 
 
-FEATURES
+CORE
 
-  - [ ] (optional) A logging system to log raised exceptions or debug information
+  [ ] create core containers with "--restart=always" so they are auto started on restart (https://docs.docker.com/reference/run/#restart-policies-restart)
+  [ ] define the Open vSwitch bridge as a regular interface (rather than through ovs-vsctl tool)
+  [ ] create Dockerfiles for the core containers and push them to the registry
+  [ ] use a process supervisor like monit/supervisord to ensure the ipynbsrv_hostapi process is always running
+  [ ] (optional) put the ipynbsrv_hostapi behind a proxy (gevent, ...). flask debug server should not be used
+  [ ] (optional) run django application in app container as non-root user
+  [ ] (optional) enable container resource limits so a container cannot eat all i.e. memory (https://docs.docker.com/reference/run/#runtime-constraints-on-resources)
 
 
-IMPROVEMENTS
+IMPROVEMENTS / TODOS
 
-  - [ ] Model validation via the in 1.8 newly introduced mechanisms
-        (https://docs.djangoproject.com/en/1.8/ref/models/instances/#validating-objects)
-
-
-REFACTORING
+  [ ] define and implement an error handling concept. at least log all errors
+  [ ] find another way to identify users/check permissions in the nginx reverse proxy (to minimize load on the django app)
+  [ ] django app model validation via the in 1.8 newly introduced mechanisms (https://docs.djangoproject.com/en/1.8/ref/models/instances/#validating-objects)
