@@ -1,10 +1,10 @@
 # Installation
 
-> A step-by-step guide on how to setup an `ipynbsrv` server/infrastructure.
+> A step-by-step guide on how to setup a `coco` server/infrastructure.
 
 ## Introduction
 
-Before we begin with the installation, it is incessant to leave a few words about the concepts and architecture of `ipynbsrv`. The main reason for that is that `ipynbsrv` is not really an application, but a giant project consisting of several (independent) components – each of it playing an important role within the whole setup. Since most of these components are exchangeable, the necessary install steps will vary depending on the concrete component implementation/specification you pick. This makes it harder to get started, but once you understand the concepts and ideas behind that approach, you'll be loving it – promised.
+Before we begin with the installation, it is incessant to leave a few words about the concepts and architecture of `coco`. The main reason for that is that `coco` is not really an application, but a giant project consisting of several (independent) components – each of it playing an important role within the whole setup. Since most of these components are exchangeable, the necessary install steps will vary depending on the concrete component implementation/specification you pick. This makes it harder to get started, but once you understand the concepts and ideas behind that approach, you'll be loving it – promised.
 
 ### Architecture
 
@@ -16,11 +16,11 @@ Since a specification contains only the minimal set of requirements, two compone
 
 ### Components
 
-As noted in the previous sections, `ipynbsrv` consists of mostly independent and replaceable components. The following list gives you a brief and short overview of the different components currently involved:
+As noted in the previous sections, `coco` consists of mostly independent and replaceable components. The following list gives you a brief and short overview of the different components currently involved:
 
 - **Networking:** To limit access to user created containers to its owner, there has to be a network that is not reachable from the outside. An internal only network has to exist. This network is used for other things as well and is the most low-end component of the project. The standard implementation uses `Open vSwitch` to create such a network.
 - **Core Infrastructure:** The core infrastructure itself is not a component (or if you'd like to call it like that anyway, think of it as one giant component consisting of various parts). Beside a handful of directories on the filesystem, it includes an LDAP directory server, a Postgresql DB server, an Nginx web server and a few Django applications. The project won't work without them and they are not meant to be replaceable, that's why they are grouped under the *Core Infrastructure* name. The default implementation/install guide uses Docker containers to run these services, but one is free to install them somewhere else.
-- **Backends:** Backend components are on one hand the most powerful abstraction in `ipynbsrv` (they abstract the storage, container and user/group backends), the most complex on the other hand. Take the `Docker` container backend as an example: it consists of the Docker platform (so it has to provide an install guide for that), Python code to communicate with that platform (it has to provide an `ipynbsrv.contract.container_backend` implementation for that) and a set of preconfigured images to run containers from (it has to provide `Dockerfile`s for that). Depending on the deployment (i.e. multi-server), additional tools like the `Docker Registry` are needed as well.
+- **Backends:** Backend components are on one hand the most powerful abstraction in `coco` (they abstract the storage, container and user/group backends), the most complex on the other hand. Take the `Docker` container backend as an example: it consists of the Docker platform (so it has to provide an install guide for that), Python code to communicate with that platform (it has to provide an `coco.contract.container_backend` implementation for that) and a set of preconfigured images to run containers from (it has to provide `Dockerfile`s for that). Depending on the deployment (i.e. multi-server), additional tools like the `Docker Registry` are needed as well.
 
 If you have (roughly) understood this concept of components, you're ready to go.
 
@@ -49,33 +49,33 @@ The following requirements are only valid for the core infrastructure. Each comp
 
 Below you can find a list of all currently available components. Make sure to consult their documentations before you start, as some might only work in combination with others.
 
-> If you are aware of one not listed, please submit a merge request. Thanks! 
+> If you are aware of one not listed, please submit a merge request. Thanks!
 
 ### Container Backends
 
-- [Docker](https://git.rackster.ch/ipynbsrv/backends/blob/master/docs/container_backends.md#docker)
-- [HttpRemote](https://git.rackster.ch/ipynbsrv/backends/blob/master/docs/container_backends.md#httpremote)
+- [Docker](https://github.com/coco-project/backends/blob/master/docs/container_backends.md#docker)
+- [HttpRemote](https://github.com/coco-project/backends/blob/master/docs/container_backends.md#httpremote)
 
 ### Networking
 
-- [Docker](https://git.rackster.ch/ipynbsrv/backends/blob/master/docs/container_backends.md#docker) (single-server only)
-- [Open vSwitch](https://git.rackster.ch/ipynbsrv/ipynbsrv/blob/master/docs/install/networking/openvswitch.md)
+- [Docker](https://github.com/coco-project/backends/blob/master/docs/container_backends.md#docker) (single-server only)
+- [Open vSwitch](hhttps://github.com/coco-project/coco/blob/master/docs/install/networking/openvswitch.md)
 
 ### Storage Backends
 
-- [LocalFileSystem](https://git.rackster.ch/ipynbsrv/backends/blob/master/docs/storage_backends.md#localfilesystem)
+- [LocalFileSystem](https://github.com/coco-project/backends/blob/master/docs/storage_backends.md#localfilesystem)
 
 ### User/Group Backends
 
-- [LdapBackend](https://git.rackster.ch/ipynbsrv/backends/blob/master/docs/usergroup_backends.md#ldapbackend)
+- [LdapBackend](https://github.com/coco-project/backends/blob/master/docs/usergroup_backends.md#ldapbackend)
 
 ## Getting started
 
-> If you are looking for an easier install guide (this one describes the modular approach), the [Easy Install Guide](https://git.rackster.ch/ipynbsrv/ipynbsrv/blob/master/docs/install/easy_installation.md) might be for you.    
+> If you are looking for an easier install guide (this one describes the modular approach), the [Easy Install Guide](https://github.com/coco-project/coco/blob/master/docs/install/easy_installation.md) might be for you.    
 > ––––    
 > If you landed here and have not yet read the **Introduction** chapter, do yourself a favour and start there.
 
-Now that you are familiar enough with `ipynbsrv`'s architecture, we can proceed to the actual installation steps. Because the setup you're going to deploy depends extensively on the components you choose, the following steps are very generic.
+Now that you are familiar enough with `coco`'s architecture, we can proceed to the actual installation steps. Because the setup you're going to deploy depends extensively on the components you choose, the following steps are very generic.
 
 The following chapters assume you have a running box (see **Requirements**) and an open `root` console. Commands prefixed with `$` are meant to be run as `root`.
 
@@ -109,17 +109,17 @@ Storage backends define the way how and where directories and files are stored. 
 
 Because the core application as well as user containers need to access these resources (directories and files), the storage backend should be the first backend to setup. Again, open the documentation of the storage backend in use to see how it needs to be set up.
 
-> The reference implementation uses the `LocalFileSystem` backend. The working directory is set to `/srv/ipynbsrv/data`.
+> The reference implementation uses the `LocalFileSystem` backend. The working directory is set to `/srv/coco/data`.
 
 ### 4. Setting up the Container Backend
 
-Container backends are by far the most complex component to install (and implement). Since the specification for such backends does not include the required install steps, you have to read the concrete backends documentation again. It should tell you how to install the (container) isolation product itself, how to configure it so it plays nicely with `ipynbsrv`, how to add/create images for it and what additional steps are needed for a working multi-server deployment.
+Container backends are by far the most complex component to install (and implement). Since the specification for such backends does not include the required install steps, you have to read the concrete backends documentation again. It should tell you how to install the (container) isolation product itself, how to configure it so it plays nicely with `coco`, how to add/create images for it and what additional steps are needed for a working multi-server deployment.
 
 > The reference implementation uses the `Docker` backend in combination with the `HttpRemote` proxy backend (if deploying a multi-server setup).
 
 ### 5. Setting up the User Backend
 
-Beside the internal usage of the `LdapBackend` for communication with the core infrastructure LDAP server (if that is the way you go), this backend (talking about it because no alternatives exist atm) can also be used to let users from an external LDAP server access the application. In general, user backends allow one to use an existing user directory to be used as `ipynbsrv`'s authentication backend.
+Beside the internal usage of the `LdapBackend` for communication with the core infrastructure LDAP server (if that is the way you go), this backend (talking about it because no alternatives exist atm) can also be used to let users from an external LDAP server access the application. In general, user backends allow one to use an existing user directory to be used as `coco`'s authentication backend.
 
 But enough. Please consult the backend's own documentation to get it working.
 
@@ -231,12 +231,12 @@ After creating the directory where the application will resist, it is already ti
 
 ```bash
 BRANCH=master
-git clone -b $BRANCH https://git.rackster.ch/ipynbsrv/ipynbsrv.git _repo
+git clone -b $BRANCH https://github.com/coco-project/coco.git _repo
 ```
 
-> A smart location for the repository is `/srv/ipynbsrv/_repo`.
+> A smart location for the repository is `/srv/coco/_repo`.
 
-Since the `ipynbsrv` Django application has several dependencies, they need to be installed before the application will work:
+Since the `coco` Django application has several dependencies, they need to be installed before the application will work:
 
 ```bash
 $ cd _repo
@@ -246,12 +246,12 @@ $ pip install -r requirements.txt
 Next, we're going to create a directory that will contain the `uwsgi` socket and tell Nginx about the application's vhost file. This virtual host configuration for Nginx makes sure that i.e. requests are send to the `uwsgi` backend:
 
 ```bash
-$ mkdir -p /var/run/ipynbsrv/
+$ mkdir -p /var/run/coco/
 $ mkdir /usr/local/openresty/nginx/conf/sites-enabled
-$ ln -s /srv/ipynbsrv/_repo/lib/confs/nginx/ipynbsrv.conf /usr/local/openresty/nginx/conf/sites-enabled/
+$ ln -s /srv/coco/_repo/lib/confs/nginx/coco.conf /usr/local/openresty/nginx/conf/sites-enabled/
 ```
 
-> The linking command assumes you have cloned the repository to `/srv/ipynbsrv/_repo`.
+> The linking command assumes you have cloned the repository to `/srv/coco/_repo`.
 
 Last but not least, make sure the Nginx main configuration at `/usr/local/openresty/nginx/conf/nginx.conf` reflects the snippet below:
 
@@ -271,13 +271,13 @@ Remember the initial note regarding unpublished packages? They can be manually i
 
 ```bash
 $ cd /usr/local/src
-$ git clone https://git.rackster.ch/ipynbsrv/contract.git
+$ git clone https://github.com/coco-project/contract.git
 $ cd contract && pip install -e . && cd ..
-$ git clone https://git.rackster.ch/ipynbsrv/common.git
+$ git clone https://github.com/coco-project/common.git
 $ cd common && pip install -e . && cd ..
-$ git clone https://git.rackster.ch/ipynbsrv/client.git
+$ git clone https://github.com/coco-project/client.git
 $ cd client && pip install -e . && cd ..
-$ git clone https://git.rackster.ch/ipynbsrv/backends.git
+$ git clone https://github.com/coco-project/backends.git
 $ cd backends && pip install -e . && cd ..
 ```
 
@@ -287,19 +287,19 @@ $ cd backends && pip install -e . && cd ..
 
 As we are using the `django-admin-conf-vars`, we need to watch out to follow some required additional steps. You can find more details about this in the (official pypi registry entry of the package)[https://pypi.python.org/pypi/django-admin-conf-vars/].
 
-First of we need to comment out some lines in the source. 
+First of we need to comment out some lines in the source.
 
-Open `ipynbsrv/settings.py` with the editor of your choice, and comment out the following line:
+Open `coco/settings.py` with the editor of your choice, and comment out the following line:
 
 ```
-VARS_MODULE_PATH = 'ipynbsrv.core.conf'
+VARS_MODULE_PATH = 'coco.core.conf'
 ```
 
-Next up, open `ipynbsrv/core/models.py` and comment out the last lines, where all the signals get imported:
+Next up, open `coco/core/models.py` and comment out the last lines, where all the signals get imported:
 
 ```
 # make sure our signal receivers are loaded
-from ipynbsrv.core.signals import backend_users, backend_groups, \
+from coco.core.signals import backend_users, backend_groups, \
     collaboration_groups, container_images, container_snapshots, containers, \
     groups, notifications, shares, users
 ```
@@ -311,7 +311,7 @@ $ python manage.py makemigrations
 $ python manage.py migrate
 ```
 
-Now you have to reopen `ipynbsrv/settings.py` and `ipynbsrv/core/models.py` again, undo your changes (remove the #), and run the migrations again:
+Now you have to reopen `coco/settings.py` and `coco/core/models.py` again, undo your changes (remove the #), and run the migrations again:
 
 ```bash
 $ python manage.py makemigrations
@@ -321,7 +321,7 @@ $ python manage.py migrate
 As we are using `LESS` to produce `CSS` and `bower` to manage external dependencies, you need to compile the styles and install the deps (like `jQuery` etc.):
 
 ```bash
-$ cd ipynbsrv/web/static
+$ cd coco/web/static
 $ bower install --allow-root  # installs external dependencies
 $ mkdir css
 $ lessc less/main.less css/main.css  # compile LESS to CSS

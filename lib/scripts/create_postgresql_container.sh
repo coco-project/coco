@@ -2,7 +2,7 @@
 
 #######################################################################################
 # This script will create the Docker container that will be used
-# by ipynbsrv as the PostgreSQL server.
+# by coco as the PostgreSQL server.
 #
 # last updated: 02.02.2015
 #######################################################################################
@@ -12,7 +12,7 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-CT_NAME="ipynbsrv_postgresql"
+CT_NAME="coco_postgresql"
 
 echo "------------------------------------------------------------"
 echo "Pulling the PostgreSQL server image..."
@@ -35,8 +35,8 @@ sleep 2
 
 docker run \
     --name "${CT_NAME}" \
-    -v /srv/ipynbsrv/postgresql:/var/lib/postgresql/data \
-    -e POSTGRES_USER="ipynbsrv" \
+    -v /srv/coco/postgresql:/var/lib/postgresql/data \
+    -e POSTGRES_USER="coco" \
     -e POSTGRES_PASSWORD="${PASSWORD}" \
     -d postgres:9.4.0
 

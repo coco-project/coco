@@ -1,10 +1,10 @@
-dn: ou=users,dc=ipynbsrv,dc=ldap
+dn: ou=users,dc=coco,dc=ldap
 changetype: add
 objectclass: organizationalUnit
 objectclass: top
 ou: users
 
-dn: ou=groups,dc=ipynbsrv,dc=ldap
+dn: ou=groups,dc=coco,dc=ldap
 changetype: add
 objectclass: organizationalUnit
 objectclass: top

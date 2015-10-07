@@ -8,8 +8,8 @@ CORE
   [ ] create core containers with "--restart=always" so they are auto started on restart (https://docs.docker.com/reference/run/#restart-policies-restart)
   [ ] define the Open vSwitch bridge as a regular interface (rather than through ovs-vsctl tool)
   [ ] create Dockerfiles for the core containers and push them to the registry
-  [ ] use a process supervisor like monit/supervisord to ensure the ipynbsrv_hostapi process is always running
-  [ ] (optional) put the ipynbsrv_hostapi behind a proxy (gevent, ...). flask debug server should not be used
+  [ ] use a process supervisor like monit/supervisord to ensure the coco_hostapi process is always running
+  [ ] (optional) put the coco_hostapi behind a proxy (gevent, ...). flask debug server should not be used
   [ ] (optional) run django application in app container as non-root user
   [ ] (optional) enable container resource limits so a container cannot eat all i.e. memory (https://docs.docker.com/reference/run/#runtime-constraints-on-resources)
 

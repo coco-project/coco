@@ -1,7 +1,7 @@
 site_name: User Guide
 
 docs_dir: .
-site_dir: ../../ipynbsrv/web/static/docs/user-guide
+site_dir: ../../coco/web/static/docs/user-guide
 
 pages:
 - 'Home' : 'index.md'

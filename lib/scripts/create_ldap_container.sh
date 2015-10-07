@@ -2,7 +2,7 @@
 
 #######################################################################################
 # This script will create the Docker container that will be used
-# by ipynbsrv as the centralized users and groups database/directory services.
+# by coco as the centralized users and groups database/directory services.
 #
 # last updated: 02.02.2015
 #######################################################################################
@@ -12,7 +12,7 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-CT_NAME="ipynbsrv_ldap"
+CT_NAME="coco_ldap"
 
 echo "------------------------------------------------------------"
 echo "Pulling the LDAP server image..."
@@ -34,10 +34,10 @@ sleep 2
 
 docker run \
     --name "${CT_NAME}" \
-    -v /srv/ipynbsrv/ldap:/var/lib/ldap \
+    -v /srv/coco/ldap:/var/lib/ldap \
     -p 389:389 \
-    -e LDAP_DOMAIN="ipynbsrv.ldap" \
-    -e LDAP_ORGANISATION="ipynbsrv" \
+    -e LDAP_DOMAIN="coco.ldap" \
+    -e LDAP_ORGANISATION="coco" \
     -e LDAP_ROOTPASS="${PASSWORD}" \
     -d nickstenning/slapd:latest
 
@@ -46,12 +46,12 @@ echo "Entering the container. Finish by issueing these commands inside:"
 echo "------------------------------------------------------------"
 
 echo "$ apt-get update && apt-get -y install ldap-utils wget"
-echo "$ wget https://git.rackster.ch/ipynbsrv/ipynbsrv/raw/master/lib/confs/slapd/init.ldif"
-echo "$ ldapadd -h localhost -p 389 -c -x -D cn=admin,dc=ipynbsrv,dc=ldap -W -f init.ldif"
+echo "$ wgethttps://raw.githubusercontent.com/coco-project/coco/master/lib/confs/slapd/init.ldif"
+echo "$ ldapadd -h localhost -p 389 -c -x -D cn=admin,dc=coco,dc=ldap -W -f init.ldif"
 echo "$ rm init.ldif && exit"
 sleep 5
 
-docker-bash ipynbsrv_ldap
+docker-bash coco_ldap
 
 echo "------------------------------------------------------------"
 echo "All done!"

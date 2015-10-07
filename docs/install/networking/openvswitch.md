@@ -1,10 +1,10 @@
 # Open vSwitch
 
-> Guide to setup Open vSwitch as `ipynbsrv`'s internal networking solution.
+> Guide to setup Open vSwitch as `coco`'s internal networking solution.
 
 ## Introduction
 
-As per the `ipynbsrv` networking requirements, every node must have its unique IPv4 address within a private/internal network that cannot be reached from the outside. With Open vSwitch, we can setup such a network between our nodes. It doesn't matter which reserved IPv4 network range you pick for that network, as long as it doesn't conflict with other existing networks (check with `ifconfig` if you are unsure about other networks in use). This guide assumes the `192.168.0.0/24` network was picked.
+As per the `coco` networking requirements, every node must have its unique IPv4 address within a private/internal network that cannot be reached from the outside. With Open vSwitch, we can setup such a network between our nodes. It doesn't matter which reserved IPv4 network range you pick for that network, as long as it doesn't conflict with other existing networks (check with `ifconfig` if you are unsure about other networks in use). This guide assumes the `192.168.0.0/24` network was picked.
 
 ## Installation
 
@@ -50,14 +50,14 @@ Open vSwitch is installed and running, but no connections between the nodes have
 Basically, the following command needs to be executed on the two nodes between which the connection should be established. Executing that command instructs Open vSwitch to create and establish a `GRE over IPSec` connection beween the two nodes:
 
 ```bash
-$ ovs-vsctl add-port ovsbr0 gre_master_slave1 -- set interface gre_master_slave1 type=ipsec_gre options:remote_ip=10.0.0.2 options:psk=ipynbsrv
+$ ovs-vsctl add-port ovsbr0 gre_master_slave1 -- set interface gre_master_slave1 type=ipsec_gre options:remote_ip=10.0.0.2 options:psk=coco
 ```
 
 > `gre_master_slave1` is the connection's name. It must be unique and the same on both nodes.    
 > ––––    
 > `10.0.0.2` is the IPv4 address under which the remote node can be reached.    
 > ––––    
-> `psk=ipynbsrv` is the password used to encrypt the connection.
+> `psk=coco` is the password used to encrypt the connection.
 
 For a minimal setup, you have to establish one connection to the master node at least. A full-meshed network might however perform better, so you're encouraged to establish additional connections between other nodes as well.
 

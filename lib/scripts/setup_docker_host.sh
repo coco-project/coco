@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #######################################################################################
-# This script will setup the host the script is executed on as an ipynbsrv Docker host.
+# This script will setup the host the script is executed on as a coco Docker host.
 # For that, it installs the Docker environment, creates the required data directories
 # and configures the system to be an LDAP client.
 #
@@ -19,7 +19,7 @@ fi
 
 echo "------------------------------------------------------------"
 echo "Note: During installation, you'll be prompted with a dialog to configure the LDAP client."
-echo "Make sure you enter 'ldap://127.0.0.1/' and 'dc=ipynbsrv,dc=ldap'."
+echo "Make sure you enter 'ldap://127.0.0.1/' and 'dc=coco,dc=ldap'."
 echo "------------------------------------------------------------"
 sleep 2
 
@@ -59,7 +59,7 @@ tar xzf master.tar.gz
 rm -rf master.tar.gz baseimage-docker-master
 
 # create the data directories
-DATA="/srv/ipynbsrv"
+DATA="/srv/coco"
 mkdir -p $DATA
 # create the LDAP/PostgreSQL container data directories
 mkdir -p $DATA/ldap
