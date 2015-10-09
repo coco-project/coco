@@ -12,6 +12,8 @@ CORE
   [ ] (optional) put the coco_hostapi behind a proxy (gevent, ...). flask debug server should not be used
   [ ] (optional) run django application in app container as non-root user
   [ ] (optional) enable container resource limits so a container cannot eat all i.e. memory (https://docs.docker.com/reference/run/#runtime-constraints-on-resources)
+  [ ] outsource ServerSelectionAlgorithm to contract package
+  [ ] make the directory<->"mount point" mapper ContainerBackend aware (the backend should say how this mapping should be done)
 
 
 IMPROVEMENTS / TODOS
@@ -19,3 +21,4 @@ IMPROVEMENTS / TODOS
   [ ] define and implement an error handling concept. at least log all errors
   [ ] find another way to identify users/check permissions in the nginx reverse proxy (to minimize load on the django app)
   [ ] django app model validation via the in 1.8 newly introduced mechanisms (https://docs.djangoproject.com/en/1.8/ref/models/instances/#validating-objects)
+  [ ] define VLANs per user so his containers can communicate (but not others)
