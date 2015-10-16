@@ -22,3 +22,5 @@ IMPROVEMENTS / TODOS
   [ ] find another way to identify users/check permissions in the nginx reverse proxy (to minimize load on the django app)
   [ ] django app model validation via the in 1.8 newly introduced mechanisms (https://docs.djangoproject.com/en/1.8/ref/models/instances/#validating-objects)
   [ ] define VLANs per user so his containers can communicate (but not others)
+  [ ] use cookie based access check in nginx to prevent high load on the django app (subrequests)
+
