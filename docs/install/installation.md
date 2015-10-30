@@ -10,6 +10,10 @@ Before we begin with the installation, it is incessant to leave a few words abou
 
 Basically, the whole project can be understood as a multilayered architecture project. Each component is either part of a layer or defines a layer itself. Additionally, each component can be structured and multilayered itself (i.e. the software stuff).
 
+![Overview of coco's strict multilayered architecture](_img/layer_architecture.png)
+
+> Overview of coco's strict multilayered architecture
+
 Because there has to be at least one (sub)component plugging all the other components together and coordinating their behavior, minimal requirements are specified for each of them. These specifications come either in the form of contracts (i.e. for the software backends) or formal descriptions (i.e. the networking). Everything together can therefor only work, if every single component fully fulfills its relevant specifications.
 
 Since a specification contains only the minimal set of requirements, two components that are totally specification conform, can have nearly nothing in common. For that reason, every component has to provide its own setup instructions (if any). Depending on the component's layer, its install steps may affect the installation process of other components as well. Besides, the type of deployment (single-server or multi-server) can have an impact too. For that reason, one has to inspect every component's install guide before actually starting. This may make the installation quite complex – as initially noted.
@@ -59,7 +63,7 @@ Below you can find a list of all currently available components. Make sure to co
 ### Networking
 
 - [Docker](https://github.com/coco-project/backends/blob/master/docs/container_backends.md#docker) (single-server only)
-- [Open vSwitch](hhttps://github.com/coco-project/coco/blob/master/docs/install/networking/openvswitch.md)
+- [Open vSwitch](https://github.com/coco-project/coco/blob/master/docs/install/networking/openvswitch.md)
 
 ### Storage Backends
 
