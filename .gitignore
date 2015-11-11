@@ -12,5 +12,3 @@ coco/web/static/bower_components
 coco/web/static/css/main.css
 # mkdocs generated files
 coco/web/static/docs/user-guide/*
-# migrations
-**/migrations/*

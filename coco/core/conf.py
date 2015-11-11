@@ -53,7 +53,7 @@ config.set('USER_BACKEND_CLASS',
            description='The full class path of the user backend to use.')
 
 config.set('USER_BACKEND_ARGS',
-           default='{"server": "coco_ldap", "base_dn": "dc=coco,dc=ldap", "users_dn": "ou=users"}',
+           default='{"server": "coco_ldap", "base_dn": "dc=coco,dc=ldap", "users_dn": "ou=_users"}',
            editable=True,
            description="""The arguments needed to instantiate the provided user backend class.
                Please provide in json format (i.e. {'arg1': "val1", 'arg2': "val2"}).""")

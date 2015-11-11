@@ -1,6 +1,6 @@
-from coca.core.models import CollaborationGroup, Notification, \
+from coco.core.models import CollaborationGroup, Notification, \
     NotificationLog
-from coca.core.signals.signals import *
+from coco.core.signals.signals import *
 from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
 

@@ -327,7 +327,6 @@ As we are using `LESS` to produce `CSS` and `bower` to manage external dependenc
 ```bash
 $ cd coco/web/static
 $ bower install --allow-root  # installs external dependencies
-$ mkdir css
 $ lessc less/main.less css/main.css  # compile LESS to CSS
 $ cd ../../..
 ```
@@ -344,8 +343,10 @@ $ mkdocs build --clean
 Last but not least, finalize the whole setup by issueing:
 
 ```bash
+cd /srv/coco/_repo
 python manage.py collectstatic
 python manage.py createsuperuser
+ln -s /srv/coco/_repo /srv/coco/www
 ```
 
 which will create a local superuser account (the admin account).

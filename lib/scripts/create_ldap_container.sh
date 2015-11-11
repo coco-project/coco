@@ -33,9 +33,10 @@ echo "------------------------------------------------------------"
 sleep 2
 
 docker run \
+    --restart=always \
     --name "${CT_NAME}" \
     -v /srv/coco/ldap:/var/lib/ldap \
-    -p 389:389 \
+    -p 192.168.0.1:389:389 \
     -e LDAP_DOMAIN="coco.ldap" \
     -e LDAP_ORGANISATION="coco" \
     -e LDAP_ROOTPASS="${PASSWORD}" \

@@ -12,7 +12,7 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-CT_NAME="coco_wui"
+CT_NAME="coco_app"
 CMD="/sbin/my_init -- /usr/bin/uwsgi_python --ini /srv/coco/_repo/lib/confs/uwsgi/coco.ini"
 
 echo "------------------------------------------------------------"
@@ -32,7 +32,7 @@ echo "Committing the WUI container so we can create a new one from it..."
 echo "------------------------------------------------------------"
 sleep 2
 
-docker commit $CT_NAME coco/wui:install
+docker commit $CT_NAME coco/app:install
 docker rm $CT_NAME
 
 echo "------------------------------------------------------------"
@@ -43,8 +43,9 @@ sleep 2
 # create the new container with mounted directories
 docker run \
     --detach=true --interactive=false \
+    --restart=always \
     --name="${CT_NAME}" \
     -p 80:80 \
     --link coco_ldap:coco_ldap --link coco_postgresql:coco_postgresql \
     -v /srv/coco/data:/srv/coco/data \
-    coco/wui:init $CMD
+    coco/app:install $CMD

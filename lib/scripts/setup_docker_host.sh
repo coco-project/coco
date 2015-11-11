@@ -17,12 +17,6 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-echo "------------------------------------------------------------"
-echo "Note: During installation, you'll be prompted with a dialog to configure the LDAP client."
-echo "Make sure you enter 'ldap://127.0.0.1/' and 'dc=coco,dc=ldap'."
-echo "------------------------------------------------------------"
-sleep 2
-
 # detect the package manager
 if `which apt-get &> /dev/null`; then
     PS="deb"
@@ -65,31 +59,12 @@ mkdir -p $DATA
 mkdir -p $DATA/ldap
 mkdir -p $DATA/postgresql
 # create the directories for the users and shares
-mkdir -p $DATA/homes
-mkdir -p $DATA/public
-mkdir -p $DATA/shares
+mkdir -p $DATA/data/homes
+mkdir -p $DATA/data/public
+mkdir -p $DATA/data/shares
 # ensure secure permissions. just in cast a custom umask is set
 chown -R root:root $DATA
 chmod -R 0755 $DATA
-
-# install the LDAP client tools
-# we need to know all LDAP users because the home/share directories will belong to them
-echo "------------------------------------------------------------"
-echo "Going to install the PAM LDAP package..."
-echo "When asked for the nsswitch services to configure, choose 'group', 'passwd' and 'shadow'."
-echo "------------------------------------------------------------"
-sleep 2
-if [ $PS == "deb" ]; then
-    $INSTALL libpam-ldap
-else
-    $INSTALL nss-pam-ldapd
-    authconfig-tui
-    # disable caching server, made problems
-    systemctl stop nslcd.service
-    systemctl disable nslcd.service
-fi
-# configure that we want to use LDAP for passwd etc.
-sed -i 's/compat/compat ldap/' /etc/nsswitch.conf
 
 echo "------------------------------------------------------------"
 echo "All done! You should now reboot the machine."

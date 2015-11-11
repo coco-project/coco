@@ -34,11 +34,12 @@ echo "------------------------------------------------------------"
 sleep 2
 
 docker run \
+    --restart=always \
     --name "${CT_NAME}" \
     -v /srv/coco/postgresql:/var/lib/postgresql/data \
     -e POSTGRES_USER="coco" \
     -e POSTGRES_PASSWORD="${PASSWORD}" \
-    -d postgres:9.4.0
+    -d postgres
 
 echo "------------------------------------------------------------"
 echo "All done!"
