@@ -3,7 +3,7 @@ from django.conf.urls import patterns, url
 from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = patterns('',
-    url(r'^$', views.api_root),
+    url(r'^$', views.api_root, name='api_root'),
 
     # /api/users(/)...
     url(r'^users/?$', views.UserList.as_view(), name="users"),

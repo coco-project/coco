@@ -14,6 +14,9 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# custom setting, used to run the application in a subdirectory, 
+# trailing slash is needed, i.e. 'sub/'
+SUBDIRECTORY = ''
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -46,8 +49,12 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles'
+    #'django.contrib.sites',
+    'django.contrib.staticfiles',
 )
+
+# set site id for site framework
+# SITE_ID = 1
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -117,12 +124,11 @@ MESSAGE_TAGS = {
     40: 'danger'
 }
 
-
-# LEGACY SETTINGS FROM OLD . NEEDS REFACTORING
-LOGIN_URL = '/accounts/login'
-LOGIN_REDIRECT_URL = '/accounts/flag'
-PUBLIC_URL = '/public/'
-USER_GUIDE_URL = '/docs/user-guide/'
+# LEGACY SETTINGS FROM OLD IPYNBSRV. NEEDS REFACTORING
+LOGIN_URL = '/{}accounts/login'.format(SUBDIRECTORY)
+LOGIN_REDIRECT_URL = '/{}accounts/flag'.format(SUBDIRECTORY)
+PUBLIC_URL = '/{}public/'.format(SUBDIRECTORY)
+USER_GUIDE_URL = '/{}docs/user-guide/'.format(SUBDIRECTORY)
 
 VARS_MODULE_PATH = 'coco.core.conf'
 

@@ -1,8 +1,10 @@
 from coco.client.clients import HttpClient
+from django.core.urlresolvers import reverse
 
 
 def get_httpclient_instance(request):
-    base_url = "http://localhost/api"
+    # TODO: make this url dynamic
+    base_url = 'http://localhost{}'.format(reverse('api_root'))
     username = request.user.username
     password = request.session.get('password')
     return HttpClient(base_url, auth=(username, password))

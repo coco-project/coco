@@ -15,15 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 '''
 
+from django.conf import settings
 from coco.admin.admin import admin_site
 from django.conf.urls import include, url
 
 
 urlpatterns = [
-    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    url(r'^admin/', include(admin_site.urls)),
-    url(r'^api/', include('coco.api.urls')),
-    url(r'^', include('coco.web.urls'))
+    url(r'^{}admin/doc/'.format(settings.SUBDIRECTORY), include('django.contrib.admindocs.urls')),
+    url(r'^{}admin/'.format(settings.SUBDIRECTORY), include(admin_site.urls)),
+    url(r'^{}api/'.format(settings.SUBDIRECTORY), include('coco.api.urls')),
+    url(r'^{}'.format(settings.SUBDIRECTORY), include('coco.web.urls'))
 ]
 
 
