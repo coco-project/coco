@@ -14,7 +14,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# custom setting, used to run the application in a subdirectory, 
+# custom setting, used to run the application in a subdirectory,
 # trailing slash is needed, i.e. 'sub/'
 SUBDIRECTORY = ''
 

@@ -1,7 +1,9 @@
+from django.conf import settings
+
 """
 Settings related to containers.
 """
-CONTAINER_ACCESS_BASE_URI = '/ct/'
+CONTAINER_ACCESS_BASE_URI = '/' + settings.SUBDIRECTORY + 'ct/'
 CONTAINER_PORT_MAPPINGS_START_PORT = 49152
 CONTAINER_PORT_MAPPINGS_END_PORT = 65534
 

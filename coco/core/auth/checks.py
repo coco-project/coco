@@ -1,4 +1,5 @@
 from coco.core.models import PortMapping
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponse
@@ -37,9 +38,12 @@ def workspace_auth_access(request):
                 user = User.objects.get(username=username)
                 uri = request.META.get(URI_HEADER)
                 if uri:  # ensure the X- header is present. its set by Nginx
+                    subdirectory_parts = 0
+                    if settings.SUBDIRECTORY != "":
+                        subdirectory_parts = settings.SUBDIRECTORY.split('/')
                     splits = uri.split('/')
-                    if len(splits) >= 3:
-                        base_url = splits[2]
+                    if len(splits) >= (3 + subdirectory_parts):
+                        base_url = splits[2 + subdirectory_parts]
                         parts = base_url.decode('hex').split(':')
                         internal_ip = parts[0]
                         port = parts[1]
