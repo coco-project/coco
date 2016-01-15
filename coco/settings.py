@@ -16,6 +16,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # custom setting, used to run the application in a subdirectory,
 # trailing slash is needed, i.e. 'sub/'
+# make sure to change 'lib/confs/nginx/coco.conf' as well (see comments there)
 SUBDIRECTORY = ''
 
 # Quick-start development settings - unsuitable for production
